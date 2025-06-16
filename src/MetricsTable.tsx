@@ -15,7 +15,39 @@ import {
 } from "@primer/react";
 import { useNavigate } from "react-router-dom";
 
-function formatDuration(start, end) {
+interface MetricsTableProps {
+  token: string;
+}
+
+interface TimelineEntry {
+  label: string;
+  date: string;
+}
+
+interface PRItem {
+  id: string;
+  owner: string;
+  repo_name: string;
+  repo: string;
+  number: number;
+  title: string;
+  url: string;
+  author: string;
+  state: "open" | "closed" | "merged" | "draft";
+  created_at: string;
+  published_at?: string;
+  closed_at?: string;
+  first_review_at?: string;
+  first_commit_at?: string;
+  reviewers: number;
+  changes_requested: number;
+  additions: number;
+  deletions: number;
+  comment_count: number;
+  timeline: TimelineEntry[];
+}
+
+function formatDuration(start?: string | null, end?: string | null) {
   if (!start || !end) return "N/A";
   const diffMs = new Date(end) - new Date(start);
   if (diffMs < 0) return "N/A";
@@ -25,18 +57,18 @@ function formatDuration(start, end) {
   return days > 0 ? `${days}d ${hours}h` : `${hours}h`;
 }
 
-export default function MetricsTable({ token }) {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [repoFilter, setRepoFilter] = useState("");
-  const [authorFilter, setAuthorFilter] = useState("");
-  const [pageIndex, setPageIndex] = useState(0);
-  const [selectedIds, setSelectedIds] = useState([]);
+export default function MetricsTable({ token }: MetricsTableProps) {
+  const [items, setItems] = useState<PRItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [repoFilter, setRepoFilter] = useState<string>("");
+  const [authorFilter, setAuthorFilter] = useState<string>("");
+  const [pageIndex, setPageIndex] = useState<number>(0);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const PAGE_SIZE = 25;
-  const columnHelper = createColumnHelper();
+  const columnHelper = createColumnHelper<PRItem>();
   const navigate = useNavigate();
 
-  const toggleSelect = (id) => {
+  const toggleSelect = (id: string) => {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
     );
@@ -63,12 +95,12 @@ export default function MetricsTable({ token }) {
           allItems.set(item.id, item);
         });
 
-        const data = await Promise.all(
-          Array.from(allItems.values()).map(async (item) => {
+        const data: PRItem[] = await Promise.all(
+          Array.from(allItems.values()).map(async (item): Promise<PRItem> => {
             const [owner, repo] = item.repository_url.split("/").slice(-2);
             const prNumber = item.number;
 
-            const prData = await octokit.graphql(
+            const prData = await octokit.graphql<any>(
               `query($owner:String!,$repo:String!,$number:Int!){
                  repository(owner:$owner,name:$repo){
                    pullRequest(number:$number){
@@ -104,7 +136,7 @@ export default function MetricsTable({ token }) {
                 per_page: 100,
               },
             );
-            const firstCommitAt = commits.reduce((earliest, c) => {
+            const firstCommitAt = commits.reduce<string | null>((earliest, c) => {
               const date = c.commit.author?.date || c.commit.committer?.date;
               return !earliest || new Date(date) < new Date(earliest)
                 ? date
@@ -273,9 +305,9 @@ export default function MetricsTable({ token }) {
         const published = row.published_at ? new Date(row.published_at) : created;
         const reviewed = row.first_review_at ? new Date(row.first_review_at) : published;
         const closed = row.closed_at ? new Date(row.closed_at) : reviewed;
-        const draftMs = Math.max(published - created, 0);
-        const reviewMs = Math.max(reviewed - published, 0);
-        const closeMs = Math.max(closed - reviewed, 0);
+        const draftMs = Math.max(published.getTime() - created.getTime(), 0);
+        const reviewMs = Math.max(reviewed.getTime() - published.getTime(), 0);
+        const closeMs = Math.max(closed.getTime() - reviewed.getTime(), 0);
         const total = draftMs + reviewMs + closeMs || 1;
 
         const tooltipText = [
@@ -391,7 +423,7 @@ export default function MetricsTable({ token }) {
           <Button
             onClick={() =>
               navigate(
-                `/pr/${selectedItem.owner}/${selectedItem.repo_name}/${selectedItem.number}`,
+                `/pr/${selectedItem!.owner}/${selectedItem!.repo_name}/${selectedItem!.number}`,
                 { state: selectedItem },
               )
             }
