@@ -25,15 +25,25 @@ export default function App() {
       {token && <Header breadcrumb={breadcrumb} />}
       <Box p={token ? 3 : 0}>
         <Routes>
-          <Route path="/" element={!token ? <Login /> : <Home />} />
+          <Route
+            path="/login"
+            element={token ? <Navigate to="/" replace /> : <Login />}
+          />
+          <Route
+            path="/"
+            element={token ? <Home /> : <Navigate to="/login" replace />}
+          />
           <Route
             path="/insights"
             element={token ? <MetricsPage /> : <Navigate to="/" replace />}
           />
           <Route
             path="/pr/:owner/:repo/:number"
-            element={token ? <PullRequestPage /> : <Navigate to="/" replace />}
+            element={
+              token ? <PullRequestPage /> : <Navigate to="/login" replace />
+            }
           />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Box>
     </Box>
