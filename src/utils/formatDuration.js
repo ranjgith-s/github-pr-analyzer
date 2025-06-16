@@ -4,7 +4,7 @@ import {
 } from 'date-fns';
 import { enUS, fr, es, de, zhCN } from 'date-fns/locale';
 
-  if (Number.isNaN(startDate) || Number.isNaN(endDate) || endDate < startDate) {
+export function formatDuration(start, end) {
     return 'N/A';
   }
   const duration = intervalToDuration({ start: startDate, end: endDate });
@@ -15,6 +15,8 @@ import { enUS, fr, es, de, zhCN } from 'date-fns/locale';
   const units = hasHours ? ['days', 'hours'] : ['minutes', 'seconds'];
 
   return dfFormatDuration(duration, { format: units, zero: false, locale });
+
+export default formatDuration;
   en: enUS,
   fr,
   es,

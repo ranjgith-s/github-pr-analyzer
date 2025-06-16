@@ -14,7 +14,7 @@ import {
   Tooltip,
 } from "@primer/react";
 import { useNavigate } from "react-router-dom";
-import formatDuration from "./utils/formatDuration";
+import formatDuration from "./utils/formatDuration.js";
 
 export default function MetricsTable({ token }) {
   const [items, setItems] = useState([]);
