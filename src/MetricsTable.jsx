@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Octokit } from '@octokit/rest';
 // Use the experimental DataTable component from Primer React
-import { DataTable, createColumnHelper } from '@primer/react/drafts';
+import { DataTable, Table, createColumnHelper } from '@primer/react/drafts';
 import { Box, FormControl, Select } from '@primer/react';
 
 
@@ -20,6 +20,8 @@ export default function MetricsTable({ token }) {
   const [loading, setLoading] = useState(true);
   const [repoFilter, setRepoFilter] = useState('');
   const [authorFilter, setAuthorFilter] = useState('');
+  const [pageIndex, setPageIndex] = useState(0);
+  const PAGE_SIZE = 25;
   const columnHelper = createColumnHelper();
 
   useEffect(() => {
@@ -117,6 +119,15 @@ export default function MetricsTable({ token }) {
     );
   });
 
+  useEffect(() => {
+    setPageIndex(0);
+  }, [repoFilter, authorFilter]);
+
+  const paginatedItems = filteredItems.slice(
+    pageIndex * PAGE_SIZE,
+    pageIndex * PAGE_SIZE + PAGE_SIZE
+  );
+
   const columns = [
     columnHelper.column({id: 'repo', header: 'Repository', field: 'repo', rowHeader: true}),
     columnHelper.column({id: 'title', header: 'Title', field: 'title'}),
@@ -174,8 +185,14 @@ export default function MetricsTable({ token }) {
       <DataTable
         aria-labelledby="pr-table"
         columns={columns}
-        data={filteredItems}
+        data={paginatedItems}
         cellPadding="condensed"
+      />
+      <Table.Pagination
+        aria-label="Pagination"
+        pageSize={PAGE_SIZE}
+        totalCount={filteredItems.length}
+        onChange={({pageIndex}) => setPageIndex(pageIndex)}
       />
     </>
   );
