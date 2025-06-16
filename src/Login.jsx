@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import {Box, Button, TextInput, Heading, Text} from '@primer/react';
 
 export default function Login({ onToken }) {
   const [value, setValue] = useState('');
@@ -11,18 +12,22 @@ export default function Login({ onToken }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ marginTop: '2rem', textAlign: 'center' }}>
-      <h1>GitHub PR Analyzer</h1>
-      <p>Enter a personal access token to continue:</p>
-      <input
+    <Box
+      as="form"
+      onSubmit={handleSubmit}
+      sx={{ mt: 4, textAlign: 'center' }}
+    >
+      <Heading as="h1">GitHub PR Analyzer</Heading>
+      <Text display="block" mt={2}>Enter a personal access token to continue:</Text>
+      <TextInput
         type="password"
         value={value}
         onChange={(e) => setValue(e.target.value)}
         placeholder="GitHub token"
       />
-      <button type="submit" style={{ marginLeft: '0.5rem' }}>
+      <Button type="submit" sx={{ ml: 2 }}>
         Sign in
-      </button>
-    </form>
+      </Button>
+    </Box>
   );
 }
