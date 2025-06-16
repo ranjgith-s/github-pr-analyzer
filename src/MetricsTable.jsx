@@ -14,16 +14,7 @@ import {
   Tooltip,
 } from "@primer/react";
 import { useNavigate } from "react-router-dom";
-
-function formatDuration(start, end) {
-  if (!start || !end) return "N/A";
-  const diffMs = new Date(end) - new Date(start);
-  if (diffMs < 0) return "N/A";
-  const diffHours = Math.floor(diffMs / 36e5);
-  const days = Math.floor(diffHours / 24);
-  const hours = diffHours % 24;
-  return days > 0 ? `${days}d ${hours}h` : `${hours}h`;
-}
+import formatDuration from "./utils/formatDuration";
 
 export default function MetricsTable({ token }) {
   const [items, setItems] = useState([]);
