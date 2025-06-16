@@ -31,9 +31,7 @@ export default function App() {
           />
           <Route
             path="/"
-            element={
-              token ? <Home /> : <Navigate to="/login" replace />
-            }
+            element={token ? <Home /> : <Navigate to="/login" replace />}
           />
           <Route
             path="/insights"
