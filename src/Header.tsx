@@ -41,7 +41,11 @@ export default function Header({ breadcrumb }: HeaderProps) {
       borderColor="border.default"
       sx={{ bg: 'canvas.subtle' }}
     >
-      <Box display="flex" alignItems="center" sx={{ gap: 2 }}>
+      <Box
+        display="flex"
+        alignItems="center"
+        sx={{ gap: 2, color: 'accent.fg' }}
+      >
         <TriangleUpIcon size={24} fill="blue" />
         <Breadcrumbs sx={{ fontWeight: 'bold' }}>
           <Breadcrumbs.Item to="/">PR-ism</Breadcrumbs.Item>

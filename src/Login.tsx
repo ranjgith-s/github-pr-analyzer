@@ -8,7 +8,7 @@ import {
   FormControl,
   Link,
 } from '@primer/react';
-import { SignInIcon } from '@primer/octicons-react';
+import { SignInIcon, TriangleUpIcon } from '@primer/octicons-react';
 
 import { useAuth } from './AuthContext';
 
@@ -28,7 +28,7 @@ export default function Login() {
       display="flex"
       justifyContent="center"
       alignItems="center"
-      height="100%"
+      minHeight="100vh"
     >
       <Box
         sx={{
@@ -44,7 +44,14 @@ export default function Login() {
         }}
       >
         <Box as="form" onSubmit={handleSubmit}>
-          <Heading as="h1" sx={{ textAlign: 'center', mb: 3 }}>
+          <Heading
+            as="h1"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            sx={{ gap: 2, textAlign: 'center', mb: 3, color: 'accent.fg' }}
+          >
+            <TriangleUpIcon size={24} />
             PR-ism
           </Heading>
           <FormControl>
@@ -102,6 +109,7 @@ export default function Login() {
           </FormControl>
           <Button
             type="submit"
+            variant="primary"
             leadingIcon={SignInIcon}
             sx={{ width: '100%', mt: 3 }}
           >
