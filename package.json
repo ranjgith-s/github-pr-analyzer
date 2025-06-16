@@ -1,5 +1,5 @@
 {
-  "name": "github-pr-analyzer",
+  "name": "pr-ism",
   "version": "1.0.0",
   "description": "Simple React app that shows pull request metrics using the GitHub API.",
   "scripts": {

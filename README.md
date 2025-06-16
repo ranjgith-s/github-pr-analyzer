@@ -1,6 +1,6 @@
-# GitHub PR Analyzer
+# PR-ism
 
-GitHub PR Analyzer is a small React and TypeScript application for exploring metrics about your pull requests. It surfaces how long a pull request stayed in draft, the time to the first review and the total time until it was merged or closed. The app also shows who reviewed the pull requests and how many change requests were made.
+PR-ism is a small React and TypeScript application for exploring metrics about your pull requests. It surfaces how long a pull request stayed in draft, the time to the first review and the total time until it was merged or closed. The app also shows who reviewed the pull requests and how many change requests were made.
 
 The user interface relies on [Primer](https://primer.style) to match the look and feel of GitHub. After signing in with your GitHub token, a table displays the pull requests with filters for repository and author. Selecting a title in the table opens the pull request on GitHub.
 

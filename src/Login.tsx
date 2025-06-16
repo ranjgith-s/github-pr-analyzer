@@ -45,7 +45,7 @@ export default function Login() {
       >
         <Box as="form" onSubmit={handleSubmit}>
           <Heading as="h1" sx={{ textAlign: 'center', mb: 3 }}>
-            GitHub PR Analyzer
+            PR-ism
           </Heading>
           <FormControl>
             <FormControl.Label>Personal Access Token</FormControl.Label>

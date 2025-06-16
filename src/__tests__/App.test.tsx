@@ -24,7 +24,7 @@ test('shows login when not authenticated', () => {
       </MemoryRouter>
     </AuthProvider>
   );
-  expect(screen.getByText(/GitHub PR Analyzer/i)).toBeInTheDocument();
+  expect(screen.getByText(/PR-ism/i)).toBeInTheDocument();
 });
 
 function LoggedIn() {
@@ -46,5 +46,5 @@ test('shows metrics table when authenticated', async () => {
     </AuthProvider>
   );
   expect(screen.getByLabelText('Repository')).toBeInTheDocument();
-  expect(screen.getByText('GitHub PR Analyzer')).toBeInTheDocument();
+  expect(screen.getByText('PR-ism')).toBeInTheDocument();
 });
