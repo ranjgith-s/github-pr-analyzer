@@ -12,3 +12,12 @@ npm run dev
 ```
 
 The app will open in your browser at `http://localhost:5173`.
+
+
+To create a production build, run:
+
+```bash
+npm run build
+```
+
+The compiled files will be placed in the `build/` directory.

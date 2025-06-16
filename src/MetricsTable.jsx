@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Octokit } from '@octokit/rest';
-import { Table } from '@primer/react';
+// Table is currently an experimental component so we import it from the
+// drafts entry point rather than the main package index.
+import { Table } from '@primer/react/drafts';
+
 
 function formatDuration(start, end) {
   if (!start || !end) return 'N/A';
