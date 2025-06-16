@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Octokit } from '@octokit/rest';
 // Use the experimental DataTable component from Primer React
 import { DataTable, createColumnHelper } from '@primer/react/drafts';
-import { Box, FormControl, Select } from '@primer/react';
+import { Box, FormControl, Select, Text } from '@primer/react';
 
 
 function formatDuration(start, end) {
@@ -142,7 +142,7 @@ export default function MetricsTable({ token }) {
   ];
 
   if (loading) {
-    return <p>Loading...</p>;
+    return <Text>Loading...</Text>;
   }
 
   return (
