@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Octokit } from '@octokit/rest';
-// Table is currently an experimental component so we import it from the
-// drafts entry point rather than the main package index.
-import { Table } from '@primer/react/drafts';
+// Use the experimental DataTable component from Primer React
+import { DataTable, createColumnHelper } from '@primer/react/drafts';
 import { Box, FormControl, Select } from '@primer/react';
 
 
@@ -21,6 +20,7 @@ export default function MetricsTable({ token }) {
   const [loading, setLoading] = useState(true);
   const [repoFilter, setRepoFilter] = useState('');
   const [authorFilter, setAuthorFilter] = useState('');
+  const columnHelper = createColumnHelper();
 
   useEffect(() => {
     async function fetchData() {
@@ -117,6 +117,30 @@ export default function MetricsTable({ token }) {
     );
   });
 
+  const columns = [
+    columnHelper.column({id: 'repo', header: 'Repository', field: 'repo', rowHeader: true}),
+    columnHelper.column({id: 'title', header: 'Title', field: 'title'}),
+    columnHelper.column({id: 'author', header: 'Author', field: 'author'}),
+    columnHelper.column({id: 'reviewers', header: 'Reviewers', field: 'reviewers'}),
+    columnHelper.column({id: 'changes_requested', header: 'Changes Requested', field: 'changes_requested'}),
+    columnHelper.column({
+      id: 'draft_time',
+      header: 'Draft Time',
+      renderCell: row => formatDuration(row.created_at, row.published_at)
+    }),
+    columnHelper.column({
+      id: 'first_review',
+      header: 'First Review',
+      renderCell: row => formatDuration(row.created_at, row.first_review_at)
+    }),
+    columnHelper.column({
+      id: 'time_to_close',
+      header: 'Time to Close',
+      renderCell: row => formatDuration(row.created_at, row.closed_at)
+    }),
+    columnHelper.column({id: 'state', header: 'State', field: 'state'})
+  ];
+
   if (loading) {
     return <p>Loading...</p>;
   }
@@ -147,44 +171,12 @@ export default function MetricsTable({ token }) {
           </Select>
         </FormControl>
       </Box>
-      <Table.Container>
-        <Table aria-label="pull request metrics">
-          <Table.Head>
-            <Table.Row>
-              <Table.Cell header>Repository</Table.Cell>
-              <Table.Cell header>Title</Table.Cell>
-              <Table.Cell header>Author</Table.Cell>
-              <Table.Cell header>Reviewers</Table.Cell>
-              <Table.Cell header>Changes Requested</Table.Cell>
-              <Table.Cell header>Draft Time</Table.Cell>
-              <Table.Cell header>First Review</Table.Cell>
-              <Table.Cell header>Time to Close</Table.Cell>
-              <Table.Cell header>State</Table.Cell>
-            </Table.Row>
-          </Table.Head>
-          <Table.Body>
-            {filteredItems.map((pr) => (
-              <Table.Row key={pr.id}>
-                <Table.Cell>{pr.repo}</Table.Cell>
-                <Table.Cell>{pr.title}</Table.Cell>
-                <Table.Cell>{pr.author}</Table.Cell>
-                <Table.Cell>{pr.reviewers}</Table.Cell>
-                <Table.Cell>{pr.changes_requested}</Table.Cell>
-                <Table.Cell>
-                  {formatDuration(pr.created_at, pr.published_at)}
-                </Table.Cell>
-                <Table.Cell>
-                  {formatDuration(pr.created_at, pr.first_review_at)}
-                </Table.Cell>
-                <Table.Cell>
-                  {formatDuration(pr.created_at, pr.closed_at)}
-                </Table.Cell>
-                <Table.Cell>{pr.state}</Table.Cell>
-              </Table.Row>
-            ))}
-          </Table.Body>
-        </Table>
-      </Table.Container>
+      <DataTable
+        aria-labelledby="pr-table"
+        columns={columns}
+        data={filteredItems}
+        cellPadding="condensed"
+      />
     </>
   );
 }
