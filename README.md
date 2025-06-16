@@ -21,7 +21,3 @@ npm run build
 ```
 
 The compiled files will be placed in the `build/` directory.
-
-## Test Coverage
-
-Line coverage: 100%
