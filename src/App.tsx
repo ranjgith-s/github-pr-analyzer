@@ -34,6 +34,7 @@ export default function App() {
             element={
               token ? <Home /> : <Navigate to="/login" replace />
             }
+          />
           <Route
             path="/insights"
             element={token ? <MetricsPage /> : <Navigate to="/" replace />}
