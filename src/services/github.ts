@@ -65,11 +65,11 @@ export async function fetchPullRequestMetrics(
           : earliest;
       }, null);
 
-      const reviewers = new Set<string>();
+      const reviewerSet = new Set<string>();
       let firstReview: string | null = null;
       let changesRequested = 0;
       pr.reviews.nodes.forEach((rv: any) => {
-        if (rv.author) reviewers.add(rv.author.login);
+        if (rv.author) reviewerSet.add(rv.author.login);
         if (rv.state === 'CHANGES_REQUESTED') changesRequested += 1;
         if (!firstReview || new Date(rv.submittedAt) < new Date(firstReview)) {
           firstReview = rv.submittedAt;
@@ -97,7 +97,7 @@ export async function fetchPullRequestMetrics(
         closed_at: pr.mergedAt || pr.closedAt,
         first_review_at: firstReview,
         first_commit_at: firstCommitAt,
-        reviewers: reviewers.size,
+        reviewers: Array.from(reviewerSet),
         changes_requested: changesRequested,
         additions: pr.additions,
         deletions: pr.deletions,
