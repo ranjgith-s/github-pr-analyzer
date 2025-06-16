@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Octokit } from '@octokit/rest';
 // Use the experimental DataTable component from Primer React
 import { DataTable, Table, createColumnHelper } from '@primer/react/drafts';
-import { Box, FormControl, Select, Text, Spinner } from '@primer/react';
+import { Box, FormControl, Select, Text, Spinner, Link } from '@primer/react';
 
 
 function formatDuration(start, end) {
@@ -135,9 +135,18 @@ export default function MetricsTable({ token }) {
       id: 'title',
       header: 'Title',
       renderCell: row => (
-        <a href={row.url} target="_blank" rel="noopener noreferrer">
+        <Link
+          href={row.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          sx={{
+            color: 'fg.default',
+            textDecoration: 'none',
+            '&:hover': {color: 'accent.fg', textDecoration: 'underline'}
+          }}
+        >
           {row.title}
-        </a>
+        </Link>
       )
     }),
     columnHelper.column({id: 'author', header: 'Author', field: 'author'}),
