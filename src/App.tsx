@@ -1,21 +1,35 @@
 import React from 'react';
 import { Box } from '@primer/react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Login from './Login';
-import MetricsTable from './MetricsTable';
+import MetricsPage from './MetricsPage';
+import Home from './Home';
 import Header from './Header';
 import PullRequestPage from './PullRequest';
 import { useAuth } from './AuthContext';
 
 export default function App() {
   const { token } = useAuth();
+  const location = useLocation();
+
+  let breadcrumb: string | undefined;
+  if (
+    location.pathname.startsWith('/insights') ||
+    location.pathname.startsWith('/pr')
+  ) {
+    breadcrumb = 'Pull request insights';
+  }
 
   return (
     <Box bg="canvas.default" minHeight="100vh">
-      {token && <Header />}
+      {token && <Header breadcrumb={breadcrumb} />}
       <Box p={token ? 3 : 0}>
         <Routes>
-          <Route path="/" element={!token ? <Login /> : <MetricsTable />} />
+          <Route path="/" element={!token ? <Login /> : <Home />} />
+          <Route
+            path="/insights"
+            element={token ? <MetricsPage /> : <Navigate to="/" replace />}
+          />
           <Route
             path="/pr/:owner/:repo/:number"
             element={token ? <PullRequestPage /> : <Navigate to="/" replace />}
