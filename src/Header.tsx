@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Avatar, Text, Button } from '@primer/react';
 import { Octokit } from '@octokit/rest';
-import { GraphIcon } from '@primer/octicons-react';
+import { TriangleUpIcon } from '@primer/octicons-react';
 import { useAuth } from './AuthContext';
 
 interface GitHubUser {
@@ -38,8 +38,8 @@ export default function Header() {
       sx={{ bg: 'canvas.subtle' }}
     >
       <Box display="flex" alignItems="center" sx={{ gap: 2 }}>
-        <GraphIcon size={24} />
-        <Text fontWeight="bold">GitHub PR Analyzer</Text>
+        <TriangleUpIcon size={24} fill="blue" />
+        <Text fontWeight="bold">PR-ism</Text>
       </Box>
       {user && (
         <Box display="flex" alignItems="center" sx={{ gap: 2 }}>
