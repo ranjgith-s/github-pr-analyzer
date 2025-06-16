@@ -14,6 +14,7 @@ beforeEach(() => {
     items: [],
     loading: false,
   });
+  localStorage.clear();
 });
 
 test('shows login when not authenticated', () => {

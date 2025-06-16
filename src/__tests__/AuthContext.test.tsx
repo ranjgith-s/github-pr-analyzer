@@ -2,6 +2,10 @@ import React from 'react';
 import { renderHook, act } from '@testing-library/react';
 import { AuthProvider, useAuth } from '../AuthContext';
 
+beforeEach(() => {
+  localStorage.clear();
+});
+
 test('login and logout updates token', () => {
   const wrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
     <AuthProvider>{children}</AuthProvider>

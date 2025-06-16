@@ -15,11 +15,23 @@ export default function App() {
       {token && <Header />}
       <Box p={token ? 3 : 0}>
         <Routes>
-          <Route path="/" element={!token ? <Login /> : <MetricsTable />} />
+          <Route
+            path="/login"
+            element={token ? <Navigate to="/" replace /> : <Login />}
+          />
+          <Route
+            path="/"
+            element={
+              token ? <MetricsTable /> : <Navigate to="/login" replace />
+            }
+          />
           <Route
             path="/pr/:owner/:repo/:number"
-            element={token ? <PullRequestPage /> : <Navigate to="/" replace />}
+            element={
+              token ? <PullRequestPage /> : <Navigate to="/login" replace />
+            }
           />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Box>
     </Box>

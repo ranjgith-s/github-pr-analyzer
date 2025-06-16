@@ -10,16 +10,26 @@ import {
 } from '@primer/react';
 import { SignInIcon, TriangleUpIcon } from '@primer/octicons-react';
 
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
+import { validateToken } from './services/auth';
 
 export default function Login() {
   const { login } = useAuth();
+  const navigate = useNavigate();
   const [value, setValue] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (value) {
+    if (!value) return;
+
+    try {
+      await validateToken(value.trim());
       login(value.trim());
+      navigate('/');
+    } catch {
+      setError('Invalid token. Please check and try again.');
     }
   };
 
@@ -115,6 +125,11 @@ export default function Login() {
           >
             Sign in
           </Button>
+          {error && (
+            <Text color="danger.fg" mt={2} display="block" textAlign="center">
+              {error}
+            </Text>
+          )}
         </Box>
       </Box>
     </Box>
