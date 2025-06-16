@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Octokit } from '@octokit/rest';
 // Use the experimental DataTable component from Primer React
 import { DataTable, Table, createColumnHelper } from '@primer/react/drafts';
-import { Box, FormControl, Select, Text, Spinner } from '@primer/react';
+import { Box, FormControl, Select, Text, Spinner, Link } from '@primer/react';
 
 
 function formatDuration(start, end) {
@@ -88,6 +88,7 @@ export default function MetricsTable({ token }) {
               id: pr.id,
               repo: `${owner}/${repo}`,
               title: pr.title,
+              url: item.html_url,
               author: pr.author ? pr.author.login : 'unknown',
               state: pr.mergedAt ? 'merged' : pr.closedAt ? 'closed' : 'open',
               created_at: pr.createdAt,
@@ -130,7 +131,24 @@ export default function MetricsTable({ token }) {
 
   const columns = [
     columnHelper.column({id: 'repo', header: 'Repository', field: 'repo', rowHeader: true}),
-    columnHelper.column({id: 'title', header: 'Title', field: 'title'}),
+    columnHelper.column({
+      id: 'title',
+      header: 'Title',
+      renderCell: row => (
+        <Link
+          href={row.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          sx={{
+            color: 'fg.default',
+            textDecoration: 'none',
+            '&:hover': {color: 'accent.fg', textDecoration: 'underline'}
+          }}
+        >
+          {row.title}
+        </Link>
+      )
+    }),
     columnHelper.column({id: 'author', header: 'Author', field: 'author'}),
     columnHelper.column({id: 'reviewers', header: 'Reviewers', field: 'reviewers'}),
     columnHelper.column({id: 'changes_requested', header: 'Changes Requested', field: 'changes_requested'}),
