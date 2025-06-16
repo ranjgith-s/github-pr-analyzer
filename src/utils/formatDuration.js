@@ -5,17 +5,6 @@ import {
 import { enUS } from 'date-fns/locale';
   return dfFormatDuration(duration, { format: units, zero: false, locale: enUS });
 
-export default formatDuration;
-  en: enUS,
-  fr,
-  es,
-  de,
-  zh: zhCN,
-};
-
-export default function formatDuration(start, end) {
-  if (!start || !end) return 'N/A';
-
   const startDate = new Date(start);
   const endDate = new Date(end);
   if (Number.isNaN(startDate) || Number.isNaN(endDate) || endDate < startDate) {
