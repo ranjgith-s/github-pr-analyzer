@@ -10,10 +10,14 @@ import {
 } from '@primer/react';
 import {SignInIcon} from '@primer/octicons-react';
 
-export default function Login({ onToken }) {
+interface LoginProps {
+  onToken: (token: string) => void;
+}
+
+export default function Login({ onToken }: LoginProps) {
   const [value, setValue] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (value) {
       onToken(value.trim());

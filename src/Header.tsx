@@ -1,10 +1,20 @@
-import React, {useEffect, useState} from 'react';
-import {Box, Avatar, Text, Button} from '@primer/react';
-import {Octokit} from '@octokit/rest';
-import {GraphIcon} from '@primer/octicons-react';
+import React, { useEffect, useState } from 'react';
+import { Box, Avatar, Text, Button } from '@primer/react';
+import { Octokit } from '@octokit/rest';
+import { GraphIcon } from '@primer/octicons-react';
 
-export default function Header({token, onLogout}) {
-  const [user, setUser] = useState(null);
+interface HeaderProps {
+  token: string;
+  onLogout: () => void;
+}
+
+interface GitHubUser {
+  login: string;
+  avatar_url: string;
+}
+
+export default function Header({ token, onLogout }: HeaderProps) {
+  const [user, setUser] = useState<GitHubUser | null>(null);
 
   useEffect(() => {
     async function fetchUser() {

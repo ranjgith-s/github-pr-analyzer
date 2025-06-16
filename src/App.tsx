@@ -4,10 +4,10 @@ import {Routes, Route, Navigate} from 'react-router-dom';
 import Login from './Login';
 import MetricsTable from './MetricsTable';
 import Header from './Header';
-import PullRequestPage from './PullRequest.jsx';
+import PullRequestPage from './PullRequest';
 
 export default function App() {
-  const [token, setToken] = useState(null);
+  const [token, setToken] = useState<string | null>(null);
 
   return (
     <Box bg="canvas.default" minHeight="100vh">

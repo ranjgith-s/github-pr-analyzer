@@ -1,15 +1,23 @@
-import React, {useEffect, useState} from 'react';
-import {Octokit} from '@octokit/rest';
-import {Timeline, Heading, TabNav} from '@primer/react';
-import {Box, Spinner, Button, Text} from '@primer/react';
-import {useParams, useLocation, Link as RouterLink} from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Octokit } from '@octokit/rest';
+import { Timeline, Heading, TabNav } from '@primer/react';
+import { Box, Spinner, Button, Text } from '@primer/react';
+import { useParams, useLocation, Link as RouterLink } from 'react-router-dom';
 
-export default function PullRequestPage({token}) {
+interface PullRequestPageProps {
+  token: string;
+}
+
+interface TimelineEntry {
+  label: string;
+  date: string;
+}
+export default function PullRequestPage({ token }: PullRequestPageProps) {
   const {owner, repo, number} = useParams();
   const location = useLocation();
-  const [events, setEvents] = useState(null);
-  const [title, setTitle] = useState(location.state?.title || '');
-  const [loading, setLoading] = useState(true);
+  const [events, setEvents] = useState<TimelineEntry[] | null>(null);
+  const [title, setTitle] = useState<string>(location.state?.title || '');
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     if (title) {
@@ -31,7 +39,7 @@ export default function PullRequestPage({token}) {
       }
       const octokit = new Octokit({auth: token});
       try {
-        const {repository} = await octokit.graphql(
+        const {repository} = await octokit.graphql<any>(
           `query($owner:String!,$repo:String!,$number:Int!){
             repository(owner:$owner,name:$repo){
               pullRequest(number:$number){
@@ -44,11 +52,11 @@ export default function PullRequestPage({token}) {
               }
             }
           }`,
-          {owner, repo, number: parseInt(number, 10)}
+          {owner, repo, number: Number(number)}
         );
         const pr = repository.pullRequest;
         setTitle(pr.title);
-        const firstReview = pr.reviews.nodes.reduce((acc, rv) => {
+        const firstReview = pr.reviews.nodes.reduce<string | null>((acc, rv) => {
           return !acc || new Date(rv.submittedAt) < new Date(acc)
             ? rv.submittedAt
             : acc;
@@ -87,7 +95,7 @@ export default function PullRequestPage({token}) {
         <TabNav.Link selected>Timeline</TabNav.Link>
       </TabNav>
       <Timeline>
-        {events.map((ev, i) => (
+        {events?.map((ev, i) => (
           <Timeline.Item key={i}>
             <Timeline.Badge />
             <Timeline.Body>
