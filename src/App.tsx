@@ -22,8 +22,8 @@ export default function App() {
 
   return (
     <Box bg="canvas.default" minHeight="100vh">
-      <Box p={token ? 3 : 0}>
       {token && <Header breadcrumb={breadcrumb} />}
+      <Box p={token ? 3 : 0}>
         <Routes>
           <Route path="/" element={!token ? <Login /> : <Home />} />
           <Route
