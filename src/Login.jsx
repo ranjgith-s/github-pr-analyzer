@@ -5,7 +5,8 @@ import {
   TextInput,
   Heading,
   Text,
-  FormControl
+  FormControl,
+  Link
 } from '@primer/react';
 import {SignInIcon} from '@primer/octicons-react';
 
@@ -88,7 +89,9 @@ export default function Login({ onToken }) {
                     </Text>
                   </li>
                   <li>
-                    <Text as="span" fontSize={1}>Copy the token and paste it here.</Text>
+                    <Text as="span" fontSize={1}>
+                      Copy the token and paste it here.
+                    </Text>
                   </li>
                 </Box>
               </details>
