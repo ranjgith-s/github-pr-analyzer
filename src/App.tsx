@@ -13,7 +13,7 @@ export default function App() {
   return (
     <Box bg="canvas.default" minHeight="100vh">
       {token && <Header />}
-      <Box p={3}>
+      <Box p={token ? 3 : 0}>
         <Routes>
           <Route path="/" element={!token ? <Login /> : <MetricsTable />} />
           <Route

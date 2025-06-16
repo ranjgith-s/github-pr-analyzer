@@ -28,7 +28,7 @@ export default function Login() {
       display="flex"
       justifyContent="center"
       alignItems="center"
-      height="100%"
+      minHeight="100vh"
     >
       <Box
         sx={{
@@ -102,6 +102,7 @@ export default function Login() {
           </FormControl>
           <Button
             type="submit"
+            variant="primary"
             leadingIcon={SignInIcon}
             sx={{ width: '100%', mt: 3 }}
           >
