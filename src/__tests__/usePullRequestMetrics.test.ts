@@ -1,7 +1,7 @@
-import {renderHook, waitFor} from '@testing-library/react';
-import {usePullRequestMetrics} from '../hooks/usePullRequestMetrics';
+import { renderHook, waitFor } from '@testing-library/react';
+import { usePullRequestMetrics } from '../hooks/usePullRequestMetrics';
 import * as github from '../services/github';
-import {PRItem} from '../types';
+import { PRItem } from '../types';
 
 const sample: PRItem[] = [
   {
@@ -24,14 +24,14 @@ const sample: PRItem[] = [
     additions: 1,
     deletions: 1,
     comment_count: 0,
-    timeline: []
-  }
+    timeline: [],
+  },
 ];
 
 jest.spyOn(github, 'fetchPullRequestMetrics').mockResolvedValue(sample);
 
 test('loads items and updates loading state', async () => {
-  const {result} = renderHook(() => usePullRequestMetrics('token'));
+  const { result } = renderHook(() => usePullRequestMetrics('token'));
   expect(result.current.loading).toBe(true);
   await waitFor(() => expect(result.current.loading).toBe(false));
   expect(result.current.items).toEqual(sample);

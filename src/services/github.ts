@@ -1,7 +1,9 @@
-import { Octokit } from "@octokit/rest";
-import { PRItem } from "../types";
+import { Octokit } from '@octokit/rest';
+import { PRItem } from '../types';
 
-export async function fetchPullRequestMetrics(token: string): Promise<PRItem[]> {
+export async function fetchPullRequestMetrics(
+  token: string
+): Promise<PRItem[]> {
   const octokit = new Octokit({ auth: token });
   const user = await octokit.rest.users.getAuthenticated();
 
@@ -22,7 +24,7 @@ export async function fetchPullRequestMetrics(token: string): Promise<PRItem[]> 
 
   const data: PRItem[] = await Promise.all(
     Array.from(allItems.values()).map(async (item): Promise<PRItem> => {
-      const [owner, repo] = item.repository_url.split("/").slice(-2);
+      const [owner, repo] = item.repository_url.split('/').slice(-2);
       const prNumber = item.number;
 
       const prData = await octokit.graphql<any>(
@@ -46,19 +48,16 @@ export async function fetchPullRequestMetrics(token: string): Promise<PRItem[]> 
              }
            }
          }`,
-        { owner, repo, number: prNumber },
+        { owner, repo, number: prNumber }
       );
 
       const pr = prData.repository.pullRequest;
-      const commits = await octokit.paginate(
-        octokit.rest.pulls.listCommits,
-        {
-          owner,
-          repo,
-          pull_number: prNumber,
-          per_page: 100,
-        },
-      );
+      const commits = await octokit.paginate(octokit.rest.pulls.listCommits, {
+        owner,
+        repo,
+        pull_number: prNumber,
+        per_page: 100,
+      });
       const firstCommitAt = commits.reduce<string | null>((earliest, c) => {
         const date = c.commit.author?.date || c.commit.committer?.date;
         return !earliest || new Date(date) < new Date(earliest)
@@ -71,7 +70,7 @@ export async function fetchPullRequestMetrics(token: string): Promise<PRItem[]> 
       let changesRequested = 0;
       pr.reviews.nodes.forEach((rv: any) => {
         if (rv.author) reviewers.add(rv.author.login);
-        if (rv.state === "CHANGES_REQUESTED") changesRequested += 1;
+        if (rv.state === 'CHANGES_REQUESTED') changesRequested += 1;
         if (!firstReview || new Date(rv.submittedAt) < new Date(firstReview)) {
           firstReview = rv.submittedAt;
         }
@@ -85,14 +84,14 @@ export async function fetchPullRequestMetrics(token: string): Promise<PRItem[]> 
         number: prNumber,
         title: pr.title,
         url: item.html_url,
-        author: pr.author ? pr.author.login : "unknown",
+        author: pr.author ? pr.author.login : 'unknown',
         state: pr.isDraft
-          ? "draft"
+          ? 'draft'
           : pr.mergedAt
-            ? "merged"
+            ? 'merged'
             : pr.closedAt
-              ? "closed"
-              : "open",
+              ? 'closed'
+              : 'open',
         created_at: pr.createdAt,
         published_at: pr.publishedAt,
         closed_at: pr.mergedAt || pr.closedAt,
@@ -104,13 +103,13 @@ export async function fetchPullRequestMetrics(token: string): Promise<PRItem[]> 
         deletions: pr.deletions,
         comment_count: pr.comments.totalCount,
         timeline: [
-          { label: "Created", date: pr.createdAt },
-          { label: "Published", date: pr.publishedAt },
-          { label: "First review", date: firstReview },
-          { label: "Closed", date: pr.mergedAt || pr.closedAt },
+          { label: 'Created', date: pr.createdAt },
+          { label: 'Published', date: pr.publishedAt },
+          { label: 'First review', date: firstReview },
+          { label: 'Closed', date: pr.mergedAt || pr.closedAt },
         ].filter((e) => e.date),
       } as PRItem;
-    }),
+    })
   );
 
   return data;

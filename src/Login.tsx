@@ -6,14 +6,14 @@ import {
   Heading,
   Text,
   FormControl,
-  Link
+  Link,
 } from '@primer/react';
-import {SignInIcon} from '@primer/octicons-react';
+import { SignInIcon } from '@primer/octicons-react';
 
-import {useAuth} from './AuthContext';
+import { useAuth } from './AuthContext';
 
 export default function Login() {
-  const {login} = useAuth();
+  const { login } = useAuth();
   const [value, setValue] = useState('');
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -40,7 +40,7 @@ export default function Login() {
           borderColor: 'border.default',
           borderRadius: 2,
           boxShadow: 'shadow.medium',
-          bg: 'canvas.default'
+          bg: 'canvas.default',
         }}
       >
         <Box as="form" onSubmit={handleSubmit}>
@@ -62,7 +62,7 @@ export default function Login() {
             <Box mt={2}>
               <details>
                 <summary>
-                  <Text fontSize={1} sx={{cursor: 'pointer'}}>
+                  <Text fontSize={1} sx={{ cursor: 'pointer' }}>
                     Additional info for generating a personal access token
                   </Text>
                 </summary>

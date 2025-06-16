@@ -12,7 +12,7 @@ export interface PRItem {
   title: string;
   url: string;
   author: string;
-  state: "open" | "closed" | "merged" | "draft";
+  state: 'open' | 'closed' | 'merged' | 'draft';
   created_at: string;
   published_at?: string;
   closed_at?: string;

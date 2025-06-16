@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 // Use the experimental DataTable component from Primer React
-import { DataTable, Table, createColumnHelper } from "@primer/react/drafts";
+import { DataTable, Table, createColumnHelper } from '@primer/react/drafts';
 import {
   Box,
   FormControl,
@@ -11,18 +11,16 @@ import {
   Button,
   StateLabel,
   Tooltip,
-} from "@primer/react";
-import { useNavigate } from "react-router-dom";
-import { usePullRequestMetrics } from "./hooks/usePullRequestMetrics";
-import { PRItem } from "./types";
-import { useAuth } from "./AuthContext";
-
-
+} from '@primer/react';
+import { useNavigate } from 'react-router-dom';
+import { usePullRequestMetrics } from './hooks/usePullRequestMetrics';
+import { PRItem } from './types';
+import { useAuth } from './AuthContext';
 
 export function formatDuration(start?: string | null, end?: string | null) {
-  if (!start || !end) return "N/A";
+  if (!start || !end) return 'N/A';
   const diffMs = new Date(end) - new Date(start);
-  if (diffMs < 0) return "N/A";
+  if (diffMs < 0) return 'N/A';
   const diffHours = Math.floor(diffMs / 36e5);
   const days = Math.floor(diffHours / 24);
   const hours = diffHours % 24;
@@ -30,10 +28,10 @@ export function formatDuration(start?: string | null, end?: string | null) {
 }
 
 export default function MetricsTable() {
-  const {token} = useAuth();
+  const { token } = useAuth();
   const { items, loading } = usePullRequestMetrics(token!);
-  const [repoFilter, setRepoFilter] = useState<string>("");
-  const [authorFilter, setAuthorFilter] = useState<string>("");
+  const [repoFilter, setRepoFilter] = useState<string>('');
+  const [authorFilter, setAuthorFilter] = useState<string>('');
   const [pageIndex, setPageIndex] = useState<number>(0);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const PAGE_SIZE = 25;
@@ -42,10 +40,9 @@ export default function MetricsTable() {
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
     );
   };
-
 
   const repos = Array.from(new Set(items.map((i) => i.repo))).sort();
   const authors = Array.from(new Set(items.map((i) => i.author))).sort();
@@ -63,15 +60,15 @@ export default function MetricsTable() {
 
   const paginatedItems = filteredItems.slice(
     pageIndex * PAGE_SIZE,
-    pageIndex * PAGE_SIZE + PAGE_SIZE,
+    pageIndex * PAGE_SIZE + PAGE_SIZE
   );
 
   const selectedItem = items.find((i) => selectedIds.includes(i.id));
 
   const columns = [
     columnHelper.column({
-      id: "select",
-      header: "",
+      id: 'select',
+      header: '',
       renderCell: (row) => (
         <input
           type="checkbox"
@@ -81,23 +78,23 @@ export default function MetricsTable() {
       ),
     }),
     columnHelper.column({
-      id: "repo",
-      header: "Repository",
-      field: "repo",
+      id: 'repo',
+      header: 'Repository',
+      field: 'repo',
       rowHeader: true,
     }),
     columnHelper.column({
-      id: "title",
-      header: "Title",
+      id: 'title',
+      header: 'Title',
       renderCell: (row) => (
         <Link
           href={row.url}
           target="_blank"
           rel="noopener noreferrer"
           sx={{
-            color: "fg.default",
-            textDecoration: "none",
-            "&:hover": { color: "accent.fg", textDecoration: "underline" },
+            color: 'fg.default',
+            textDecoration: 'none',
+            '&:hover': { color: 'accent.fg', textDecoration: 'underline' },
           }}
         >
           {row.title}
@@ -105,8 +102,8 @@ export default function MetricsTable() {
       ),
     }),
     columnHelper.column({
-      id: "author",
-      header: "Author",
+      id: 'author',
+      header: 'Author',
       renderCell: (row) => (
         <Link
           href={`https://github.com/${row.author}`}
@@ -118,37 +115,41 @@ export default function MetricsTable() {
       ),
     }),
     columnHelper.column({
-      id: "reviewers",
-      header: "Reviewers",
-      field: "reviewers",
+      id: 'reviewers',
+      header: 'Reviewers',
+      field: 'reviewers',
     }),
     columnHelper.column({
-      id: "changes_requested",
-      header: "Changes Requested",
-      field: "changes_requested",
+      id: 'changes_requested',
+      header: 'Changes Requested',
+      field: 'changes_requested',
     }),
     columnHelper.column({
-      id: "diff",
-      header: "Diff",
+      id: 'diff',
+      header: 'Diff',
       renderCell: (row) => (
         <Text as="span">
-          <Text as="span" color="success.fg">{`+${row.additions}`}</Text>{" "}
+          <Text as="span" color="success.fg">{`+${row.additions}`}</Text>{' '}
           <Text as="span" color="danger.fg">{`-${row.deletions}`}</Text>
         </Text>
       ),
     }),
     columnHelper.column({
-      id: "comment_count",
-      header: "Comments",
-      field: "comment_count",
+      id: 'comment_count',
+      header: 'Comments',
+      field: 'comment_count',
     }),
     columnHelper.column({
-      id: "timeline",
-      header: "Timeline",
+      id: 'timeline',
+      header: 'Timeline',
       renderCell: (row) => {
         const created = new Date(row.created_at);
-        const published = row.published_at ? new Date(row.published_at) : created;
-        const reviewed = row.first_review_at ? new Date(row.first_review_at) : published;
+        const published = row.published_at
+          ? new Date(row.published_at)
+          : created;
+        const reviewed = row.first_review_at
+          ? new Date(row.first_review_at)
+          : published;
         const closed = row.closed_at ? new Date(row.closed_at) : reviewed;
         const draftMs = Math.max(published.getTime() - created.getTime(), 0);
         const reviewMs = Math.max(reviewed.getTime() - published.getTime(), 0);
@@ -159,13 +160,13 @@ export default function MetricsTable() {
           `Draft: ${formatDuration(row.created_at, row.published_at)}`,
           `Review: ${formatDuration(
             row.published_at || row.created_at,
-            row.first_review_at,
+            row.first_review_at
           )}`,
           `Close: ${formatDuration(
             row.first_review_at || row.published_at || row.created_at,
-            row.closed_at,
+            row.closed_at
           )}`,
-        ].join("\n");
+        ].join('\n');
 
         return (
           <Tooltip aria-label={tooltipText} direction="s">
@@ -173,7 +174,7 @@ export default function MetricsTable() {
               display="flex"
               height="6px"
               width={80}
-              sx={{ overflow: "hidden", borderRadius: 1 }}
+              sx={{ overflow: 'hidden', borderRadius: 1 }}
             >
               <Box
                 bg="accent.emphasis"
@@ -193,19 +194,19 @@ export default function MetricsTable() {
       },
     }),
     columnHelper.column({
-      id: "lead_time",
-      header: "Lead Time",
+      id: 'lead_time',
+      header: 'Lead Time',
       renderCell: (row) => formatDuration(row.first_commit_at, row.closed_at),
     }),
     columnHelper.column({
-      id: "state",
-      header: "State",
+      id: 'state',
+      header: 'State',
       renderCell: (row) => {
         const statusMap = {
-          open: "pullOpened",
-          closed: "pullClosed",
-          merged: "pullMerged",
-          draft: "draft",
+          open: 'pullOpened',
+          closed: 'pullClosed',
+          merged: 'pullMerged',
+          draft: 'draft',
         };
         return (
           <StateLabel status={statusMap[row.state]}>{row.state}</StateLabel>
@@ -221,10 +222,10 @@ export default function MetricsTable() {
         flexDirection="column"
         alignItems="center"
         justifyContent="center"
-        sx={{ minHeight: "50vh" }}
+        sx={{ minHeight: '50vh' }}
       >
         <Spinner size="large" />
-        <Text sx={{ fontFamily: "mono", mt: 2 }}>
+        <Text sx={{ fontFamily: 'mono', mt: 2 }}>
           looking into the pulls that you were involved in
         </Text>
       </Box>
@@ -269,7 +270,7 @@ export default function MetricsTable() {
             onClick={() =>
               navigate(
                 `/pr/${selectedItem!.owner}/${selectedItem!.repo_name}/${selectedItem!.number}`,
-                { state: selectedItem },
+                { state: selectedItem }
               )
             }
           >

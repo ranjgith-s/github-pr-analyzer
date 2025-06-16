@@ -10,14 +10,14 @@ interface GitHubUser {
 }
 
 export default function Header() {
-  const {token, logout} = useAuth();
+  const { token, logout } = useAuth();
   const [user, setUser] = useState<GitHubUser | null>(null);
 
   useEffect(() => {
     async function fetchUser() {
-      const octokit = new Octokit({auth: token});
+      const octokit = new Octokit({ auth: token });
       try {
-        const {data} = await octokit.rest.users.getAuthenticated();
+        const { data } = await octokit.rest.users.getAuthenticated();
         setUser(data);
       } catch (err) {
         console.error(err);
@@ -35,14 +35,14 @@ export default function Header() {
       borderBottomWidth="1px"
       borderBottomStyle="solid"
       borderColor="border.default"
-      sx={{bg: 'canvas.subtle'}}
+      sx={{ bg: 'canvas.subtle' }}
     >
-      <Box display="flex" alignItems="center" sx={{gap: 2}}>
+      <Box display="flex" alignItems="center" sx={{ gap: 2 }}>
         <GraphIcon size={24} />
         <Text fontWeight="bold">GitHub PR Analyzer</Text>
       </Box>
       {user && (
-        <Box display="flex" alignItems="center" sx={{gap: 2}}>
+        <Box display="flex" alignItems="center" sx={{ gap: 2 }}>
           <Avatar src={user.avatar_url} size={24} />
           <Text>{user.login}</Text>
           <Button onClick={logout}>Logout</Button>
