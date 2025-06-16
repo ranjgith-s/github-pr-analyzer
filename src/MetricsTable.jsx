@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Octokit } from '@octokit/rest';
 // Use the experimental DataTable component from Primer React
 import { DataTable, Table, createColumnHelper } from '@primer/react/drafts';
-import { Box, FormControl, Select, Text } from '@primer/react';
+import { Box, FormControl, Select, Text, Spinner } from '@primer/react';
 
 
 function formatDuration(start, end) {
@@ -153,7 +153,20 @@ export default function MetricsTable({ token }) {
   ];
 
   if (loading) {
-    return <Text>Loading...</Text>;
+    return (
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+        sx={{minHeight: '50vh'}}
+      >
+        <Spinner size="large" />
+        <Text sx={{fontFamily: 'mono', mt: 2}}>
+          looking into the pulls that you were involved in
+        </Text>
+      </Box>
+    );
   }
 
   return (
