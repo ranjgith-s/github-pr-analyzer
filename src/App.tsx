@@ -22,13 +22,8 @@ export default function App() {
 
   return (
     <Box bg="canvas.default" minHeight="100vh">
-<<<<<<< ranjgith/redesign-landing-page-with-card-structure
-      {token && <Header breadcrumb={breadcrumb} />}
-      <Box p={3}>
-=======
-      {token && <Header />}
       <Box p={token ? 3 : 0}>
->>>>>>> main
+      {token && <Header breadcrumb={breadcrumb} />}
         <Routes>
           <Route path="/" element={!token ? <Login /> : <Home />} />
           <Route
