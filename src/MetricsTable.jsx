@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Octokit } from '@octokit/rest';
 // Use the experimental DataTable component from Primer React
 import { DataTable, Table, createColumnHelper } from '@primer/react/drafts';
-import { Box, FormControl, Select, Text, Spinner, Link, Button } from '@primer/react';
+import { Box, FormControl, Select, Text, Spinner, Link, Button, StateLabel } from '@primer/react';
 import {useNavigate} from 'react-router-dom';
 
 
@@ -102,7 +102,7 @@ export default function MetricsTable({ token }) {
               title: pr.title,
               url: item.html_url,
               author: pr.author ? pr.author.login : 'unknown',
-              state: pr.mergedAt ? 'merged' : pr.closedAt ? 'closed' : 'open',
+              state: pr.isDraft ? 'draft' : pr.mergedAt ? 'merged' : pr.closedAt ? 'closed' : 'open',
               created_at: pr.createdAt,
               published_at: pr.publishedAt,
               closed_at: pr.mergedAt || pr.closedAt,
@@ -198,7 +198,19 @@ export default function MetricsTable({ token }) {
       header: 'Time to Close',
       renderCell: row => formatDuration(row.created_at, row.closed_at)
     }),
-    columnHelper.column({id: 'state', header: 'State', field: 'state'})
+    columnHelper.column({
+      id: 'state',
+      header: 'State',
+      renderCell: row => {
+        const statusMap = {
+          open: 'pullOpened',
+          closed: 'pullClosed',
+          merged: 'pullMerged',
+          draft: 'draft'
+        };
+        return <StateLabel status={statusMap[row.state]}>{row.state}</StateLabel>;
+      }
+    })
   ];
 
   if (loading) {
