@@ -50,3 +50,16 @@ test('renders filters and data', () => {
   expect(screen.getByLabelText('Repository')).toBeInTheDocument();
   expect(screen.getByLabelText('Author')).toBeInTheDocument();
 });
+
+test('shows spinner when loading', () => {
+  (metricsHook.usePullRequestMetrics as jest.Mock).mockReturnValue({items: [], loading: true});
+  render(
+    <AuthProvider>
+      <MemoryRouter>
+        <MetricsTable />
+      </MemoryRouter>
+    </AuthProvider>
+  );
+  expect(screen.getByText(/looking into the pulls/i)).toBeInTheDocument();
+});
+

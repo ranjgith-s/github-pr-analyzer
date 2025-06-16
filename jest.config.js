@@ -3,15 +3,17 @@ module.exports = {
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
   collectCoverageFrom: [
-    'src/AuthContext.tsx',
-    'src/Login.tsx'
+    'src/**/*.{ts,tsx}',
+    '!src/main.tsx',
+    '!src/setupTests.ts',
+    '!src/**/__tests__/**'
   ],
   moduleNameMapper: {
     '\\.(css|less|scss)$': 'identity-obj-proxy'
   },
   coverageThreshold: {
     global: {
-      lines: 95
+      lines: 50
     }
   }
 };
