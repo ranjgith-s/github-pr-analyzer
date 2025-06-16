@@ -4,7 +4,7 @@ import {Routes, Route, Navigate} from 'react-router-dom';
 import Login from './Login';
 import MetricsTable from './MetricsTable';
 import Header from './Header';
-import TimelinePage from './Timeline.jsx';
+import PullRequestPage from './PullRequest.jsx';
 
 export default function App() {
   const [token, setToken] = useState(null);
@@ -19,8 +19,8 @@ export default function App() {
             element={!token ? <Login onToken={setToken} /> : <MetricsTable token={token} />}
           />
           <Route
-            path="/timeline/:owner/:repo/:number"
-            element={token ? <TimelinePage token={token} /> : <Navigate to="/" replace />}
+            path="/pr/:owner/:repo/:number"
+            element={token ? <PullRequestPage token={token} /> : <Navigate to="/" replace />}
           />
         </Routes>
       </Box>

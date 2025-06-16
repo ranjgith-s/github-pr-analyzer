@@ -246,8 +246,8 @@ export default function MetricsTable({ token }) {
       </Box>
       {selectedIds.length === 1 && (
         <Box marginBottom={2}>
-          <Button onClick={() => navigate(`/timeline/${selectedItem.owner}/${selectedItem.repo_name}/${selectedItem.number}`, { state: selectedItem })}>
-            View timeline
+          <Button onClick={() => navigate(`/pr/${selectedItem.owner}/${selectedItem.repo_name}/${selectedItem.number}`, { state: selectedItem })}>
+            View pull request
           </Button>
         </Box>
       )}

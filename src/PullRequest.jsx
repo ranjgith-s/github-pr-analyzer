@@ -1,19 +1,31 @@
 import React, {useEffect, useState} from 'react';
 import {Octokit} from '@octokit/rest';
-import {Timeline} from '@primer/react';
+import {Timeline, Heading, TabNav} from '@primer/react';
 import {Box, Spinner, Button, Text} from '@primer/react';
 import {useParams, useLocation, Link as RouterLink} from 'react-router-dom';
 
-export default function TimelinePage({token}) {
+export default function PullRequestPage({token}) {
   const {owner, repo, number} = useParams();
   const location = useLocation();
   const [events, setEvents] = useState(null);
+  const [title, setTitle] = useState(location.state?.title || '');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (title) {
+      const prev = document.title;
+      document.title = title;
+      return () => {
+        document.title = prev;
+      };
+    }
+  }, [title]);
+
+  useEffect(() => {
     async function fetchData() {
-      if (location.state && location.state.timeline) {
+      if (location.state && location.state.timeline && location.state.title) {
         setEvents(location.state.timeline);
+        setTitle(location.state.title);
         setLoading(false);
         return;
       }
@@ -23,6 +35,7 @@ export default function TimelinePage({token}) {
           `query($owner:String!,$repo:String!,$number:Int!){
             repository(owner:$owner,name:$repo){
               pullRequest(number:$number){
+                title
                 createdAt
                 publishedAt
                 closedAt
@@ -34,6 +47,7 @@ export default function TimelinePage({token}) {
           {owner, repo, number: parseInt(number, 10)}
         );
         const pr = repository.pullRequest;
+        setTitle(pr.title);
         const firstReview = pr.reviews.nodes.reduce((acc, rv) => {
           return !acc || new Date(rv.submittedAt) < new Date(acc)
             ? rv.submittedAt
@@ -68,6 +82,10 @@ export default function TimelinePage({token}) {
       <Button as={RouterLink} to="/" sx={{mb: 3}}>
         Back
       </Button>
+      <Heading as="h2" sx={{mb: 3}}>{title}</Heading>
+      <TabNav aria-label="Pull request views" sx={{mb: 3}}>
+        <TabNav.Link selected>Timeline</TabNav.Link>
+      </TabNav>
       <Timeline>
         {events.map((ev, i) => (
           <Timeline.Item key={i}>
@@ -81,3 +99,4 @@ export default function TimelinePage({token}) {
     </Box>
   );
 }
+
