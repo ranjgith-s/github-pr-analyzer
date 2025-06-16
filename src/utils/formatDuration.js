@@ -1,5 +1,8 @@
-import {formatDuration as dfFormatDuration, intervalToDuration} from 'date-fns';
-import {enUS, fr, es, de, zhCN} from 'date-fns/locale';
+import {
+  formatDuration as dfFormatDuration,
+  intervalToDuration,
+} from 'date-fns';
+import { enUS, fr, es, de, zhCN } from 'date-fns/locale';
 
 const LOCALES = {
   en: enUS,
@@ -11,13 +14,20 @@ const LOCALES = {
 
 export default function formatDuration(start, end) {
   if (!start || !end) return 'N/A';
+
   const startDate = new Date(start);
   const endDate = new Date(end);
-  if (isNaN(startDate) || isNaN(endDate) || endDate < startDate) return 'N/A';
+  if (Number.isNaN(startDate) || Number.isNaN(endDate) || endDate < startDate) {
+    return 'N/A';
+  }
 
-  const duration = intervalToDuration({start: startDate, end: endDate});
-  const langCode = (navigator.language || 'en').split('-')[0];
+  const duration = intervalToDuration({ start: startDate, end: endDate });
+  const langCode = (typeof navigator !== 'undefined' ? navigator.language : 'en')
+    .split('-')[0];
   const locale = LOCALES[langCode] || enUS;
 
-  return dfFormatDuration(duration, {format: ['days', 'hours'], zero: false, locale});
+  const hasHours = duration.days > 0 || duration.hours > 0;
+  const units = hasHours ? ['days', 'hours'] : ['minutes', 'seconds'];
+
+  return dfFormatDuration(duration, { format: units, zero: false, locale });
 }
