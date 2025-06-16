@@ -1,0 +1,22 @@
+{
+  "name": "github-pr-analyzer",
+  "version": "1.0.0",
+  "description": "Simple React app that shows pull request metrics using the GitHub API.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "echo \"No tests available\" && exit 0"
+  },
+  "dependencies": {
+    "@octokit/rest": "^20.0.0",
+    "@primer/react": "^35.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.0",
+    "vite": "^4.0.0"
+  },
+  "license": "MIT"
+}
