@@ -1,23 +1,76 @@
 # GitHub PR Analyzer
 
-This project is a simple React application that authenticates with GitHub and shows metrics for pull requests you have created or reviewed. It surfaces how long a pull request stayed in draft, the time to the first review and the total time until it was merged or closed. It also displays how many reviewers participated and how many change requests were made.
+GitHub PR Analyzer is a small React and TypeScript application for exploring metrics about your pull requests. It surfaces how long a pull request stayed in draft, the time to the first review and the total time until it was merged or closed. The app also reports how many reviewers participated and how many change requests were made.
 
-The UI is built with [Primer](https://primer.style) components so that it feels similar to the GitHub interface. After signing in with GitHub, a table displays the pull requests along with filters for repository and author. Click any title in the table to open that pull request on GitHub.
+The user interface relies on [Primer](https://primer.style) to match the look and feel of GitHub. After signing in with your GitHub token, a table displays the pull requests with filters for repository and author. Selecting a title in the table opens the pull request on GitHub.
 
-This repository contains only a minimal example client. You must supply a GitHub personal access token when prompted in the browser. Run the app with:
+## Table of Contents
+
+- [Features](#features)
+- [Architecture](#architecture)
+- [Getting Started](#getting-started)
+  - [Development](#development)
+  - [Testing](#testing)
+  - [Production build](#production-build)
+- [License](#license)
+
+## Features
+
+- Authenticate with a personal access token.
+- View pull requests you authored or reviewed.
+- Metrics for draft time, first review and total lifespan.
+- Display reviewer count and change requests.
+- Filter by repository and author.
+- Direct links to each pull request.
+
+## Architecture
+
+The codebase follows clean architecture principles. Domain logic is kept separate from UI concerns and external APIs.
+
+- **src/services** – API modules used to query GitHub via `@octokit/rest`.
+- **src/hooks** – reusable hooks that fetch and format data.
+- **src/AuthContext.tsx** – provides authentication state to the rest of the app.
+- **React components** – present the data retrieved from hooks and services.
+
+## Getting Started
+
+### Development
+
+Install dependencies and start the development server:
 
 ```bash
 npm install
 npm run dev
 ```
 
-The app will open in your browser at `http://localhost:5173`.
+When the app opens at `http://localhost:5173`, enter a personal GitHub token with read‑only repository access when prompted.
 
+### Testing
 
-To create a production build, run:
+Run unit tests with coverage:
+
+```bash
+npm test
+```
+
+To update the coverage badge in the README after running the tests, execute:
+
+```bash
+node scripts/updateReadmeCoverage.js
+```
+
+### Production build
+
+Create a production build:
 
 ```bash
 npm run build
 ```
 
-The compiled files will be placed in the `build/` directory.
+The compiled files will be available in the `build/` directory.
+
+## License
+
+This project is released under the [MIT License](LICENSE).
+
+Line coverage: 84.57%
