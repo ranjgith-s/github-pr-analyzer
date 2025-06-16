@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Octokit } from '@octokit/rest';
 // Use the experimental DataTable component from Primer React
 import { DataTable, Table, createColumnHelper } from '@primer/react/drafts';
-import { Box, FormControl, Select, Text, Spinner, Link } from '@primer/react';
+import { Box, FormControl, Select, Text, Spinner, Link, Button } from '@primer/react';
+import {useNavigate} from 'react-router-dom';
 
 
 function formatDuration(start, end) {
@@ -21,8 +22,16 @@ export default function MetricsTable({ token }) {
   const [repoFilter, setRepoFilter] = useState('');
   const [authorFilter, setAuthorFilter] = useState('');
   const [pageIndex, setPageIndex] = useState(0);
+  const [selectedIds, setSelectedIds] = useState([]);
   const PAGE_SIZE = 25;
   const columnHelper = createColumnHelper();
+  const navigate = useNavigate();
+
+  const toggleSelect = (id) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+    );
+  };
 
   useEffect(() => {
     async function fetchData() {
@@ -86,7 +95,10 @@ export default function MetricsTable({ token }) {
 
             return {
               id: pr.id,
+              owner,
+              repo_name: repo,
               repo: `${owner}/${repo}`,
+              number: prNumber,
               title: pr.title,
               url: item.html_url,
               author: pr.author ? pr.author.login : 'unknown',
@@ -97,6 +109,12 @@ export default function MetricsTable({ token }) {
               first_review_at: firstReview,
               reviewers: reviewers.size,
               changes_requested: changesRequested,
+              timeline: [
+                {label: 'Created', date: pr.createdAt},
+                {label: 'Published', date: pr.publishedAt},
+                {label: 'First review', date: firstReview},
+                {label: 'Closed', date: pr.mergedAt || pr.closedAt}
+              ].filter(e => e.date)
             };
           })
         );
@@ -129,7 +147,20 @@ export default function MetricsTable({ token }) {
     pageIndex * PAGE_SIZE + PAGE_SIZE
   );
 
+  const selectedItem = items.find((i) => selectedIds.includes(i.id));
+
   const columns = [
+    columnHelper.column({
+      id: 'select',
+      header: '',
+      renderCell: row => (
+        <input
+          type="checkbox"
+          checked={selectedIds.includes(row.id)}
+          onChange={() => toggleSelect(row.id)}
+        />
+      )
+    }),
     columnHelper.column({id: 'repo', header: 'Repository', field: 'repo', rowHeader: true}),
     columnHelper.column({
       id: 'title',
@@ -213,6 +244,13 @@ export default function MetricsTable({ token }) {
           </Select>
         </FormControl>
       </Box>
+      {selectedIds.length === 1 && (
+        <Box marginBottom={2}>
+          <Button onClick={() => navigate(`/pr/${selectedItem.owner}/${selectedItem.repo_name}/${selectedItem.number}`, { state: selectedItem })}>
+            View pull request
+          </Button>
+        </Box>
+      )}
       <DataTable
         aria-labelledby="pr-table"
         columns={columns}
