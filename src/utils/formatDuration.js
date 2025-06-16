@@ -2,19 +2,8 @@ import {
   formatDuration as dfFormatDuration,
   intervalToDuration,
 } from 'date-fns';
-import { enUS, fr, es, de, zhCN } from 'date-fns/locale';
-
-export function formatDuration(start, end) {
-    return 'N/A';
-  }
-  const duration = intervalToDuration({ start: startDate, end: endDate });
-  const langCode = (typeof navigator !== 'undefined' ? navigator.language : 'en')
-    .split('-')[0];
-
-  const hasHours = duration.days > 0 || duration.hours > 0;
-  const units = hasHours ? ['days', 'hours'] : ['minutes', 'seconds'];
-
-  return dfFormatDuration(duration, { format: units, zero: false, locale });
+import { enUS } from 'date-fns/locale';
+  return dfFormatDuration(duration, { format: units, zero: false, locale: enUS });
 
 export default formatDuration;
   en: enUS,
