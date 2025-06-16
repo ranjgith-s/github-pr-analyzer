@@ -37,8 +37,12 @@ export default function Header() {
       borderColor="border.default"
       sx={{ bg: 'canvas.subtle' }}
     >
-      <Box display="flex" alignItems="center" sx={{ gap: 2 }}>
-        <TriangleUpIcon size={24} fill="blue" />
+      <Box
+        display="flex"
+        alignItems="center"
+        sx={{ gap: 2, color: 'accent.fg' }}
+      >
+        <TriangleUpIcon size={24} />
         <Text fontWeight="bold">PR-ism</Text>
       </Box>
       {user && (
