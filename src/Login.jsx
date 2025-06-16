@@ -5,7 +5,8 @@ import {
   TextInput,
   Heading,
   Text,
-  FormControl
+  FormControl,
+  Link
 } from '@primer/react';
 import {SignInIcon} from '@primer/octicons-react';
 
@@ -55,6 +56,46 @@ export default function Login({ onToken }) {
             <FormControl.Caption>
               <Text fontSize={1}>Your token is used only in the browser</Text>
             </FormControl.Caption>
+            <Box mt={2}>
+              <details>
+                <summary>
+                  <Text fontSize={1} sx={{cursor: 'pointer'}}>
+                    Additional info for generating a personal access token
+                  </Text>
+                </summary>
+                <Box as="ol" pl={3} mt={2}>
+                  <li>
+                    <Text as="span" fontSize={1}>
+                      Visit{' '}
+                      <Link
+                        href="https://github.com/settings/tokens"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        GitHub settings
+                      </Link>
+                      .
+                    </Text>
+                  </li>
+                  <li>
+                    <Text as="span" fontSize={1}>
+                      Generate a new fine‑grained token with read‑only
+                      repository access.
+                    </Text>
+                  </li>
+                  <li>
+                    <Text as="span" fontSize={1}>
+                      Enable SSO for your organization when prompted.
+                    </Text>
+                  </li>
+                  <li>
+                    <Text as="span" fontSize={1}>
+                      Copy the token and paste it here.
+                    </Text>
+                  </li>
+                </Box>
+              </details>
+            </Box>
           </FormControl>
           <Button
             type="submit"
