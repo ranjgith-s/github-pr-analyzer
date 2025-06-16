@@ -19,7 +19,7 @@ import { useAuth } from "./AuthContext";
 
 
 
-function formatDuration(start?: string | null, end?: string | null) {
+export function formatDuration(start?: string | null, end?: string | null) {
   if (!start || !end) return "N/A";
   const diffMs = new Date(end) - new Date(start);
   if (diffMs < 0) return "N/A";
