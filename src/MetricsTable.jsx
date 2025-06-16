@@ -180,7 +180,19 @@ export default function MetricsTable({ token }) {
         </Link>
       )
     }),
-    columnHelper.column({id: 'author', header: 'Author', field: 'author'}),
+    columnHelper.column({
+      id: 'author',
+      header: 'Author',
+      renderCell: row => (
+        <Link
+          href={`https://github.com/${row.author}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {row.author}
+        </Link>
+      )
+    }),
     columnHelper.column({id: 'reviewers', header: 'Reviewers', field: 'reviewers'}),
     columnHelper.column({id: 'changes_requested', header: 'Changes Requested', field: 'changes_requested'}),
     columnHelper.column({
