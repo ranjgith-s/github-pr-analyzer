@@ -11,6 +11,7 @@ import {
   Link,
   Button,
   StateLabel,
+  Tooltip,
 } from "@primer/react";
 import { useNavigate } from "react-router-dom";
 
@@ -269,27 +270,32 @@ export default function MetricsTable({ token }) {
       header: "Timeline",
       renderCell: (row) => {
         const created = new Date(row.created_at);
-        const published = row.published_at
-          ? new Date(row.published_at)
-          : created;
-        const reviewed = row.first_review_at
-          ? new Date(row.first_review_at)
-          : published;
+        const published = row.published_at ? new Date(row.published_at) : created;
+        const reviewed = row.first_review_at ? new Date(row.first_review_at) : published;
         const closed = row.closed_at ? new Date(row.closed_at) : reviewed;
         const draftMs = Math.max(published - created, 0);
         const reviewMs = Math.max(reviewed - published, 0);
         const closeMs = Math.max(closed - reviewed, 0);
         const total = draftMs + reviewMs + closeMs || 1;
+
+        const tooltipText = [
+          `Draft: ${formatDuration(row.created_at, row.published_at)}`,
+          `Review: ${formatDuration(
+            row.published_at || row.created_at,
+            row.first_review_at,
+          )}`,
+          `Close: ${formatDuration(
+            row.first_review_at || row.published_at || row.created_at,
+            row.closed_at,
+          )}`,
+        ].join("\n");
+
         return (
-          <Box
-            display="flex"
-            flexDirection="column"
-            alignItems="stretch"
-            sx={{ width: 80 }}
-          >
+          <Tooltip aria-label={tooltipText} direction="s">
             <Box
               display="flex"
               height="6px"
+              width={80}
               sx={{ overflow: "hidden", borderRadius: 1 }}
             >
               <Box
@@ -305,30 +311,7 @@ export default function MetricsTable({ token }) {
                 style={{ width: `${(closeMs / total) * 100}%` }}
               />
             </Box>
-            <Box
-              display="flex"
-              flexDirection="column"
-              sx={{ fontSize: 0, mt: 1 }}
-            >
-              <Text>
-                Draft: {formatDuration(row.created_at, row.published_at)}
-              </Text>
-              <Text>
-                Review:{" "}
-                {formatDuration(
-                  row.published_at || row.created_at,
-                  row.first_review_at,
-                )}
-              </Text>
-              <Text>
-                Close:{" "}
-                {formatDuration(
-                  row.first_review_at || row.published_at || row.created_at,
-                  row.closed_at,
-                )}
-              </Text>
-            </Box>
-          </Box>
+          </Tooltip>
         );
       },
     }),
