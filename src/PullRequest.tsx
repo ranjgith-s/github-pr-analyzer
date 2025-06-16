@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Octokit } from '@octokit/rest';
 import { Timeline, Heading, TabNav } from '@primer/react';
 import { Box, Spinner, Button, Text } from '@primer/react';
+import Header from './Header';
 import { useParams, useLocation, Link as RouterLink } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 
@@ -87,26 +88,29 @@ export default function PullRequestPage() {
   }
 
   return (
-    <Box p={3}>
-      <Button as={RouterLink} to="/" sx={{ mb: 3 }}>
-        Back
-      </Button>
-      <Heading as="h2" sx={{ mb: 3 }}>
-        {title}
-      </Heading>
-      <TabNav aria-label="Pull request views" sx={{ mb: 3 }}>
-        <TabNav.Link selected>Timeline</TabNav.Link>
-      </TabNav>
-      <Timeline>
-        {events?.map((ev, i) => (
-          <Timeline.Item key={i}>
-            <Timeline.Badge />
-            <Timeline.Body>
-              <Text>{`${ev.label}: ${new Date(ev.date).toLocaleString()}`}</Text>
-            </Timeline.Body>
-          </Timeline.Item>
-        ))}
-      </Timeline>
-    </Box>
+    <>
+      <Header breadcrumb="Pull request insights" />
+      <Box p={3}>
+        <Button as={RouterLink} to="/insights" sx={{ mb: 3 }}>
+          Back
+        </Button>
+        <Heading as="h2" sx={{ mb: 3 }}>
+          {title}
+        </Heading>
+        <TabNav aria-label="Pull request views" sx={{ mb: 3 }}>
+          <TabNav.Link selected>Timeline</TabNav.Link>
+        </TabNav>
+        <Timeline>
+          {events?.map((ev, i) => (
+            <Timeline.Item key={i}>
+              <Timeline.Badge />
+              <Timeline.Body>
+                <Text>{`${ev.label}: ${new Date(ev.date).toLocaleString()}`}</Text>
+              </Timeline.Body>
+            </Timeline.Item>
+          ))}
+        </Timeline>
+      </Box>
+    </>
   );
 }

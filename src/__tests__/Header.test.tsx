@@ -20,7 +20,7 @@ test('fetches and displays user info', async () => {
     useEffect(() => {
       auth.login('token');
     }, [auth]);
-    return <Header />;
+    return <Header breadcrumb="Pull request insights" />;
   }
 
   render(
@@ -31,4 +31,5 @@ test('fetches and displays user info', async () => {
 
   await waitFor(() => expect(screen.getByText('octo')).toBeInTheDocument());
   expect(Octokit).toHaveBeenCalledWith({ auth: 'token' });
+  expect(screen.getByText('Pull request insights')).toBeInTheDocument();
 });

@@ -39,12 +39,33 @@ function LoggedIn() {
   );
 }
 
-test('shows metrics table when authenticated', async () => {
+test('shows home card when authenticated', async () => {
   render(
     <AuthProvider>
       <LoggedIn />
     </AuthProvider>
   );
-  expect(screen.getByLabelText('Repository')).toBeInTheDocument();
+  expect(screen.getByText('Pull request insights')).toBeInTheDocument();
   expect(screen.getByText('PR-ism')).toBeInTheDocument();
+});
+
+test('shows breadcrumb on insights page', async () => {
+  function Wrapper() {
+    const auth = useAuth();
+    useEffect(() => {
+      auth.login('token');
+    }, [auth]);
+    return (
+      <MemoryRouter initialEntries={['/insights']}>
+        <App />
+      </MemoryRouter>
+    );
+  }
+
+  render(
+    <AuthProvider>
+      <Wrapper />
+    </AuthProvider>
+  );
+  expect(screen.getByText('Pull request insights')).toBeInTheDocument();
 });
