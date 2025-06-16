@@ -59,6 +59,20 @@ To update the coverage badge in the README after running the tests, execute:
 node scripts/updateReadmeCoverage.js
 ```
 
+### Linting
+
+Run ESLint to check code quality:
+
+```bash
+npm run lint
+```
+
+Format source files with Prettier:
+
+```bash
+npm run format
+```
+
 ### Production build
 
 Create a production build:

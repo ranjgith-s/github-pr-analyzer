@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import { fetchPullRequestMetrics } from "../services/github";
-import { PRItem } from "../types";
+import { useEffect, useState } from 'react';
+import { fetchPullRequestMetrics } from '../services/github';
+import { PRItem } from '../types';
 
 export function usePullRequestMetrics(token: string) {
   const [items, setItems] = useState<PRItem[]>([]);

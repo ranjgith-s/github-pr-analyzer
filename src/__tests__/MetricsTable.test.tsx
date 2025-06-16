@@ -1,15 +1,15 @@
 import React from 'react';
-import {render, screen} from '@testing-library/react';
-import {MemoryRouter} from 'react-router-dom';
+import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import MetricsTable from '../MetricsTable';
-import {AuthProvider} from '../AuthContext';
+import { AuthProvider } from '../AuthContext';
 import * as metricsHook from '../hooks/usePullRequestMetrics';
-import {PRItem} from '../types';
+import { PRItem } from '../types';
 
 jest.mock('@primer/react/drafts', () => ({
   DataTable: (props: any) => <table>{props.children}</table>,
   Table: { Pagination: () => null },
-  createColumnHelper: () => ({ column: (c: any) => c })
+  createColumnHelper: () => ({ column: (c: any) => c }),
 }));
 
 const sample: PRItem[] = [
@@ -33,11 +33,13 @@ const sample: PRItem[] = [
     additions: 1,
     deletions: 1,
     comment_count: 0,
-    timeline: []
-  }
+    timeline: [],
+  },
 ];
 
-jest.spyOn(metricsHook, 'usePullRequestMetrics').mockReturnValue({items: sample, loading: false});
+jest
+  .spyOn(metricsHook, 'usePullRequestMetrics')
+  .mockReturnValue({ items: sample, loading: false });
 
 test('renders filters and data', () => {
   render(
@@ -52,7 +54,10 @@ test('renders filters and data', () => {
 });
 
 test('shows spinner when loading', () => {
-  (metricsHook.usePullRequestMetrics as jest.Mock).mockReturnValue({items: [], loading: true});
+  (metricsHook.usePullRequestMetrics as jest.Mock).mockReturnValue({
+    items: [],
+    loading: true,
+  });
   render(
     <AuthProvider>
       <MemoryRouter>
@@ -62,4 +67,3 @@ test('shows spinner when loading', () => {
   );
   expect(screen.getByText(/looking into the pulls/i)).toBeInTheDocument();
 });
-

@@ -10,8 +10,8 @@ interface TimelineEntry {
   date: string;
 }
 export default function PullRequestPage() {
-  const {token} = useAuth();
-  const {owner, repo, number} = useParams();
+  const { token } = useAuth();
+  const { owner, repo, number } = useParams();
   const location = useLocation();
   const [events, setEvents] = useState<TimelineEntry[] | null>(null);
   const [title, setTitle] = useState<string>(location.state?.title || '');
@@ -35,9 +35,9 @@ export default function PullRequestPage() {
         setLoading(false);
         return;
       }
-      const octokit = new Octokit({auth: token});
+      const octokit = new Octokit({ auth: token });
       try {
-        const {repository} = await octokit.graphql<any>(
+        const { repository } = await octokit.graphql<any>(
           `query($owner:String!,$repo:String!,$number:Int!){
             repository(owner:$owner,name:$repo){
               pullRequest(number:$number){
@@ -50,21 +50,24 @@ export default function PullRequestPage() {
               }
             }
           }`,
-          {owner, repo, number: Number(number)}
+          { owner, repo, number: Number(number) }
         );
         const pr = repository.pullRequest;
         setTitle(pr.title);
-        const firstReview = pr.reviews.nodes.reduce<string | null>((acc, rv) => {
-          return !acc || new Date(rv.submittedAt) < new Date(acc)
-            ? rv.submittedAt
-            : acc;
-        }, null);
+        const firstReview = pr.reviews.nodes.reduce<string | null>(
+          (acc, rv) => {
+            return !acc || new Date(rv.submittedAt) < new Date(acc)
+              ? rv.submittedAt
+              : acc;
+          },
+          null
+        );
         const timeline = [
-          {label: 'Created', date: pr.createdAt},
-          {label: 'Published', date: pr.publishedAt},
-          {label: 'First review', date: firstReview},
-          {label: 'Closed', date: pr.mergedAt || pr.closedAt}
-        ].filter(e => e.date);
+          { label: 'Created', date: pr.createdAt },
+          { label: 'Published', date: pr.publishedAt },
+          { label: 'First review', date: firstReview },
+          { label: 'Closed', date: pr.mergedAt || pr.closedAt },
+        ].filter((e) => e.date);
         setEvents(timeline);
       } catch (err) {
         console.error(err);
@@ -85,11 +88,13 @@ export default function PullRequestPage() {
 
   return (
     <Box p={3}>
-      <Button as={RouterLink} to="/" sx={{mb: 3}}>
+      <Button as={RouterLink} to="/" sx={{ mb: 3 }}>
         Back
       </Button>
-      <Heading as="h2" sx={{mb: 3}}>{title}</Heading>
-      <TabNav aria-label="Pull request views" sx={{mb: 3}}>
+      <Heading as="h2" sx={{ mb: 3 }}>
+        {title}
+      </Heading>
+      <TabNav aria-label="Pull request views" sx={{ mb: 3 }}>
         <TabNav.Link selected>Timeline</TabNav.Link>
       </TabNav>
       <Timeline>
@@ -105,4 +110,3 @@ export default function PullRequestPage() {
     </Box>
   );
 }
-

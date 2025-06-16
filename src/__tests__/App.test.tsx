@@ -1,8 +1,8 @@
-import React, {useEffect} from 'react';
-import {render, screen} from '@testing-library/react';
-import {MemoryRouter} from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import App from '../App';
-import {AuthProvider, useAuth} from '../AuthContext';
+import { AuthProvider, useAuth } from '../AuthContext';
 import * as metricsHook from '../hooks/usePullRequestMetrics';
 
 jest.mock('../hooks/usePullRequestMetrics');
@@ -10,7 +10,10 @@ jest.mock('../hooks/usePullRequestMetrics');
 const mockedHook = metricsHook as jest.Mocked<typeof metricsHook>;
 
 beforeEach(() => {
-  mockedHook.usePullRequestMetrics.mockReturnValue({items: [], loading: false});
+  mockedHook.usePullRequestMetrics.mockReturnValue({
+    items: [],
+    loading: false,
+  });
 });
 
 test('shows login when not authenticated', () => {
