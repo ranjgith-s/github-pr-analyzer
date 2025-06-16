@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { Octokit } from "@octokit/rest";
 // Use the experimental DataTable component from Primer React
 import { DataTable, Table, createColumnHelper } from "@primer/react/drafts";
 import {
@@ -14,38 +13,14 @@ import {
   Tooltip,
 } from "@primer/react";
 import { useNavigate } from "react-router-dom";
+import { usePullRequestMetrics } from "./hooks/usePullRequestMetrics";
+import { PRItem } from "./types";
 
 interface MetricsTableProps {
   token: string;
 }
 
-interface TimelineEntry {
-  label: string;
-  date: string;
-}
 
-interface PRItem {
-  id: string;
-  owner: string;
-  repo_name: string;
-  repo: string;
-  number: number;
-  title: string;
-  url: string;
-  author: string;
-  state: "open" | "closed" | "merged" | "draft";
-  created_at: string;
-  published_at?: string;
-  closed_at?: string;
-  first_review_at?: string;
-  first_commit_at?: string;
-  reviewers: number;
-  changes_requested: number;
-  additions: number;
-  deletions: number;
-  comment_count: number;
-  timeline: TimelineEntry[];
-}
 
 function formatDuration(start?: string | null, end?: string | null) {
   if (!start || !end) return "N/A";
@@ -58,8 +33,7 @@ function formatDuration(start?: string | null, end?: string | null) {
 }
 
 export default function MetricsTable({ token }: MetricsTableProps) {
-  const [items, setItems] = useState<PRItem[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const { items, loading } = usePullRequestMetrics(token);
   const [repoFilter, setRepoFilter] = useState<string>("");
   const [authorFilter, setAuthorFilter] = useState<string>("");
   const [pageIndex, setPageIndex] = useState<number>(0);
@@ -74,133 +48,6 @@ export default function MetricsTable({ token }: MetricsTableProps) {
     );
   };
 
-  useEffect(() => {
-    async function fetchData() {
-      const octokit = new Octokit({ auth: token });
-      try {
-        const user = await octokit.rest.users.getAuthenticated();
-
-        const authored = await octokit.rest.search.issuesAndPullRequests({
-          q: `is:pr author:${user.data.login}`,
-          per_page: 100,
-        });
-
-        const reviewed = await octokit.rest.search.issuesAndPullRequests({
-          q: `is:pr reviewed-by:${user.data.login}`,
-          per_page: 100,
-        });
-
-        const allItems = new Map();
-        [...authored.data.items, ...reviewed.data.items].forEach((item) => {
-          allItems.set(item.id, item);
-        });
-
-        const data: PRItem[] = await Promise.all(
-          Array.from(allItems.values()).map(async (item): Promise<PRItem> => {
-            const [owner, repo] = item.repository_url.split("/").slice(-2);
-            const prNumber = item.number;
-
-            const prData = await octokit.graphql<any>(
-              `query($owner:String!,$repo:String!,$number:Int!){
-                 repository(owner:$owner,name:$repo){
-                   pullRequest(number:$number){
-                     id
-                     title
-                     author { login }
-                     createdAt
-                     publishedAt
-                     closedAt
-                     mergedAt
-                     isDraft
-                     additions
-                     deletions
-                     comments { totalCount }
-                     reviews(first:100){
-                       nodes{ author{login} state submittedAt }
-                     }
-                   }
-                 }
-               }`,
-              { owner, repo, number: prNumber },
-            );
-
-            const pr = prData.repository.pullRequest;
-
-            // fetch commits to determine lead time
-            const commits = await octokit.paginate(
-              octokit.rest.pulls.listCommits,
-              {
-                owner,
-                repo,
-                pull_number: prNumber,
-                per_page: 100,
-              },
-            );
-            const firstCommitAt = commits.reduce<string | null>((earliest, c) => {
-              const date = c.commit.author?.date || c.commit.committer?.date;
-              return !earliest || new Date(date) < new Date(earliest)
-                ? date
-                : earliest;
-            }, null);
-
-            const reviewers = new Set();
-            let firstReview = null;
-            let changesRequested = 0;
-            pr.reviews.nodes.forEach((rv) => {
-              if (rv.author) reviewers.add(rv.author.login);
-              if (rv.state === "CHANGES_REQUESTED") changesRequested += 1;
-              if (
-                !firstReview ||
-                new Date(rv.submittedAt) < new Date(firstReview)
-              ) {
-                firstReview = rv.submittedAt;
-              }
-            });
-
-            return {
-              id: pr.id,
-              owner,
-              repo_name: repo,
-              repo: `${owner}/${repo}`,
-              number: prNumber,
-              title: pr.title,
-              url: item.html_url,
-              author: pr.author ? pr.author.login : "unknown",
-              state: pr.isDraft
-                ? "draft"
-                : pr.mergedAt
-                  ? "merged"
-                  : pr.closedAt
-                    ? "closed"
-                    : "open",
-              created_at: pr.createdAt,
-              published_at: pr.publishedAt,
-              closed_at: pr.mergedAt || pr.closedAt,
-              first_review_at: firstReview,
-              first_commit_at: firstCommitAt,
-              reviewers: reviewers.size,
-              changes_requested: changesRequested,
-              additions: pr.additions,
-              deletions: pr.deletions,
-              comment_count: pr.comments.totalCount,
-              timeline: [
-                { label: "Created", date: pr.createdAt },
-                { label: "Published", date: pr.publishedAt },
-                { label: "First review", date: firstReview },
-                { label: "Closed", date: pr.mergedAt || pr.closedAt },
-              ].filter((e) => e.date),
-            };
-          }),
-        );
-        setItems(data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchData();
-  }, [token]);
 
   const repos = Array.from(new Set(items.map((i) => i.repo))).sort();
   const authors = Array.from(new Set(items.map((i) => i.author))).sort();
