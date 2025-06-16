@@ -18,7 +18,7 @@ export interface PRItem {
   closed_at?: string;
   first_review_at?: string | null;
   first_commit_at?: string | null;
-  reviewers: number;
+  reviewers: string[];
   changes_requested: number;
   additions: number;
   deletions: number;

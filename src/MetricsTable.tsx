@@ -117,7 +117,22 @@ export default function MetricsTable() {
     columnHelper.column({
       id: 'reviewers',
       header: 'Reviewers',
-      field: 'reviewers',
+      renderCell: (row) => (
+        <>
+          {row.reviewers.map((name: string, idx: number) => (
+            <React.Fragment key={name}>
+              <Link
+                href={`https://github.com/${name}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {name}
+              </Link>
+              {idx < row.reviewers.length - 1 && ', '}
+            </React.Fragment>
+          ))}
+        </>
+      ),
     }),
     columnHelper.column({
       id: 'changes_requested',

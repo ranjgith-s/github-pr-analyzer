@@ -19,7 +19,7 @@ const sample: PRItem[] = [
     closed_at: '2020-01-03',
     first_review_at: '2020-01-02',
     first_commit_at: '2020-01-01',
-    reviewers: 1,
+    reviewers: ['reviewer1'],
     changes_requested: 0,
     additions: 1,
     deletions: 1,

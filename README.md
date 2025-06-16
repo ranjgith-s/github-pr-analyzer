@@ -1,6 +1,6 @@
 # GitHub PR Analyzer
 
-GitHub PR Analyzer is a small React and TypeScript application for exploring metrics about your pull requests. It surfaces how long a pull request stayed in draft, the time to the first review and the total time until it was merged or closed. The app also reports how many reviewers participated and how many change requests were made.
+GitHub PR Analyzer is a small React and TypeScript application for exploring metrics about your pull requests. It surfaces how long a pull request stayed in draft, the time to the first review and the total time until it was merged or closed. The app also shows who reviewed the pull requests and how many change requests were made.
 
 The user interface relies on [Primer](https://primer.style) to match the look and feel of GitHub. After signing in with your GitHub token, a table displays the pull requests with filters for repository and author. Selecting a title in the table opens the pull request on GitHub.
 
@@ -19,7 +19,7 @@ The user interface relies on [Primer](https://primer.style) to match the look an
 - Authenticate with a personal access token.
 - View pull requests you authored or reviewed.
 - Metrics for draft time, first review and total lifespan.
-- Display reviewer count and change requests.
+ - Display reviewer names with links and change requests.
 - Filter by repository and author.
 - Direct links to each pull request.
 
