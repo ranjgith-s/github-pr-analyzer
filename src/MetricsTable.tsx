@@ -15,10 +15,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { usePullRequestMetrics } from "./hooks/usePullRequestMetrics";
 import { PRItem } from "./types";
-
-interface MetricsTableProps {
-  token: string;
-}
+import { useAuth } from "./AuthContext";
 
 
 
@@ -32,8 +29,9 @@ function formatDuration(start?: string | null, end?: string | null) {
   return days > 0 ? `${days}d ${hours}h` : `${hours}h`;
 }
 
-export default function MetricsTable({ token }: MetricsTableProps) {
-  const { items, loading } = usePullRequestMetrics(token);
+export default function MetricsTable() {
+  const {token} = useAuth();
+  const { items, loading } = usePullRequestMetrics(token!);
   const [repoFilter, setRepoFilter] = useState<string>("");
   const [authorFilter, setAuthorFilter] = useState<string>("");
   const [pageIndex, setPageIndex] = useState<number>(0);

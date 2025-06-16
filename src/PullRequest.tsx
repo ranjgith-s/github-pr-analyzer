@@ -3,16 +3,14 @@ import { Octokit } from '@octokit/rest';
 import { Timeline, Heading, TabNav } from '@primer/react';
 import { Box, Spinner, Button, Text } from '@primer/react';
 import { useParams, useLocation, Link as RouterLink } from 'react-router-dom';
-
-interface PullRequestPageProps {
-  token: string;
-}
+import { useAuth } from './AuthContext';
 
 interface TimelineEntry {
   label: string;
   date: string;
 }
-export default function PullRequestPage({ token }: PullRequestPageProps) {
+export default function PullRequestPage() {
+  const {token} = useAuth();
   const {owner, repo, number} = useParams();
   const location = useLocation();
   const [events, setEvents] = useState<TimelineEntry[] | null>(null);

@@ -2,18 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { Box, Avatar, Text, Button } from '@primer/react';
 import { Octokit } from '@octokit/rest';
 import { GraphIcon } from '@primer/octicons-react';
-
-interface HeaderProps {
-  token: string;
-  onLogout: () => void;
-}
+import { useAuth } from './AuthContext';
 
 interface GitHubUser {
   login: string;
   avatar_url: string;
 }
 
-export default function Header({ token, onLogout }: HeaderProps) {
+export default function Header() {
+  const {token, logout} = useAuth();
   const [user, setUser] = useState<GitHubUser | null>(null);
 
   useEffect(() => {
@@ -48,7 +45,7 @@ export default function Header({ token, onLogout }: HeaderProps) {
         <Box display="flex" alignItems="center" sx={{gap: 2}}>
           <Avatar src={user.avatar_url} size={24} />
           <Text>{user.login}</Text>
-          <Button onClick={onLogout}>Logout</Button>
+          <Button onClick={logout}>Logout</Button>
         </Box>
       )}
     </Box>
