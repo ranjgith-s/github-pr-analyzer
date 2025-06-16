@@ -47,4 +47,5 @@ test('shows metrics table when authenticated', async () => {
   );
   expect(screen.getByLabelText('Repository')).toBeInTheDocument();
   expect(screen.getByText('GitHub PR Analyzer')).toBeInTheDocument();
+  expect(screen.getByText('Pull Requests')).toBeInTheDocument();
 });
