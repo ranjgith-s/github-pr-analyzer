@@ -85,6 +85,23 @@ export default function MetricsTable({ token }) {
 
             const pr = prData.repository.pullRequest;
 
+            // fetch commits to determine lead time
+            const commits = await octokit.paginate(
+              octokit.rest.pulls.listCommits,
+              {
+                owner,
+                repo,
+                pull_number: prNumber,
+                per_page: 100,
+              }
+            );
+            const firstCommitAt = commits.reduce((earliest, c) => {
+              const date = c.commit.author?.date || c.commit.committer?.date;
+              return !earliest || new Date(date) < new Date(earliest)
+                ? date
+                : earliest;
+            }, null);
+
             const reviewers = new Set();
             let firstReview = null;
             let changesRequested = 0;
@@ -110,6 +127,7 @@ export default function MetricsTable({ token }) {
               published_at: pr.publishedAt,
               closed_at: pr.mergedAt || pr.closedAt,
               first_review_at: firstReview,
+              first_commit_at: firstCommitAt,
               reviewers: reviewers.size,
               changes_requested: changesRequested,
               additions: pr.additions,
@@ -226,6 +244,11 @@ export default function MetricsTable({ token }) {
       id: 'time_to_close',
       header: 'Time to Close',
       renderCell: row => formatDuration(row.created_at, row.closed_at)
+    }),
+    columnHelper.column({
+      id: 'lead_time',
+      header: 'Lead Time',
+      renderCell: row => formatDuration(row.first_commit_at, row.closed_at)
     }),
     columnHelper.column({
       id: 'state',
