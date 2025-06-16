@@ -32,9 +32,8 @@ export default function App() {
           <Route
             path="/"
             element={
-              token ? <MetricsTable /> : <Navigate to="/login" replace />
+              token ? <Home /> : <Navigate to="/login" replace />
             }
-          <Route path="/" element={!token ? <Login /> : <Home />} />
           <Route
             path="/insights"
             element={token ? <MetricsPage /> : <Navigate to="/" replace />}
