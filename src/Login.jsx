@@ -5,8 +5,7 @@ import {
   TextInput,
   Heading,
   Text,
-  FormControl,
-  Card
+  FormControl
 } from '@primer/react';
 import {SignInIcon} from '@primer/octicons-react';
 
@@ -27,7 +26,19 @@ export default function Login({ onToken }) {
       alignItems="center"
       height="100%"
     >
-      <Card sx={{ p: 4, width: '100%', maxWidth: 400 }}>
+      <Box
+        sx={{
+          p: 4,
+          width: '100%',
+          maxWidth: 400,
+          borderWidth: '1px',
+          borderStyle: 'solid',
+          borderColor: 'border.default',
+          borderRadius: 2,
+          boxShadow: 'shadow.medium',
+          bg: 'canvas.default'
+        }}
+      >
         <Box as="form" onSubmit={handleSubmit}>
           <Heading as="h1" sx={{ textAlign: 'center', mb: 3 }}>
             GitHub PR Analyzer
@@ -53,7 +64,7 @@ export default function Login({ onToken }) {
             Sign in
           </Button>
         </Box>
-      </Card>
+      </Box>
     </Box>
   );
 }
