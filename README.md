@@ -20,7 +20,8 @@ The user interface relies on [Primer](https://primer.style) to match the look an
 - View pull requests you authored or reviewed.
 - Metrics for draft time, first review and total lifespan.
 - Display reviewer count and change requests.
-- Filter by repository and author.
+- Filter by repository, author and state.
+- Sort table columns.
 - Direct links to each pull request.
 
 ## Architecture

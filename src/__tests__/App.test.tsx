@@ -5,6 +5,12 @@ import App from '../App';
 import { AuthProvider, useAuth } from '../AuthContext';
 import * as metricsHook from '../hooks/usePullRequestMetrics';
 
+jest.mock('@primer/react/drafts', () => ({
+  DataTable: (props: any) => <table>{props.children}</table>,
+  Table: { Pagination: () => null },
+  createColumnHelper: () => ({ column: (c: any) => c }),
+}));
+
 jest.mock('../hooks/usePullRequestMetrics');
 
 const mockedHook = metricsHook as jest.Mocked<typeof metricsHook>;

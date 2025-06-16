@@ -32,6 +32,9 @@ export default function MetricsTable() {
   const { items, loading } = usePullRequestMetrics(token!);
   const [repoFilter, setRepoFilter] = useState<string>('');
   const [authorFilter, setAuthorFilter] = useState<string>('');
+  const [stateFilter, setStateFilter] = useState<string>('');
+  const [sortKey, setSortKey] = useState<keyof PRItem | ''>('');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [pageIndex, setPageIndex] = useState<number>(0);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const PAGE_SIZE = 25;
@@ -44,21 +47,66 @@ export default function MetricsTable() {
     );
   };
 
+  const headerWithSort = (label: string, key: keyof PRItem) => (
+    <button
+      type="button"
+      onClick={() => {
+        if (sortKey === key) {
+          setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+        } else {
+          setSortKey(key);
+          setSortOrder('asc');
+        }
+      }}
+      style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+    >
+      {label}
+      {sortKey === key ? (sortOrder === 'asc' ? ' \u2191' : ' \u2193') : ''}
+    </button>
+  );
+
   const repos = Array.from(new Set(items.map((i) => i.repo))).sort();
   const authors = Array.from(new Set(items.map((i) => i.author))).sort();
+  const states = Array.from(new Set(items.map((i) => i.state))).sort();
 
   const filteredItems = items.filter((item) => {
     return (
       (!repoFilter || item.repo === repoFilter) &&
-      (!authorFilter || item.author === authorFilter)
+      (!authorFilter || item.author === authorFilter) &&
+      (!stateFilter || item.state === stateFilter)
     );
+  });
+
+  const sortedItems = [...filteredItems].sort((a, b) => {
+    if (!sortKey) return 0;
+    const aVal = a[sortKey];
+    const bVal = b[sortKey];
+    if (aVal == null || bVal == null) return 0;
+    const dateKeys = [
+      'created_at',
+      'published_at',
+      'closed_at',
+      'first_review_at',
+      'first_commit_at',
+    ];
+    if (dateKeys.includes(sortKey as string)) {
+      const aTime = new Date(aVal as string).getTime();
+      const bTime = new Date(bVal as string).getTime();
+      return sortOrder === 'asc' ? aTime - bTime : bTime - aTime;
+    }
+    if (typeof aVal === 'number' && typeof bVal === 'number') {
+      return sortOrder === 'asc' ? aVal - bVal : bVal - aVal;
+    }
+    return sortOrder === 'asc'
+      ? String(aVal).localeCompare(String(bVal))
+      : String(bVal).localeCompare(String(aVal));
   });
 
   useEffect(() => {
     setPageIndex(0);
-  }, [repoFilter, authorFilter]);
+  }, [repoFilter, authorFilter, stateFilter]);
 
-  const paginatedItems = filteredItems.slice(
+  const paginatedItems = sortedItems.slice(
     pageIndex * PAGE_SIZE,
     pageIndex * PAGE_SIZE + PAGE_SIZE
   );
@@ -79,13 +127,13 @@ export default function MetricsTable() {
     }),
     columnHelper.column({
       id: 'repo',
-      header: 'Repository',
+      header: headerWithSort('Repository', 'repo'),
       field: 'repo',
       rowHeader: true,
     }),
     columnHelper.column({
       id: 'title',
-      header: 'Title',
+      header: headerWithSort('Title', 'title'),
       renderCell: (row) => (
         <Link
           href={row.url}
@@ -103,7 +151,7 @@ export default function MetricsTable() {
     }),
     columnHelper.column({
       id: 'author',
-      header: 'Author',
+      header: headerWithSort('Author', 'author'),
       renderCell: (row) => (
         <Link
           href={`https://github.com/${row.author}`}
@@ -116,12 +164,12 @@ export default function MetricsTable() {
     }),
     columnHelper.column({
       id: 'reviewers',
-      header: 'Reviewers',
+      header: headerWithSort('Reviewers', 'reviewers'),
       field: 'reviewers',
     }),
     columnHelper.column({
       id: 'changes_requested',
-      header: 'Changes Requested',
+      header: headerWithSort('Changes Requested', 'changes_requested'),
       field: 'changes_requested',
     }),
     columnHelper.column({
@@ -136,7 +184,7 @@ export default function MetricsTable() {
     }),
     columnHelper.column({
       id: 'comment_count',
-      header: 'Comments',
+      header: headerWithSort('Comments', 'comment_count'),
       field: 'comment_count',
     }),
     columnHelper.column({
@@ -200,7 +248,7 @@ export default function MetricsTable() {
     }),
     columnHelper.column({
       id: 'state',
-      header: 'State',
+      header: headerWithSort('State', 'state'),
       renderCell: (row) => {
         const statusMap = {
           open: 'pullOpened',
@@ -261,9 +309,23 @@ export default function MetricsTable() {
                 {a}
               </Select.Option>
             ))}
-          </Select>
-        </FormControl>
-      </Box>
+      </Select>
+    </FormControl>
+    <FormControl>
+      <FormControl.Label>State</FormControl.Label>
+      <Select
+        value={stateFilter}
+        onChange={(e) => setStateFilter(e.target.value)}
+      >
+        <Select.Option value="">All</Select.Option>
+        {states.map((s) => (
+          <Select.Option key={s} value={s}>
+            {s}
+          </Select.Option>
+        ))}
+      </Select>
+    </FormControl>
+  </Box>
       {selectedIds.length === 1 && (
         <Box marginBottom={2}>
           <Button

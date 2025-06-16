@@ -51,6 +51,7 @@ test('renders filters and data', () => {
   );
   expect(screen.getByLabelText('Repository')).toBeInTheDocument();
   expect(screen.getByLabelText('Author')).toBeInTheDocument();
+  expect(screen.getByLabelText('State')).toBeInTheDocument();
 });
 
 test('shows spinner when loading', () => {
