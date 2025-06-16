@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import Header from '../Header';
 import { AuthProvider, useAuth } from '../AuthContext';
 import { Octokit } from '@octokit/rest';
@@ -20,7 +21,11 @@ test('fetches and displays user info', async () => {
     useEffect(() => {
       auth.login('token');
     }, [auth]);
-    return <Header />;
+    return (
+      <MemoryRouter>
+        <Header />
+      </MemoryRouter>
+    );
   }
 
   render(
@@ -31,4 +36,5 @@ test('fetches and displays user info', async () => {
 
   await waitFor(() => expect(screen.getByText('octo')).toBeInTheDocument());
   expect(Octokit).toHaveBeenCalledWith({ auth: 'token' });
+  expect(screen.getByText('Pull Requests')).toBeInTheDocument();
 });

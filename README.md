@@ -22,6 +22,7 @@ The user interface relies on [Primer](https://primer.style) to match the look an
 - Display reviewer count and change requests.
 - Filter by repository and author.
 - Direct links to each pull request.
+- Breadcrumb navigation for quick orientation.
 
 ## Architecture
 
@@ -87,4 +88,4 @@ The compiled files will be available in the `build/` directory.
 
 This project is released under the [MIT License](LICENSE).
 
-Line coverage: 84.57%
+Line coverage: 85.37%
