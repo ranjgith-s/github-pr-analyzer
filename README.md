@@ -21,3 +21,5 @@ npm run build
 ```
 
 The compiled files will be placed in the `build/` directory.
+
+The application formats durations with **date-fns**, automatically using your browser's language for pluralized output.
