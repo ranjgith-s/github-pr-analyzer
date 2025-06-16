@@ -71,6 +71,9 @@ export default function MetricsTable({ token }) {
                      closedAt
                      mergedAt
                      isDraft
+                     additions
+                     deletions
+                     comments { totalCount }
                      reviews(first:100){
                        nodes{ author{login} state submittedAt }
                      }
@@ -109,6 +112,9 @@ export default function MetricsTable({ token }) {
               first_review_at: firstReview,
               reviewers: reviewers.size,
               changes_requested: changesRequested,
+              additions: pr.additions,
+              deletions: pr.deletions,
+              comment_count: pr.comments.totalCount,
               timeline: [
                 {label: 'Created', date: pr.createdAt},
                 {label: 'Published', date: pr.publishedAt},
@@ -195,6 +201,17 @@ export default function MetricsTable({ token }) {
     }),
     columnHelper.column({id: 'reviewers', header: 'Reviewers', field: 'reviewers'}),
     columnHelper.column({id: 'changes_requested', header: 'Changes Requested', field: 'changes_requested'}),
+    columnHelper.column({
+      id: 'diff',
+      header: 'Diff',
+      renderCell: row => (
+        <Text as="span">
+          <Text as="span" color="success.fg">{`+${row.additions}`}</Text>{' '}
+          <Text as="span" color="danger.fg">{`-${row.deletions}`}</Text>
+        </Text>
+      )
+    }),
+    columnHelper.column({id: 'comment_count', header: 'Comments', field: 'comment_count'}),
     columnHelper.column({
       id: 'draft_time',
       header: 'Draft Time',
