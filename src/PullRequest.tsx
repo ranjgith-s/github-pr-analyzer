@@ -88,7 +88,7 @@ export default function PullRequestPage() {
 
   return (
     <Box p={3}>
-      <Button as={RouterLink} to="/" sx={{ mb: 3 }}>
+      <Button as={RouterLink} to="/insights" sx={{ mb: 3 }}>
         Back
       </Button>
       <Heading as="h2" sx={{ mb: 3 }}>
