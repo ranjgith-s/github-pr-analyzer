@@ -34,8 +34,8 @@ export default function Home() {
           </Text>
         </Box>
         <Text as="p" mt={2} color="fg.muted">
-          Dive into metrics about your pull requests to track review timelines
-          and lead time.
+          See metrics for your pull requests, including review time and lead
+          time.
         </Text>
       </Box>
       <Box
@@ -58,12 +58,12 @@ export default function Home() {
         <Box display="flex" alignItems="center" sx={{ gap: 2 }}>
           <PeopleIcon />
           <Text fontSize={2} fontWeight="bold">
-            Developer Insights
+            Developer insights
           </Text>
         </Box>
         <Text as="p" mt={2} color="fg.muted">
-          Visualize a developer&apos;s contributions and review activities
-          across GitHub repositories using insightful radar metrics.
+          View a developer&apos;s contributions and review activity across
+          GitHub repositories with radar charts.
         </Text>
       </Box>
       <Box
@@ -86,11 +86,11 @@ export default function Home() {
         <Box display="flex" alignItems="center" sx={{ gap: 2 }}>
           <RepoIcon />
           <Text fontSize={2} fontWeight="bold">
-            Repo Insights
+            Repository insights
           </Text>
         </Box>
         <Text as="p" mt={2} color="fg.muted">
-          Explore repository health and DevOps metrics calculated from GitHub.
+          Explore repository health and DevOps metrics from GitHub.
         </Text>
       </Box>
     </Box>

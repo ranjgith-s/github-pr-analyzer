@@ -12,12 +12,12 @@ export default function RepoInsightsPage() {
   const [repo, setRepo] = useState<string | null>(null);
   const { data, loading, error } = useRepoInsights(token!, owner, repo);
   const loadingMessages = [
-    'Fetching repo info...',
+    'Fetching repository info...',
     'Crunching numbers...',
     'Analyzing pull requests...',
   ];
 
-  useDocumentTitle('Repo insights');
+  useDocumentTitle('Repository insights');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +29,7 @@ export default function RepoInsightsPage() {
     } else {
       setOwner(null);
       setRepo(null);
-      alert('Enter a valid GitHub repo URL like owner/repo');
+      alert('Enter a repository in the format owner/repo');
     }
   };
 

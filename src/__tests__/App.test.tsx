@@ -47,8 +47,8 @@ test('shows home card when authenticated', async () => {
     </AuthProvider>
   );
   expect(screen.getByText('Pull request insights')).toBeInTheDocument();
-  expect(screen.getByText('Developer Insights')).toBeInTheDocument();
-  expect(screen.getByText('Repo Insights')).toBeInTheDocument();
+  expect(screen.getByText('Developer insights')).toBeInTheDocument();
+  expect(screen.getByText('Repository insights')).toBeInTheDocument();
   expect(screen.getByText('PR-ism')).toBeInTheDocument();
 });
 

@@ -18,7 +18,7 @@ export default function SearchUserBox({
   return (
     <Box position="relative" width="100%" maxWidth={300}>
       <TextInput
-        placeholder="Search GitHub user"
+        placeholder="Search GitHub users"
         value={query}
         onChange={(e) => onQueryChange(e.target.value)}
         sx={{ width: '100%' }}

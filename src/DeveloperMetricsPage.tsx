@@ -29,58 +29,60 @@ const METRIC_INFO: MetricInfo[] = [
     key: 'mergeSuccess',
     valueKey: 'mergeRate',
     format: (n: number) => `${Math.round(n * 100)}%`,
-    valueDesc: 'of recent PRs were merged',
+    valueDesc: 'of recent pull requests merged',
     brief: 'ratio of merged pull requests',
-    details: 'Shows how many of your recent pull requests merged successfully.',
+    details:
+      'Shows the percentage of your recent pull requests that merged successfully.',
   },
   {
     name: 'Cycle Efficiency',
     key: 'cycleEfficiency',
     valueKey: 'averageChanges',
-    valueDesc: 'average change requests per PR',
-    brief: 'fewer review cycles score higher',
-    details: 'Scores drop when pull requests need many changes.',
+    valueDesc: 'average change requests per pull request',
+    brief: 'fewer review cycles earn a higher score',
+    details: 'The score decreases when pull requests require many changes.',
   },
   {
     name: 'Size Efficiency',
     key: 'sizeEfficiency',
     valueKey: 'medianSize',
     valueDesc: 'median lines changed',
-    brief: 'smaller pull requests are rewarded',
+    brief: 'smaller pull requests get higher scores',
     details:
-      'Looks at median lines changed. Smaller pull requests score higher.',
+      'Based on median lines changed. Smaller pull requests get higher scores.',
   },
   {
     name: 'Lead Time',
     key: 'leadTimeScore',
     valueKey: 'medianLeadTime',
     valueDesc: 'median hours to merge',
-    brief: 'time from open to merge',
-    details: 'Shows median time to merge in hours. Faster merges score higher.',
+    brief: 'time from opening to merging',
+    details:
+      'Shows the median time to merge, in hours. Faster merges score higher.',
   },
   {
     name: 'Review Activity',
     key: 'reviewActivity',
     valueKey: 'reviewsCount',
-    valueDesc: 'PRs reviewed',
-    brief: 'how many pull requests reviewed',
-    details: "Counts how many pull requests you've reviewed recently.",
+    valueDesc: 'pull requests reviewed',
+    brief: "how many pull requests you've reviewed",
+    details: "Counts the pull requests you've reviewed recently.",
   },
   {
     name: 'Feedback Score',
     key: 'feedbackScore',
     valueKey: 'averageComments',
-    valueDesc: 'average comments per PR',
+    valueDesc: 'average comments per pull request',
     brief: 'average comments per pull request',
-    details: 'Average number of comments you leave on your pull requests.',
+    details: 'The average number of comments you leave on your pull requests.',
   },
   {
     name: 'Issue Resolution',
     key: 'issueResolution',
     valueKey: 'issuesClosed',
-    valueDesc: 'issues closed via PRs',
-    brief: 'issues closed via pull requests',
-    details: 'Counts issues closed through your pull requests.',
+    valueDesc: 'issues closed by pull requests',
+    brief: 'issues closed by your pull requests',
+    details: 'Counts the issues you closed with pull requests.',
   },
 ];
 
@@ -95,9 +97,9 @@ export default function DeveloperMetricsPage() {
     selected?.login || null
   );
   const loadingMessages = [
-    'Fetching user info...',
+    'Fetching user data...',
     'Analyzing contributions...',
-    'Building radar charts...',
+    'Building radar chart...',
   ];
 
   useDocumentTitle('Developer insights');
