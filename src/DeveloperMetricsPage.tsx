@@ -15,6 +15,51 @@ import { useDeveloperMetrics } from './hooks/useDeveloperMetrics';
 import { useDebounce } from './hooks/useDebounce';
 import { GitHubUser } from './services/auth';
 
+const METRIC_INFO = [
+  {
+    name: 'Merge Success',
+    brief: 'ratio of merged pull requests',
+    details:
+      'Calculated as the number of merged pull requests divided by the total pull requests authored (last 30). The ratio is scaled from 0–10.',
+  },
+  {
+    name: 'Cycle Efficiency',
+    brief: 'fewer review cycles score higher',
+    details:
+      'Average change requests per pull request are doubled and subtracted from 10. The score bottoms out at 0 so fewer iterations result in a better value.',
+  },
+  {
+    name: 'Size Efficiency',
+    brief: 'smaller pull requests are rewarded',
+    details:
+      'Uses the median of additions and deletions for authored pull requests. The median size is divided by 100 and subtracted from 10 with a minimum of 0.',
+  },
+  {
+    name: 'Lead Time',
+    brief: 'time from open to merge',
+    details:
+      'Median hours between creating and merging a pull request. The median is divided by 12 and subtracted from 10 with a floor of 0.',
+  },
+  {
+    name: 'Review Activity',
+    brief: 'how many pull requests reviewed',
+    details:
+      'Counts the pull requests reviewed by the developer (last 30) and caps the value at 10.',
+  },
+  {
+    name: 'Feedback Score',
+    brief: 'average comments per pull request',
+    details:
+      'Computes the mean number of comments left on authored pull requests and limits the score to 10.',
+  },
+  {
+    name: 'Issue Resolution',
+    brief: 'issues closed via pull requests',
+    details:
+      "Tallies issues closed by the developer's pull requests. The total is capped at a maximum score of 10.",
+  },
+];
+
 export default function DeveloperMetricsPage() {
   const { token } = useAuth();
   const [query, setQuery] = useState('');
@@ -109,68 +154,98 @@ export default function DeveloperMetricsPage() {
       )}
 
       {data && !loading && (
-        <Box display="flex" sx={{ gap: 4, flexWrap: 'wrap' }}>
-          <Box
-            p={3}
-            borderWidth={1}
-            borderStyle="solid"
-            borderColor="border.default"
-            borderRadius={2}
-            boxShadow="shadow.medium"
-            sx={{ animation: 'fadeInUp 0.3s ease-out' }}
-          >
-            <Box display="flex" alignItems="center" sx={{ gap: 2 }}>
-              <Avatar src={data.avatar_url} size={64} />
-              <Box>
-                <Heading as="h2" sx={{ fontSize: 3 }}>
-                  {data.name || data.login}
-                </Heading>
-                <Text color="fg.muted">{data.login}</Text>
+        <>
+          <Box display="flex" sx={{ gap: 4, flexWrap: 'wrap' }}>
+            <Box
+              p={3}
+              borderWidth={1}
+              borderStyle="solid"
+              borderColor="border.default"
+              borderRadius={2}
+              boxShadow="shadow.medium"
+              sx={{ animation: 'fadeInUp 0.3s ease-out' }}
+            >
+              <Box display="flex" alignItems="center" sx={{ gap: 2 }}>
+                <Avatar src={data.avatar_url} size={64} />
+                <Box>
+                  <Heading as="h2" sx={{ fontSize: 3 }}>
+                    {data.name || data.login}
+                  </Heading>
+                  <Text color="fg.muted">{data.login}</Text>
+                </Box>
+              </Box>
+              {data.bio && (
+                <Text as="p" mt={2} sx={{ maxWidth: 300 }}>
+                  {data.bio}
+                </Text>
+              )}
+              <Box mt={2} sx={{ display: 'grid', rowGap: 1 }}>
+                {data.company && <Text>🏢 {data.company}</Text>}
+                {data.location && <Text>📍 {data.location}</Text>}
+                <Text>Repos: {data.public_repos}</Text>
+                <Text>Followers: {data.followers}</Text>
+                <Text>Following: {data.following}</Text>
+                <Link
+                  href={data.html_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View on GitHub
+                </Link>
               </Box>
             </Box>
-            {data.bio && (
-              <Text as="p" mt={2} sx={{ maxWidth: 300 }}>
-                {data.bio}
-              </Text>
-            )}
-            <Box mt={2} sx={{ display: 'grid', rowGap: 1 }}>
-              {data.company && <Text>🏢 {data.company}</Text>}
-              {data.location && <Text>📍 {data.location}</Text>}
-              <Text>Repos: {data.public_repos}</Text>
-              <Text>Followers: {data.followers}</Text>
-              <Text>Following: {data.following}</Text>
-              <Link
-                href={data.html_url}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                View on GitHub
-              </Link>
+            <Box
+              p={3}
+              borderWidth={1}
+              borderStyle="solid"
+              borderColor="border.default"
+              borderRadius={2}
+              boxShadow="shadow.medium"
+              sx={{ animation: 'fadeInUp 0.3s ease-out' }}
+            >
+              <RadarChart width={500} height={400} data={chartData}>
+                <PolarAngleAxis
+                  dataKey="metric"
+                  tick={{ fontFamily: 'monospace', fontSize: 10 }}
+                />
+                <Radar
+                  dataKey="value"
+                  stroke="#2da44e"
+                  fill="#2da44e"
+                  fillOpacity={0.6}
+                />
+              </RadarChart>
             </Box>
           </Box>
-          <Box
-            p={3}
-            borderWidth={1}
-            borderStyle="solid"
-            borderColor="border.default"
-            borderRadius={2}
-            boxShadow="shadow.medium"
-            sx={{ animation: 'fadeInUp 0.3s ease-out' }}
-          >
-            <RadarChart width={500} height={400} data={chartData}>
-              <PolarAngleAxis
-                dataKey="metric"
-                tick={{ fontFamily: 'monospace', fontSize: 10 }}
-              />
-              <Radar
-                dataKey="value"
-                stroke="#2da44e"
-                fill="#2da44e"
-                fillOpacity={0.6}
-              />
-            </RadarChart>
+          <Box mt={4}>
+            <Box
+              display="grid"
+              sx={{
+                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                gap: 3,
+              }}
+            >
+              {METRIC_INFO.map((info) => (
+                <Box
+                  key={info.name}
+                  borderWidth={1}
+                  borderStyle="solid"
+                  borderColor="border.default"
+                  borderRadius={2}
+                  p={2}
+                >
+                  <Heading as="h3" sx={{ fontSize: 1, mb: 1 }}>
+                    {info.name}
+                  </Heading>
+                  <Text sx={{ fontSize: 1 }}>{info.brief}</Text>
+                  <Text as="p" sx={{ mt: 1, color: 'fg.muted', fontSize: 0 }}>
+                    {info.details}
+                  </Text>
+                </Box>
+              ))}
+            </Box>
           </Box>
-        </Box>
+        </>
       )}
     </Box>
   );
