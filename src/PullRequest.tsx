@@ -4,6 +4,7 @@ import { Timeline, Heading, TabNav } from '@primer/react';
 import { Box, Spinner, Button, Text } from '@primer/react';
 import { useParams, useLocation, Link as RouterLink } from 'react-router-dom';
 import { useAuth } from './AuthContext';
+import { useDocumentTitle } from './hooks/useDocumentTitle';
 
 interface TimelineEntry {
   label: string;
@@ -17,15 +18,7 @@ export default function PullRequestPage() {
   const [title, setTitle] = useState<string>(location.state?.title || '');
   const [loading, setLoading] = useState<boolean>(true);
 
-  useEffect(() => {
-    if (title) {
-      const prev = document.title;
-      document.title = title;
-      return () => {
-        document.title = prev;
-      };
-    }
-  }, [title]);
+  useDocumentTitle(title);
 
   useEffect(() => {
     async function fetchData() {
