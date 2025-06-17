@@ -1,13 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  TextInput,
-  Avatar,
-  Heading,
-  Text,
-  Link,
-  Label,
-} from '@primer/react';
+import { Box, Avatar, Heading, Text, Link } from '@primer/react';
 import { RadarChart, Radar, PolarAngleAxis } from 'recharts';
 import { useAuth } from './AuthContext';
 import { searchUsers } from './services/github';
@@ -15,6 +7,8 @@ import { useDeveloperMetrics } from './hooks/useDeveloperMetrics';
 import { useDebounce } from './hooks/useDebounce';
 import { GitHubUser } from './services/auth';
 import LoadingOverlay from './LoadingOverlay';
+import SearchUserBox from './SearchUserBox';
+import DeveloperMetricCard from './DeveloperMetricCard';
 
 const METRIC_INFO = [
   {
@@ -152,41 +146,12 @@ export default function DeveloperMetricsPage() {
         <Heading as="h2" sx={{ fontSize: 4 }}>
           Developer insights
         </Heading>
-        <Box position="relative" width="100%" maxWidth={300}>
-          <TextInput
-            placeholder="Search GitHub user"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            sx={{ width: '100%' }}
-          />
-          {options.length > 0 && (
-            <Box
-              position="absolute"
-              width="100%"
-              borderWidth={1}
-              borderStyle="solid"
-              borderColor="border.default"
-              borderRadius={2}
-              bg="canvas.overlay"
-              mt={1}
-              zIndex={1}
-            >
-              {options.map((u) => (
-                <Box
-                  key={u.login}
-                  p={2}
-                  display="flex"
-                  alignItems="center"
-                  sx={{ cursor: 'pointer', '&:hover': { bg: 'neutral.muted' } }}
-                  onClick={() => handleSelect(u)}
-                >
-                  <Avatar src={u.avatar_url} size={20} mr={2} />
-                  <Text>{u.login}</Text>
-                </Box>
-              ))}
-            </Box>
-          )}
-        </Box>
+        <SearchUserBox
+          query={query}
+          options={options}
+          onQueryChange={setQuery}
+          onSelect={handleSelect}
+        />
       </Box>
 
       <LoadingOverlay show={loading} messages={loadingMessages} />
@@ -269,61 +234,20 @@ export default function DeveloperMetricsPage() {
                 gap: 3,
               }}
             >
-              {METRIC_INFO.map((info) => {
-                const score = data
-                  ? (data as any)[info.key as keyof typeof data]
-                  : null;
-                const variant =
-                  score === null
-                    ? 'default'
-                    : score < 3
-                      ? 'danger'
-                      : score <= 8
-                        ? 'attention'
-                        : 'success';
-                return (
-                  <Box
-                    key={info.name}
-                    borderWidth={1}
-                    borderStyle="solid"
-                    borderColor="border.default"
-                    borderRadius={2}
-                    p={2}
-                  >
-                    <Heading
-                      as="h3"
-                      sx={{
-                        fontSize: 1,
-                        mb: 1,
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                      }}
-                    >
-                      {info.name}
-                      {typeof score === 'number' && (
-                        <Label variant={variant} size="small">
-                          {score}
-                        </Label>
-                      )}
-                    </Heading>
-                    <Text sx={{ fontSize: 1 }}>{info.brief}</Text>
-                    <Text as="p" sx={{ mt: 1, color: 'fg.muted', fontSize: 0 }}>
-                      {info.details}
-                    </Text>
-                    {data && (
-                      <Text as="p" sx={{ mt: 1, fontSize: 0 }}>
-                        <Label variant={variant} size="small" mr={1}>
-                          {info.format
-                            ? info.format((data as any)[info.valueKey])
-                            : (data as any)[info.valueKey]}
-                        </Label>{' '}
-                        {info.valueDesc}
-                      </Text>
-                    )}
-                  </Box>
-                );
-              })}
+              {METRIC_INFO.map((info) => (
+                <DeveloperMetricCard
+                  key={info.name}
+                  name={info.name}
+                  brief={info.brief}
+                  details={info.details}
+                  valueDesc={info.valueDesc}
+                  score={
+                    data ? (data as any)[info.key as keyof typeof data] : null
+                  }
+                  value={data ? (data as any)[info.valueKey] : 0}
+                  format={info.format}
+                />
+              ))}
             </Box>
           </Box>
         </>
