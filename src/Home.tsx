@@ -62,8 +62,8 @@ export default function Home() {
           </Text>
         </Box>
         <Text as="p" mt={2} color="fg.muted">
-          View a developer&apos;s contributions and review activity across GitHub
-          repositories with radar charts.
+          View a developer&apos;s contributions and review activity across
+          GitHub repositories with radar charts.
         </Text>
       </Box>
       <Box

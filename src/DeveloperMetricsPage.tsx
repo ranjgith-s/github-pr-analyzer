@@ -31,7 +31,8 @@ const METRIC_INFO: MetricInfo[] = [
     format: (n: number) => `${Math.round(n * 100)}%`,
     valueDesc: 'of recent pull requests merged',
     brief: 'ratio of merged pull requests',
-    details: 'Shows the percentage of your recent pull requests that merged successfully.',
+    details:
+      'Shows the percentage of your recent pull requests that merged successfully.',
   },
   {
     name: 'Cycle Efficiency',
@@ -56,7 +57,8 @@ const METRIC_INFO: MetricInfo[] = [
     valueKey: 'medianLeadTime',
     valueDesc: 'median hours to merge',
     brief: 'time from opening to merging',
-    details: 'Shows the median time to merge, in hours. Faster merges score higher.',
+    details:
+      'Shows the median time to merge, in hours. Faster merges score higher.',
   },
   {
     name: 'Review Activity',

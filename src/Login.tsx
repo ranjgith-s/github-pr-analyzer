@@ -65,7 +65,7 @@ export default function Login() {
             PR-ism
           </Heading>
           <FormControl>
-          <FormControl.Label>Personal access token</FormControl.Label>
+            <FormControl.Label>Personal access token</FormControl.Label>
             <TextInput
               type="password"
               value={value}
