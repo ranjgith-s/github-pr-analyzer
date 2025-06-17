@@ -18,7 +18,7 @@ test('calls handlers when selecting user', async () => {
     />
   );
   const user = userEvent.setup();
-  await user.type(screen.getByPlaceholderText(/search github user/i), 't');
+  await user.type(screen.getByPlaceholderText(/search github users/i), 't');
   expect(handleQuery).toHaveBeenCalledWith('oct');
   await user.click(screen.getByText('octo'));
   expect(handleSelect).toHaveBeenCalledWith(sample[0]);

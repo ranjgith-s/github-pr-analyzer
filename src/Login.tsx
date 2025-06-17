@@ -29,7 +29,7 @@ export default function Login() {
       login(value.trim());
       navigate('/');
     } catch {
-      setError('Invalid token. Please check and try again.');
+      setError('Invalid token. Verify the token and try again.');
     }
   };
 
@@ -65,7 +65,7 @@ export default function Login() {
             PR-ism
           </Heading>
           <FormControl>
-            <FormControl.Label>Personal Access Token</FormControl.Label>
+          <FormControl.Label>Personal access token</FormControl.Label>
             <TextInput
               type="password"
               value={value}
@@ -74,13 +74,13 @@ export default function Login() {
               sx={{ width: '100%' }}
             />
             <FormControl.Caption>
-              <Text fontSize={1}>Your token is used only in the browser</Text>
+              <Text fontSize={1}>This token is used only in the browser.</Text>
             </FormControl.Caption>
             <Box mt={2}>
               <details>
                 <summary>
                   <Text fontSize={1} sx={{ cursor: 'pointer' }}>
-                    Additional info for generating a personal access token
+                    How to generate a personal access token
                   </Text>
                 </summary>
                 <Box as="ol" pl={3} mt={2}>
