@@ -14,12 +14,19 @@ const sample = {
   following: 5,
   public_repos: 3,
   mergeSuccess: 5,
+  mergeRate: 0.5,
   cycleEfficiency: 8,
+  averageChanges: 1,
   sizeEfficiency: 9,
+  medianSize: 50,
   leadTimeScore: 7,
+  medianLeadTime: 6,
   reviewActivity: 3,
+  reviewsCount: 3,
   feedbackScore: 2,
+  averageComments: 2,
   issueResolution: 1,
+  issuesClosed: 1,
 };
 
 jest.spyOn(github, 'fetchDeveloperMetrics').mockResolvedValue(sample as any);

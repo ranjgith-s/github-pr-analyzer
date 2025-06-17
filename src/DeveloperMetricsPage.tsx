@@ -20,6 +20,8 @@ const METRIC_INFO = [
   {
     name: 'Merge Success',
     key: 'mergeSuccess',
+    valueKey: 'mergeRate',
+    format: (n: number) => `${Math.round(n * 100)}%`,
     brief: 'ratio of merged pull requests',
     details:
       'Calculated as the number of merged pull requests divided by the total pull requests authored (last 30). The ratio is scaled from 0–10.',
@@ -27,6 +29,7 @@ const METRIC_INFO = [
   {
     name: 'Cycle Efficiency',
     key: 'cycleEfficiency',
+    valueKey: 'averageChanges',
     brief: 'fewer review cycles score higher',
     details:
       'Average change requests per pull request are doubled and subtracted from 10. The score bottoms out at 0 so fewer iterations result in a better value.',
@@ -34,6 +37,7 @@ const METRIC_INFO = [
   {
     name: 'Size Efficiency',
     key: 'sizeEfficiency',
+    valueKey: 'medianSize',
     brief: 'smaller pull requests are rewarded',
     details:
       'Uses the median of additions and deletions for authored pull requests. The median size is divided by 100 and subtracted from 10 with a minimum of 0.',
@@ -41,6 +45,7 @@ const METRIC_INFO = [
   {
     name: 'Lead Time',
     key: 'leadTimeScore',
+    valueKey: 'medianLeadTime',
     brief: 'time from open to merge',
     details:
       'Median hours between creating and merging a pull request. The median is divided by 12 and subtracted from 10 with a floor of 0.',
@@ -48,6 +53,7 @@ const METRIC_INFO = [
   {
     name: 'Review Activity',
     key: 'reviewActivity',
+    valueKey: 'reviewsCount',
     brief: 'how many pull requests reviewed',
     details:
       'Counts the pull requests reviewed by the developer (last 30) and caps the value at 10.',
@@ -55,6 +61,7 @@ const METRIC_INFO = [
   {
     name: 'Feedback Score',
     key: 'feedbackScore',
+    valueKey: 'averageComments',
     brief: 'average comments per pull request',
     details:
       'Computes the mean number of comments left on authored pull requests and limits the score to 10.',
@@ -62,6 +69,7 @@ const METRIC_INFO = [
   {
     name: 'Issue Resolution',
     key: 'issueResolution',
+    valueKey: 'issuesClosed',
     brief: 'issues closed via pull requests',
     details:
       "Tallies issues closed by the developer's pull requests. The total is capped at a maximum score of 10.",
@@ -301,6 +309,15 @@ export default function DeveloperMetricsPage() {
                     <Text as="p" sx={{ mt: 1, color: 'fg.muted', fontSize: 0 }}>
                       {info.details}
                     </Text>
+                    {data && (
+                      <Box mt={1}>
+                        <Label variant={variant} size="small">
+                          {info.format
+                            ? info.format((data as any)[info.valueKey])
+                            : (data as any)[info.valueKey]}
+                        </Label>
+                      </Box>
+                    )}
                   </Box>
                 );
               })}

@@ -127,12 +127,19 @@ export interface DeveloperMetrics {
   following: number;
   public_repos: number;
   mergeSuccess: number;
+  mergeRate: number;
   cycleEfficiency: number;
+  averageChanges: number;
   sizeEfficiency: number;
+  medianSize: number;
   leadTimeScore: number;
+  medianLeadTime: number;
   reviewActivity: number;
+  reviewsCount: number;
   feedbackScore: number;
+  averageComments: number;
   issueResolution: number;
+  issuesClosed: number;
 }
 
 export async function searchUsers(token: string, query: string) {
@@ -217,14 +224,21 @@ export async function fetchDeveloperMetrics(
 
   const round = (n: number) => Math.round(n * 100) / 100;
 
-  const mergeSuccess = authored.data.items.length
-    ? (merged / authored.data.items.length) * 10
+  const mergeRate = authored.data.items.length
+    ? merged / authored.data.items.length
     : 0;
-  const cycleEfficiency = Math.max(0, 10 - average(changes) * 2);
-  const sizeEfficiency = Math.max(0, 10 - median(sizes) / 100);
-  const leadTimeScore = Math.max(0, 10 - median(leadTimes) / 12);
-  const reviewActivity = Math.min(10, reviewed.data.items.length);
-  const feedbackScore = Math.min(10, average(comments));
+  const averageChanges = average(changes);
+  const medianSize = median(sizes);
+  const medianLeadTime = median(leadTimes);
+  const reviewsCount = reviewed.data.items.length;
+  const averageComments = average(comments);
+
+  const mergeSuccess = mergeRate * 10;
+  const cycleEfficiency = Math.max(0, 10 - averageChanges * 2);
+  const sizeEfficiency = Math.max(0, 10 - medianSize / 100);
+  const leadTimeScore = Math.max(0, 10 - medianLeadTime / 12);
+  const reviewActivity = Math.min(10, reviewsCount);
+  const feedbackScore = Math.min(10, averageComments);
   const issueResolution = Math.min(10, issuesClosed);
 
   return {
@@ -239,11 +253,18 @@ export async function fetchDeveloperMetrics(
     following: user.following,
     public_repos: user.public_repos,
     mergeSuccess: round(mergeSuccess),
+    mergeRate: round(mergeRate),
     cycleEfficiency: round(cycleEfficiency),
+    averageChanges: round(averageChanges),
     sizeEfficiency: round(sizeEfficiency),
+    medianSize: round(medianSize),
     leadTimeScore: round(leadTimeScore),
+    medianLeadTime: round(medianLeadTime),
     reviewActivity: round(reviewActivity),
+    reviewsCount: reviewsCount,
     feedbackScore: round(feedbackScore),
+    averageComments: round(averageComments),
     issueResolution: round(issueResolution),
+    issuesClosed: issuesClosed,
   };
 }
