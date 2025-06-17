@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Box, Avatar, Text, Button, Breadcrumbs } from '@primer/react';
 import { Octokit } from '@octokit/rest';
 import { TriangleUpIcon, SignOutIcon } from '@primer/octicons-react';
+import { Link as RouterLink } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 
 interface GitHubUser {
@@ -9,8 +10,13 @@ interface GitHubUser {
   avatar_url: string;
 }
 
+interface BreadcrumbItem {
+  label: string;
+  to: string;
+}
+
 interface HeaderProps {
-  breadcrumb?: string;
+  breadcrumb?: BreadcrumbItem;
 }
 
 export default function Header({ breadcrumb }: HeaderProps) {
@@ -48,8 +54,14 @@ export default function Header({ breadcrumb }: HeaderProps) {
       >
         <TriangleUpIcon size={24} fill="blue" />
         <Breadcrumbs sx={{ fontWeight: 'bold' }}>
-          <Breadcrumbs.Item to="/">PR-ism</Breadcrumbs.Item>
-          {breadcrumb && <Breadcrumbs.Item>{breadcrumb}</Breadcrumbs.Item>}
+          <Breadcrumbs.Item as={RouterLink} to="/">
+            PR-ism
+          </Breadcrumbs.Item>
+          {breadcrumb && (
+            <Breadcrumbs.Item as={RouterLink} to={breadcrumb.to}>
+              {breadcrumb.label}
+            </Breadcrumbs.Item>
+          )}
         </Breadcrumbs>
       </Box>
       {user && (
