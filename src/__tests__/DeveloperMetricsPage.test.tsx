@@ -81,6 +81,8 @@ test('shows metrics table and pull requests', () => {
       <Wrapper />
     </AuthProvider>
   );
-  expect(screen.getByText('Org Avg')).toBeInTheDocument();
+  expect(
+    screen.getByRole('columnheader', { name: /metric/i })
+  ).toBeInTheDocument();
   expect(screen.getByText(/recent pull requests/i)).toBeInTheDocument();
 });

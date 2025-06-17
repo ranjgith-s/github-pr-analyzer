@@ -15,7 +15,6 @@ import { useDeveloperMetrics } from './hooks/useDeveloperMetrics';
 import { useUserPullRequests } from './hooks/useUserPullRequests';
 import { useDebounce } from './hooks/useDebounce';
 import { GitHubUser } from './services/auth';
-import { ORG_AVERAGES } from './constants';
 
 const METRIC_INFO = [
   {
@@ -273,7 +272,6 @@ export default function DeveloperMetricsPage() {
                   <tr>
                     <th>Metric</th>
                     <th>Score</th>
-                    <th>Org Avg</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -281,16 +279,6 @@ export default function DeveloperMetricsPage() {
                     <tr key={row.metric}>
                       <td>{row.metric}</td>
                       <td>{row.value}</td>
-                      <td>
-                        {
-                          (ORG_AVERAGES as any)[
-                            row.metric.replace(
-                              /\s/g,
-                              ''
-                            ) as keyof typeof ORG_AVERAGES
-                          ]
-                        }
-                      </td>
                     </tr>
                   ))}
                 </tbody>
