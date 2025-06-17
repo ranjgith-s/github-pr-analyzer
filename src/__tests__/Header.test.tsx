@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import Header from '../Header';
 import { AuthProvider, useAuth } from '../AuthContext';
+import { MemoryRouter } from 'react-router-dom';
 import { Octokit } from '@octokit/rest';
 
 jest.mock('@octokit/rest');
@@ -20,7 +21,13 @@ test('fetches and displays user info', async () => {
     useEffect(() => {
       auth.login('token');
     }, [auth]);
-    return <Header breadcrumb="Pull request insights" />;
+    return (
+      <MemoryRouter>
+        <Header
+          breadcrumb={{ label: 'Pull request insights', to: '/insights' }}
+        />
+      </MemoryRouter>
+    );
   }
 
   render(
@@ -31,5 +38,6 @@ test('fetches and displays user info', async () => {
 
   await waitFor(() => expect(screen.getByText('octo')).toBeInTheDocument());
   expect(Octokit).toHaveBeenCalledWith({ auth: 'token' });
-  expect(screen.getByText('Pull request insights')).toBeInTheDocument();
+  const link = screen.getByRole('link', { name: 'Pull request insights' });
+  expect(link).toHaveAttribute('href', '/insights');
 });

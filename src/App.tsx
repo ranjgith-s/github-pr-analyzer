@@ -14,16 +14,16 @@ export default function App() {
   const { token } = useAuth();
   const location = useLocation();
 
-  let breadcrumb: string | undefined;
+  let breadcrumb: { label: string; to: string } | undefined;
   if (
     location.pathname.startsWith('/insights') ||
     location.pathname.startsWith('/pr')
   ) {
-    breadcrumb = 'Pull request insights';
+    breadcrumb = { label: 'Pull request insights', to: '/insights' };
   } else if (location.pathname.startsWith('/developer')) {
-    breadcrumb = 'Developer insights';
+    breadcrumb = { label: 'Developer insights', to: '/developer' };
   } else if (location.pathname.startsWith('/repo')) {
-    breadcrumb = 'Repo insights';
+    breadcrumb = { label: 'Repo insights', to: '/repo' };
   }
 
   return (
