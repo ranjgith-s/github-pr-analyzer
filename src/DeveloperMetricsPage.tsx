@@ -7,6 +7,7 @@ import {
   Heading,
   Text,
   Link,
+  Label,
 } from '@primer/react';
 import { RadarChart, Radar, PolarAngleAxis } from 'recharts';
 import { useAuth } from './AuthContext';
@@ -18,45 +19,61 @@ import { GitHubUser } from './services/auth';
 const METRIC_INFO = [
   {
     name: 'Merge Success',
+    key: 'mergeSuccess',
+    valueKey: 'mergeRate',
+    format: (n: number) => `${Math.round(n * 100)}%`,
+    valueDesc: 'of recent PRs were merged',
     brief: 'ratio of merged pull requests',
-    details:
-      'Calculated as the number of merged pull requests divided by the total pull requests authored (last 30). The ratio is scaled from 0–10.',
+    details: 'Shows how many of your recent pull requests merged successfully.',
   },
   {
     name: 'Cycle Efficiency',
+    key: 'cycleEfficiency',
+    valueKey: 'averageChanges',
+    valueDesc: 'average change requests per PR',
     brief: 'fewer review cycles score higher',
-    details:
-      'Average change requests per pull request are doubled and subtracted from 10. The score bottoms out at 0 so fewer iterations result in a better value.',
+    details: 'Scores drop when pull requests need many changes.',
   },
   {
     name: 'Size Efficiency',
+    key: 'sizeEfficiency',
+    valueKey: 'medianSize',
+    valueDesc: 'median lines changed',
     brief: 'smaller pull requests are rewarded',
     details:
-      'Uses the median of additions and deletions for authored pull requests. The median size is divided by 100 and subtracted from 10 with a minimum of 0.',
+      'Looks at median lines changed. Smaller pull requests score higher.',
   },
   {
     name: 'Lead Time',
+    key: 'leadTimeScore',
+    valueKey: 'medianLeadTime',
+    valueDesc: 'median hours to merge',
     brief: 'time from open to merge',
-    details:
-      'Median hours between creating and merging a pull request. The median is divided by 12 and subtracted from 10 with a floor of 0.',
+    details: 'Shows median time to merge in hours. Faster merges score higher.',
   },
   {
     name: 'Review Activity',
+    key: 'reviewActivity',
+    valueKey: 'reviewsCount',
+    valueDesc: 'PRs reviewed',
     brief: 'how many pull requests reviewed',
-    details:
-      'Counts the pull requests reviewed by the developer (last 30) and caps the value at 10.',
+    details: "Counts how many pull requests you've reviewed recently.",
   },
   {
     name: 'Feedback Score',
+    key: 'feedbackScore',
+    valueKey: 'averageComments',
+    valueDesc: 'average comments per PR',
     brief: 'average comments per pull request',
-    details:
-      'Computes the mean number of comments left on authored pull requests and limits the score to 10.',
+    details: 'Average number of comments you leave on your pull requests.',
   },
   {
     name: 'Issue Resolution',
+    key: 'issueResolution',
+    valueKey: 'issuesClosed',
+    valueDesc: 'issues closed via PRs',
     brief: 'issues closed via pull requests',
-    details:
-      "Tallies issues closed by the developer's pull requests. The total is capped at a maximum score of 10.",
+    details: 'Counts issues closed through your pull requests.',
   },
 ];
 
@@ -251,24 +268,61 @@ export default function DeveloperMetricsPage() {
                 gap: 3,
               }}
             >
-              {METRIC_INFO.map((info) => (
-                <Box
-                  key={info.name}
-                  borderWidth={1}
-                  borderStyle="solid"
-                  borderColor="border.default"
-                  borderRadius={2}
-                  p={2}
-                >
-                  <Heading as="h3" sx={{ fontSize: 1, mb: 1 }}>
-                    {info.name}
-                  </Heading>
-                  <Text sx={{ fontSize: 1 }}>{info.brief}</Text>
-                  <Text as="p" sx={{ mt: 1, color: 'fg.muted', fontSize: 0 }}>
-                    {info.details}
-                  </Text>
-                </Box>
-              ))}
+              {METRIC_INFO.map((info) => {
+                const score = data
+                  ? (data as any)[info.key as keyof typeof data]
+                  : null;
+                const variant =
+                  score === null
+                    ? 'default'
+                    : score < 3
+                      ? 'danger'
+                      : score <= 8
+                        ? 'attention'
+                        : 'success';
+                return (
+                  <Box
+                    key={info.name}
+                    borderWidth={1}
+                    borderStyle="solid"
+                    borderColor="border.default"
+                    borderRadius={2}
+                    p={2}
+                  >
+                    <Heading
+                      as="h3"
+                      sx={{
+                        fontSize: 1,
+                        mb: 1,
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      }}
+                    >
+                      {info.name}
+                      {typeof score === 'number' && (
+                        <Label variant={variant} size="small">
+                          {score}
+                        </Label>
+                      )}
+                    </Heading>
+                    <Text sx={{ fontSize: 1 }}>{info.brief}</Text>
+                    <Text as="p" sx={{ mt: 1, color: 'fg.muted', fontSize: 0 }}>
+                      {info.details}
+                    </Text>
+                    {data && (
+                      <Text as="p" sx={{ mt: 1, fontSize: 0 }}>
+                        <Label variant={variant} size="small" mr={1}>
+                          {info.format
+                            ? info.format((data as any)[info.valueKey])
+                            : (data as any)[info.valueKey]}
+                        </Label>{' '}
+                        {info.valueDesc}
+                      </Text>
+                    )}
+                  </Box>
+                );
+              })}
             </Box>
           </Box>
         </>
