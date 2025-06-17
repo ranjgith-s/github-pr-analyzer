@@ -101,4 +101,4 @@ Higher numbers indicate better performance:
 
 This project is released under the [MIT License](LICENSE).
 
-Line coverage: 84.57%
+Line coverage: 74.67%

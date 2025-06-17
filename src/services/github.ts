@@ -247,3 +247,34 @@ export async function fetchDeveloperMetrics(
     issueResolution: round(issueResolution),
   };
 }
+
+export interface DeveloperPR {
+  id: number;
+  title: string;
+  url: string;
+  created_at: string;
+  state: string;
+  repo: string;
+}
+
+export async function fetchUserPullRequests(
+  token: string,
+  login: string,
+  limit = 5
+): Promise<DeveloperPR[]> {
+  const octokit = new Octokit({ auth: token });
+  const { data } = await octokit.rest.search.issuesAndPullRequests({
+    q: `is:pr author:${login}`,
+    sort: 'created',
+    order: 'desc',
+    per_page: limit,
+  });
+  return data.items.map((it: any) => ({
+    id: it.id,
+    title: it.title,
+    url: it.html_url,
+    created_at: it.created_at,
+    state: it.state,
+    repo: it.repository_url.split('/').slice(-2).join('/'),
+  }));
+}
