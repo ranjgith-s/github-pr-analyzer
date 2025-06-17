@@ -24,8 +24,7 @@ const METRIC_INFO = [
     format: (n: number) => `${Math.round(n * 100)}%`,
     valueDesc: 'of recent PRs were merged',
     brief: 'ratio of merged pull requests',
-    details:
-      'Calculated as the number of merged pull requests divided by the total pull requests authored (last 30). The ratio is scaled from 0–10.',
+    details: 'Shows how many of your recent pull requests merged successfully.',
   },
   {
     name: 'Cycle Efficiency',
@@ -33,8 +32,7 @@ const METRIC_INFO = [
     valueKey: 'averageChanges',
     valueDesc: 'average change requests per PR',
     brief: 'fewer review cycles score higher',
-    details:
-      'Average change requests per pull request are doubled and subtracted from 10. The score bottoms out at 0 so fewer iterations result in a better value.',
+    details: 'Scores drop when pull requests need many changes.',
   },
   {
     name: 'Size Efficiency',
@@ -43,7 +41,7 @@ const METRIC_INFO = [
     valueDesc: 'median lines changed',
     brief: 'smaller pull requests are rewarded',
     details:
-      'Uses the median of additions and deletions for authored pull requests. The median size is divided by 100 and subtracted from 10 with a minimum of 0.',
+      'Looks at median lines changed. Smaller pull requests score higher.',
   },
   {
     name: 'Lead Time',
@@ -51,8 +49,7 @@ const METRIC_INFO = [
     valueKey: 'medianLeadTime',
     valueDesc: 'median hours to merge',
     brief: 'time from open to merge',
-    details:
-      'Median hours between creating and merging a pull request. The median is divided by 12 and subtracted from 10 with a floor of 0.',
+    details: 'Shows median time to merge in hours. Faster merges score higher.',
   },
   {
     name: 'Review Activity',
@@ -60,8 +57,7 @@ const METRIC_INFO = [
     valueKey: 'reviewsCount',
     valueDesc: 'PRs reviewed',
     brief: 'how many pull requests reviewed',
-    details:
-      'Counts the pull requests reviewed by the developer (last 30) and caps the value at 10.',
+    details: "Counts how many pull requests you've reviewed recently.",
   },
   {
     name: 'Feedback Score',
@@ -69,8 +65,7 @@ const METRIC_INFO = [
     valueKey: 'averageComments',
     valueDesc: 'average comments per PR',
     brief: 'average comments per pull request',
-    details:
-      'Computes the mean number of comments left on authored pull requests and limits the score to 10.',
+    details: 'Average number of comments you leave on your pull requests.',
   },
   {
     name: 'Issue Resolution',
@@ -78,8 +73,7 @@ const METRIC_INFO = [
     valueKey: 'issuesClosed',
     valueDesc: 'issues closed via PRs',
     brief: 'issues closed via pull requests',
-    details:
-      "Tallies issues closed by the developer's pull requests. The total is capped at a maximum score of 10.",
+    details: 'Counts issues closed through your pull requests.',
   },
 ];
 
