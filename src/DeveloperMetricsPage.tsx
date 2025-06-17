@@ -14,7 +14,6 @@ import {
   PolarGrid,
   PolarAngleAxis,
   PolarRadiusAxis,
-  Tooltip,
 } from 'recharts';
 import { useAuth } from './AuthContext';
 import { searchUsers } from './services/github';
@@ -174,7 +173,6 @@ export default function DeveloperMetricsPage() {
                 fill="var(--color-accent-subtle)"
                 fillOpacity={0.6}
               />
-              <Tooltip />
             </RadarChart>
           </Box>
         </Box>
