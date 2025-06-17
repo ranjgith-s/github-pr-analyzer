@@ -19,11 +19,13 @@ import {
 import { useAuth } from './AuthContext';
 import { searchUsers } from './services/github';
 import { useDeveloperMetrics } from './hooks/useDeveloperMetrics';
+import { useDebounce } from './hooks/useDebounce';
 import { GitHubUser } from './services/auth';
 
 export default function DeveloperMetricsPage() {
   const { token } = useAuth();
   const [query, setQuery] = useState('');
+  const debouncedQuery = useDebounce(query);
   const [options, setOptions] = useState<GitHubUser[]>([]);
   const [selected, setSelected] = useState<GitHubUser | null>(null);
   const { data, loading } = useDeveloperMetrics(
@@ -32,14 +34,14 @@ export default function DeveloperMetricsPage() {
   );
 
   useEffect(() => {
-    if (!query) {
+    if (!debouncedQuery) {
       setOptions([]);
       return;
     }
     let cancel = false;
     async function load() {
       try {
-        const res = await searchUsers(token!, query);
+        const res = await searchUsers(token!, debouncedQuery);
         if (!cancel) setOptions(res);
       } catch (err) {
         if (!cancel) console.error(err);
@@ -49,7 +51,7 @@ export default function DeveloperMetricsPage() {
     return () => {
       cancel = true;
     };
-  }, [query, token]);
+  }, [debouncedQuery, token]);
 
   const handleSelect = (user: GitHubUser) => {
     setSelected(user);
