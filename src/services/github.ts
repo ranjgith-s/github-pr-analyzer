@@ -268,3 +268,129 @@ export async function fetchDeveloperMetrics(
     issuesClosed: issuesClosed,
   };
 }
+
+export interface RepoInsights {
+  deploymentFrequency: number;
+  leadTime: number;
+  changeFailureRate: number;
+  meanTimeToRestore: number;
+  openIssues: number;
+  openPullRequests: number;
+  averageMergeTime: number;
+  weeklyCommits: number[];
+  contributorCount: number;
+  communityHealthScore: number;
+}
+
+export async function fetchRepoInsights(
+  token: string,
+  owner: string,
+  repo: string
+): Promise<RepoInsights> {
+  const octokit = new Octokit({ auth: token });
+  const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+
+  const repoData = await octokit.rest.repos.get({ owner, repo });
+
+  const commits = await octokit.paginate(octokit.rest.repos.listCommits, {
+    owner,
+    repo,
+    sha: repoData.data.default_branch,
+    since,
+    per_page: 100,
+  });
+
+  const prs = await octokit.paginate(octokit.rest.pulls.list, {
+    owner,
+    repo,
+    state: 'closed',
+    per_page: 100,
+  });
+  const recentMerged = prs.filter(
+    (p: any) => p.merged_at && p.merged_at >= since
+  );
+  const leadTimes = recentMerged.map(
+    (p: any) =>
+      (new Date(p.merged_at).getTime() - new Date(p.created_at).getTime()) /
+      36e5
+  );
+  const averageMergeTime =
+    leadTimes.length > 0
+      ? leadTimes.reduce((a, b) => a + b, 0) / leadTimes.length
+      : 0;
+
+  const openPulls = await octokit.paginate(octokit.rest.pulls.list, {
+    owner,
+    repo,
+    state: 'open',
+    per_page: 100,
+  });
+
+  const workflowRuns = await octokit.paginate(
+    octokit.rest.actions.listWorkflowRunsForRepo,
+    {
+      owner,
+      repo,
+      branch: repoData.data.default_branch,
+      status: 'completed',
+      per_page: 100,
+    }
+  );
+  const recentRuns = workflowRuns.filter((r: any) => r.created_at >= since);
+  const failures = recentRuns.filter((r: any) => r.conclusion === 'failure');
+  const successes = recentRuns.filter((r: any) => r.conclusion === 'success');
+  const changeFailureRate =
+    recentRuns.length > 0 ? failures.length / recentRuns.length : 0;
+
+  let meanTimeToRestore = 0;
+  if (failures.length > 0) {
+    const diffs: number[] = [];
+    for (const fail of failures) {
+      const nextSuccess = successes.find(
+        (s: any) => new Date(s.created_at) > new Date(fail.created_at)
+      );
+      if (nextSuccess) {
+        diffs.push(
+          (new Date(nextSuccess.created_at).getTime() -
+            new Date(fail.created_at).getTime()) /
+            36e5
+        );
+      }
+    }
+    if (diffs.length > 0) {
+      meanTimeToRestore = diffs.reduce((a, b) => a + b, 0) / diffs.length;
+    }
+  }
+
+  const commitActivity = await octokit.rest.repos.getCommitActivityStats({
+    owner,
+    repo,
+  });
+  const weeklyCommits =
+    commitActivity.data && commitActivity.data.length > 0
+      ? commitActivity.data[commitActivity.data.length - 1].days
+      : [];
+
+  const contributors = await octokit.paginate(
+    octokit.rest.repos.listContributors,
+    { owner, repo, per_page: 100 }
+  );
+
+  const communityProfile = await octokit.rest.repos.getCommunityProfileMetrics({
+    owner,
+    repo,
+  });
+
+  return {
+    deploymentFrequency: commits.length,
+    leadTime: averageMergeTime,
+    changeFailureRate,
+    meanTimeToRestore,
+    openIssues: repoData.data.open_issues_count - openPulls.length,
+    openPullRequests: openPulls.length,
+    averageMergeTime,
+    weeklyCommits,
+    contributorCount: contributors.length,
+    communityHealthScore: communityProfile.data.health_percentage,
+  };
+}
