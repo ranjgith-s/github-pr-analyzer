@@ -126,13 +126,13 @@ export interface DeveloperMetrics {
   followers: number;
   following: number;
   public_repos: number;
-  acceptanceRate: number;
-  reviewCycles: number;
-  prSize: number;
-  leadTime: number;
-  reviewParticipation: number;
-  feedbackThoroughness: number;
-  issuesClosed: number;
+  mergeSuccess: number;
+  cycleEfficiency: number;
+  sizeEfficiency: number;
+  leadTimeScore: number;
+  reviewActivity: number;
+  feedbackScore: number;
+  issueResolution: number;
 }
 
 export async function searchUsers(token: string, query: string) {
@@ -215,6 +215,18 @@ export async function fetchDeveloperMetrics(
   const average = (arr: number[]) =>
     arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
 
+  const round = (n: number) => Math.round(n * 100) / 100;
+
+  const mergeSuccess = authored.data.items.length
+    ? (merged / authored.data.items.length) * 10
+    : 0;
+  const cycleEfficiency = Math.max(0, 10 - average(changes) * 2);
+  const sizeEfficiency = Math.max(0, 10 - median(sizes) / 100);
+  const leadTimeScore = Math.max(0, 10 - median(leadTimes) / 12);
+  const reviewActivity = Math.min(10, reviewed.data.items.length);
+  const feedbackScore = Math.min(10, average(comments));
+  const issueResolution = Math.min(10, issuesClosed);
+
   return {
     login: user.login,
     name: user.name,
@@ -226,14 +238,12 @@ export async function fetchDeveloperMetrics(
     followers: user.followers,
     following: user.following,
     public_repos: user.public_repos,
-    acceptanceRate: authored.data.items.length
-      ? (merged / authored.data.items.length) * 100
-      : 0,
-    reviewCycles: average(changes),
-    prSize: median(sizes),
-    leadTime: median(leadTimes),
-    reviewParticipation: reviewed.data.items.length,
-    feedbackThoroughness: average(comments),
-    issuesClosed,
+    mergeSuccess: round(mergeSuccess),
+    cycleEfficiency: round(cycleEfficiency),
+    sizeEfficiency: round(sizeEfficiency),
+    leadTimeScore: round(leadTimeScore),
+    reviewActivity: round(reviewActivity),
+    feedbackScore: round(feedbackScore),
+    issueResolution: round(issueResolution),
   };
 }

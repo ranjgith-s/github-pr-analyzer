@@ -13,13 +13,13 @@ const sample = {
   followers: 10,
   following: 5,
   public_repos: 3,
-  acceptanceRate: 50,
-  reviewCycles: 1,
-  prSize: 10,
-  leadTime: 5,
-  reviewParticipation: 3,
-  feedbackThoroughness: 2,
-  issuesClosed: 1,
+  mergeSuccess: 5,
+  cycleEfficiency: 8,
+  sizeEfficiency: 9,
+  leadTimeScore: 7,
+  reviewActivity: 3,
+  feedbackScore: 2,
+  issueResolution: 1,
 };
 
 jest.spyOn(github, 'fetchDeveloperMetrics').mockResolvedValue(sample as any);

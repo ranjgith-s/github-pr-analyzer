@@ -60,13 +60,13 @@ export default function DeveloperMetricsPage() {
 
   const chartData = data
     ? [
-        { metric: 'Acceptance Rate', value: data.acceptanceRate },
-        { metric: 'Review Cycles', value: data.reviewCycles },
-        { metric: 'PR Size', value: data.prSize },
-        { metric: 'Lead Time', value: data.leadTime },
-        { metric: 'Reviews', value: data.reviewParticipation },
-        { metric: 'Feedback', value: data.feedbackThoroughness },
-        { metric: 'Issues Closed', value: data.issuesClosed },
+        { metric: 'Merge Success', value: data.mergeSuccess },
+        { metric: 'Cycle Efficiency', value: data.cycleEfficiency },
+        { metric: 'Size Efficiency', value: data.sizeEfficiency },
+        { metric: 'Lead Time', value: data.leadTimeScore },
+        { metric: 'Review Activity', value: data.reviewActivity },
+        { metric: 'Feedback Score', value: data.feedbackScore },
+        { metric: 'Issue Resolution', value: data.issueResolution },
       ]
     : [];
 
