@@ -6,7 +6,6 @@ import {
   FormControl,
   Select,
   Text,
-  Spinner,
   Link,
   Button,
   StateLabel,
@@ -16,6 +15,7 @@ import { useNavigate } from 'react-router-dom';
 import { usePullRequestMetrics } from './hooks/usePullRequestMetrics';
 import { PRItem } from './types';
 import { useAuth } from './AuthContext';
+import LoadingOverlay from './LoadingOverlay';
 
 export function formatDuration(start?: string | null, end?: string | null) {
   if (!start || !end) return 'N/A';
@@ -37,6 +37,11 @@ export default function MetricsTable() {
   const PAGE_SIZE = 25;
   const columnHelper = createColumnHelper<PRItem>();
   const navigate = useNavigate();
+  const loadingMessages = [
+    'Loading pull requests...',
+    'Crunching numbers...',
+    'Preparing table...',
+  ];
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) =>
@@ -231,20 +236,7 @@ export default function MetricsTable() {
   ];
 
   if (loading) {
-    return (
-      <Box
-        display="flex"
-        flexDirection="column"
-        alignItems="center"
-        justifyContent="center"
-        sx={{ minHeight: '50vh' }}
-      >
-        <Spinner size="large" />
-        <Text sx={{ fontFamily: 'mono', mt: 2 }}>
-          looking into the pulls that you were involved in
-        </Text>
-      </Box>
-    );
+    return <LoadingOverlay show={loading} messages={loadingMessages} />;
   }
 
   return (

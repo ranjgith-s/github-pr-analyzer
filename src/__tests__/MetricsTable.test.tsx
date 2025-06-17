@@ -65,5 +65,5 @@ test('shows spinner when loading', () => {
       </MemoryRouter>
     </AuthProvider>
   );
-  expect(screen.getByText(/looking into the pulls/i)).toBeInTheDocument();
+  expect(screen.getByText(/loading pull requests/i)).toBeInTheDocument();
 });
