@@ -164,8 +164,8 @@ export default function DeveloperMetricsPage() {
               />
               <Radar
                 dataKey="value"
-                stroke="var(--color-fg-default)"
-                fill="var(--color-fg-default)"
+                stroke="#2da44e"
+                fill="#2da44e"
                 fillOpacity={0.6}
               />
             </RadarChart>
