@@ -316,7 +316,7 @@ export default function DeveloperMetricsPage() {
                           {info.format
                             ? info.format((data as any)[info.valueKey])
                             : (data as any)[info.valueKey]}
-                        </Label>
+                        </Label>{' '}
                         {info.valueDesc}
                       </Text>
                     )}
