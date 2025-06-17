@@ -13,6 +13,7 @@ import { RadarChart, Radar, PolarAngleAxis } from 'recharts';
 import { useAuth } from './AuthContext';
 import { searchUsers } from './services/github';
 import { useDeveloperMetrics } from './hooks/useDeveloperMetrics';
+import { useUserPullRequests } from './hooks/useUserPullRequests';
 import { useDebounce } from './hooks/useDebounce';
 import { GitHubUser } from './services/auth';
 
@@ -77,6 +78,16 @@ const METRIC_INFO = [
   },
 ];
 
+function getTimeline(prs: { created_at: string }[]) {
+  const byMonth: Record<string, number> = {};
+  prs.forEach((pr) => {
+    const d = new Date(pr.created_at);
+    const key = `${d.getFullYear()}-${d.getMonth() + 1}`;
+    byMonth[key] = (byMonth[key] || 0) + 1;
+  });
+  return Object.entries(byMonth).map(([period, count]) => ({ period, count }));
+}
+
 export default function DeveloperMetricsPage() {
   const { token } = useAuth();
   const [query, setQuery] = useState('');
@@ -87,6 +98,7 @@ export default function DeveloperMetricsPage() {
     token!,
     selected?.login || null
   );
+  const { items: prs } = useUserPullRequests(token!, selected?.login || null);
 
   useEffect(() => {
     const prev = document.title;
@@ -235,6 +247,20 @@ export default function DeveloperMetricsPage() {
                 >
                   View on GitHub
                 </Link>
+                <Link
+                  href={`${data.html_url}?tab=repositories`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Repositories
+                </Link>
+                <Link
+                  href={`${data.html_url}?tab=stars`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Stars
+                </Link>
               </Box>
             </Box>
             <Box
@@ -258,6 +284,22 @@ export default function DeveloperMetricsPage() {
                   fillOpacity={0.6}
                 />
               </RadarChart>
+              <Box as="table" width="100%" mt={3} sx={{ fontSize: 1 }}>
+                <thead>
+                  <tr>
+                    <th>Metric</th>
+                    <th>Score</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {chartData.map((row) => (
+                    <tr key={row.metric}>
+                      <td>{row.metric}</td>
+                      <td>{row.value}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Box>
             </Box>
           </Box>
           <Box mt={4}>
@@ -325,6 +367,42 @@ export default function DeveloperMetricsPage() {
               })}
             </Box>
           </Box>
+          {prs.length > 0 && (
+            <Box mt={4}>
+              <Heading as="h3" sx={{ mb: 2, fontSize: 2 }}>
+                Recent Pull Requests
+              </Heading>
+              <Box as="ul" pl={3} sx={{ listStyleType: 'disc' }}>
+                {prs.map((pr) => (
+                  <li key={pr.id}>
+                    <Link
+                      href={pr.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {pr.repo} - {pr.title}
+                    </Link>
+                  </li>
+                ))}
+              </Box>
+            </Box>
+          )}
+          {prs.length > 0 && (
+            <Box mt={4}>
+              <Heading as="h3" sx={{ mb: 2, fontSize: 2 }}>
+                Contribution Timeline
+              </Heading>
+              <RadarChart width={500} height={250} data={getTimeline(prs)}>
+                <PolarAngleAxis dataKey="period" />
+                <Radar
+                  dataKey="count"
+                  stroke="#0969da"
+                  fill="#0969da"
+                  fillOpacity={0.6}
+                />
+              </RadarChart>
+            </Box>
+          )}
         </>
       )}
     </Box>
