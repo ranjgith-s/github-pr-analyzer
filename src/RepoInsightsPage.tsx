@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, TextInput, Button, Heading, Text } from '@primer/react';
+import { Box, TextInput, Button, Heading, Text, Label } from '@primer/react';
 import { useAuth } from './AuthContext';
 import { useRepoInsights } from './hooks/useRepoInsights';
 import LoadingOverlay from './LoadingOverlay';
@@ -70,7 +70,7 @@ export default function RepoInsightsPage() {
         >
           <MetricCard
             title="Deployment Frequency"
-            value={data.deploymentFrequency}
+            value={`${data.deploymentFrequency} pushes`}
           />
           <MetricCard
             title="Lead Time for Changes"
@@ -126,7 +126,9 @@ function MetricCard({ title, value }: MetricCardProps) {
       <Heading as="h3" sx={{ fontSize: 2, mb: 2 }}>
         {title}
       </Heading>
-      <Text fontSize={1}>{value}</Text>
+      <Label variant="accent" sx={{ fontSize: 1 }}>
+        {value}
+      </Label>
     </Box>
   );
 }
