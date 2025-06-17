@@ -6,6 +6,7 @@ import MetricsPage from './MetricsPage';
 import Home from './Home';
 import Header from './Header';
 import PullRequestPage from './PullRequest';
+import DeveloperMetricsPage from './DeveloperMetricsPage';
 import { useAuth } from './AuthContext';
 
 export default function App() {
@@ -15,7 +16,8 @@ export default function App() {
   let breadcrumb: string | undefined;
   if (
     location.pathname.startsWith('/insights') ||
-    location.pathname.startsWith('/pr')
+    location.pathname.startsWith('/pr') ||
+    location.pathname.startsWith('/developer')
   ) {
     breadcrumb = 'Pull request insights';
   }
@@ -36,6 +38,12 @@ export default function App() {
           <Route
             path="/insights"
             element={token ? <MetricsPage /> : <Navigate to="/" replace />}
+          />
+          <Route
+            path="/developer"
+            element={
+              token ? <DeveloperMetricsPage /> : <Navigate to="/" replace />
+            }
           />
           <Route
             path="/pr/:owner/:repo/:number"

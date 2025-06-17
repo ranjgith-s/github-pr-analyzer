@@ -17,7 +17,8 @@
     "@primer/react": "^35.0.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
-    "react-router-dom": "^6.30.1"
+    "react-router-dom": "^6.30.1",
+    "recharts": "^2.15.3"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.2.0",
