@@ -12,15 +12,15 @@ The user interface relies on [Primer](https://primer.style) to match the look an
   - [Development](#development)
   - [Testing](#testing)
   - [Production build](#production-build)
-- [Developer Metrics](#developer-metrics)
-- [License](#license)
+- [Developer insights](#developer-insights)
+  - [License](#license)
 
 ## Features
 
 - Authenticate with a personal access token.
 - View pull requests you authored or reviewed.
 - Metrics for draft time, first review and total lifespan.
- - Display reviewer names with links and change requests.
+- Display reviewer names with links and change requests.
 - Filter by repository and author.
 - Direct links to each pull request.
 
@@ -84,7 +84,7 @@ npm run build
 
 The compiled files will be available in the `build/` directory.
 
-## Developer Metrics
+## Developer insights
 
 The radar chart on the developer page visualizes seven scores scaled from 0 to 10.
 Higher numbers indicate better performance:

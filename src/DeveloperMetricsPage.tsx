@@ -72,6 +72,14 @@ export default function DeveloperMetricsPage() {
   );
 
   useEffect(() => {
+    const prev = document.title;
+    document.title = 'Developer insights';
+    return () => {
+      document.title = prev;
+    };
+  }, []);
+
+  useEffect(() => {
     if (!debouncedQuery) {
       setOptions([]);
       return;
@@ -111,40 +119,52 @@ export default function DeveloperMetricsPage() {
 
   return (
     <Box p={3}>
-      <Box mb={3} position="relative" maxWidth={300}>
-        <TextInput
-          placeholder="Search GitHub user"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          sx={{ width: '100%' }}
-        />
-        {options.length > 0 && (
-          <Box
-            position="absolute"
-            width="100%"
-            borderWidth={1}
-            borderStyle="solid"
-            borderColor="border.default"
-            borderRadius={2}
-            bg="canvas.overlay"
-            mt={1}
-            zIndex={1}
-          >
-            {options.map((u) => (
-              <Box
-                key={u.login}
-                p={2}
-                display="flex"
-                alignItems="center"
-                sx={{ cursor: 'pointer', '&:hover': { bg: 'neutral.muted' } }}
-                onClick={() => handleSelect(u)}
-              >
-                <Avatar src={u.avatar_url} size={20} mr={2} />
-                <Text>{u.login}</Text>
-              </Box>
-            ))}
-          </Box>
-        )}
+      <Box
+        mb={3}
+        display="flex"
+        alignItems="center"
+        justifyContent="space-between"
+        flexWrap="wrap"
+        sx={{ gap: 3 }}
+      >
+        <Heading as="h2" sx={{ fontSize: 4 }}>
+          Developer insights
+        </Heading>
+        <Box position="relative" width="100%" maxWidth={300}>
+          <TextInput
+            placeholder="Search GitHub user"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            sx={{ width: '100%' }}
+          />
+          {options.length > 0 && (
+            <Box
+              position="absolute"
+              width="100%"
+              borderWidth={1}
+              borderStyle="solid"
+              borderColor="border.default"
+              borderRadius={2}
+              bg="canvas.overlay"
+              mt={1}
+              zIndex={1}
+            >
+              {options.map((u) => (
+                <Box
+                  key={u.login}
+                  p={2}
+                  display="flex"
+                  alignItems="center"
+                  sx={{ cursor: 'pointer', '&:hover': { bg: 'neutral.muted' } }}
+                  onClick={() => handleSelect(u)}
+                >
+                  <Avatar src={u.avatar_url} size={20} mr={2} />
+                  <Text>{u.login}</Text>
+                </Box>
+              ))}
+            </Box>
+          )}
+        </Box>
       </Box>
 
       {loading && (
@@ -155,7 +175,13 @@ export default function DeveloperMetricsPage() {
 
       {data && !loading && (
         <>
-          <Box display="flex" sx={{ gap: 4, flexWrap: 'wrap' }}>
+          <Box
+            display="grid"
+            sx={{
+              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+              gap: 4,
+            }}
+          >
             <Box
               p={3}
               borderWidth={1}
