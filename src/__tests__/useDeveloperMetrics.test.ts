@@ -4,7 +4,15 @@ import * as github from '../services/github';
 
 const sample = {
   login: 'dev',
+  name: 'Dev',
   avatar_url: 'x',
+  html_url: 'https://github.com/dev',
+  bio: 'dev bio',
+  company: 'Acme',
+  location: 'Earth',
+  followers: 10,
+  following: 5,
+  public_repos: 3,
   acceptanceRate: 50,
   reviewCycles: 1,
   prSize: 10,

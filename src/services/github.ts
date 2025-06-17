@@ -117,7 +117,15 @@ export async function fetchPullRequestMetrics(
 
 export interface DeveloperMetrics {
   login: string;
+  name: string | null;
   avatar_url: string;
+  html_url: string;
+  bio: string | null;
+  company: string | null;
+  location: string | null;
+  followers: number;
+  following: number;
+  public_repos: number;
   acceptanceRate: number;
   reviewCycles: number;
   prSize: number;
@@ -209,7 +217,15 @@ export async function fetchDeveloperMetrics(
 
   return {
     login: user.login,
+    name: user.name,
     avatar_url: user.avatar_url,
+    html_url: user.html_url,
+    bio: user.bio,
+    company: user.company,
+    location: user.location,
+    followers: user.followers,
+    following: user.following,
+    public_repos: user.public_repos,
     acceptanceRate: authored.data.items.length
       ? (merged / authored.data.items.length) * 100
       : 0,

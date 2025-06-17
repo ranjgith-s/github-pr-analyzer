@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Box, TextInput, Spinner, Avatar, Heading, Text } from '@primer/react';
+import {
+  Box,
+  TextInput,
+  Spinner,
+  Avatar,
+  Heading,
+  Text,
+  Link,
+} from '@primer/react';
 import {
   RadarChart,
   Radar,
@@ -114,12 +122,35 @@ export default function DeveloperMetricsPage() {
             borderColor="border.default"
             borderRadius={2}
             boxShadow="shadow.medium"
+            sx={{ animation: 'fadeInUp 0.3s ease-out' }}
           >
             <Box display="flex" alignItems="center" sx={{ gap: 2 }}>
-              <Avatar src={data.avatar_url} size={48} />
-              <Heading as="h2" sx={{ fontSize: 3 }}>
-                {data.login}
-              </Heading>
+              <Avatar src={data.avatar_url} size={64} />
+              <Box>
+                <Heading as="h2" sx={{ fontSize: 3 }}>
+                  {data.name || data.login}
+                </Heading>
+                <Text color="fg.muted">{data.login}</Text>
+              </Box>
+            </Box>
+            {data.bio && (
+              <Text as="p" mt={2} sx={{ maxWidth: 300 }}>
+                {data.bio}
+              </Text>
+            )}
+            <Box mt={2} sx={{ display: 'grid', rowGap: 1 }}>
+              {data.company && <Text>🏢 {data.company}</Text>}
+              {data.location && <Text>📍 {data.location}</Text>}
+              <Text>Repos: {data.public_repos}</Text>
+              <Text>Followers: {data.followers}</Text>
+              <Text>Following: {data.following}</Text>
+              <Link
+                href={data.html_url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View on GitHub
+              </Link>
             </Box>
           </Box>
           <Box
@@ -129,6 +160,7 @@ export default function DeveloperMetricsPage() {
             borderColor="border.default"
             borderRadius={2}
             boxShadow="shadow.medium"
+            sx={{ animation: 'fadeInUp 0.3s ease-out' }}
           >
             <RadarChart width={500} height={400} data={chartData}>
               <PolarGrid />
@@ -136,8 +168,8 @@ export default function DeveloperMetricsPage() {
               <PolarRadiusAxis />
               <Radar
                 dataKey="value"
-                stroke="#8884d8"
-                fill="#8884d8"
+                stroke="var(--color-accent-fg)"
+                fill="var(--color-accent-subtle)"
                 fillOpacity={0.6}
               />
               <Tooltip />
