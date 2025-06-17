@@ -120,7 +120,7 @@ export default function Login() {
           <Button
             type="submit"
             variant="primary"
-            leadingIcon={SignInIcon}
+            trailingIcon={SignInIcon}
             sx={{ width: '100%', mt: 3 }}
           >
             Sign in

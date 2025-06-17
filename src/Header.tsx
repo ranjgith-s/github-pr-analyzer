@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Avatar, Text, Button, Breadcrumbs } from '@primer/react';
 import { Octokit } from '@octokit/rest';
-import { TriangleUpIcon } from '@primer/octicons-react';
+import { TriangleUpIcon, SignOutIcon } from '@primer/octicons-react';
 import { useAuth } from './AuthContext';
 
 interface GitHubUser {
@@ -55,8 +55,12 @@ export default function Header({ breadcrumb }: HeaderProps) {
       {user && (
         <Box display="flex" alignItems="center" sx={{ gap: 2 }}>
           <Avatar src={user.avatar_url} size={24} />
-          <Text>{user.login}</Text>
-          <Button onClick={logout}>Logout</Button>
+          <Text fontSize={1} sx={{ fontFamily: 'mono' }}>
+            {user.login}
+          </Text>
+          <Button onClick={logout} trailingIcon={SignOutIcon}>
+            Sign out
+          </Button>
         </Box>
       )}
     </Box>
