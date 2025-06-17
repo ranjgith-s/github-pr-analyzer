@@ -12,6 +12,7 @@ The user interface relies on [Primer](https://primer.style) to match the look an
   - [Development](#development)
   - [Testing](#testing)
   - [Production build](#production-build)
+- [Developer Metrics](#developer-metrics)
 - [License](#license)
 
 ## Features
@@ -82,6 +83,19 @@ npm run build
 ```
 
 The compiled files will be available in the `build/` directory.
+
+## Developer Metrics
+
+The radar chart on the developer page visualizes seven scores scaled from 0 to 10.
+Higher numbers indicate better performance:
+
+- **Merge Success** – ratio of merged pull requests.
+- **Cycle Efficiency** – fewer review cycles yield a higher score.
+- **Size Efficiency** – smaller pull requests score higher.
+- **Lead Time** – quicker merges improve the score.
+- **Review Activity** – how many pull requests the developer reviewed.
+- **Feedback Score** – average number of comments per pull request.
+- **Issue Resolution** – number of issues closed via pull requests.
 
 ## License
 

@@ -8,13 +8,7 @@ import {
   Text,
   Link,
 } from '@primer/react';
-import {
-  RadarChart,
-  Radar,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-} from 'recharts';
+import { RadarChart, Radar, PolarAngleAxis } from 'recharts';
 import { useAuth } from './AuthContext';
 import { searchUsers } from './services/github';
 import { useDeveloperMetrics } from './hooks/useDeveloperMetrics';
@@ -60,13 +54,13 @@ export default function DeveloperMetricsPage() {
 
   const chartData = data
     ? [
-        { metric: 'Acceptance Rate', value: data.acceptanceRate },
-        { metric: 'Review Cycles', value: data.reviewCycles },
-        { metric: 'PR Size', value: data.prSize },
-        { metric: 'Lead Time', value: data.leadTime },
-        { metric: 'Reviews', value: data.reviewParticipation },
-        { metric: 'Feedback', value: data.feedbackThoroughness },
-        { metric: 'Issues Closed', value: data.issuesClosed },
+        { metric: 'Merge Success', value: data.mergeSuccess },
+        { metric: 'Cycle Efficiency', value: data.cycleEfficiency },
+        { metric: 'Size Efficiency', value: data.sizeEfficiency },
+        { metric: 'Lead Time', value: data.leadTimeScore },
+        { metric: 'Review Activity', value: data.reviewActivity },
+        { metric: 'Feedback Score', value: data.feedbackScore },
+        { metric: 'Issue Resolution', value: data.issueResolution },
       ]
     : [];
 
@@ -164,13 +158,14 @@ export default function DeveloperMetricsPage() {
             sx={{ animation: 'fadeInUp 0.3s ease-out' }}
           >
             <RadarChart width={500} height={400} data={chartData}>
-              <PolarGrid />
-              <PolarAngleAxis dataKey="metric" />
-              <PolarRadiusAxis />
+              <PolarAngleAxis
+                dataKey="metric"
+                tick={{ fontFamily: 'monospace', fontSize: 10 }}
+              />
               <Radar
                 dataKey="value"
-                stroke="var(--color-accent-fg)"
-                fill="var(--color-accent-subtle)"
+                stroke="#2da44e"
+                fill="#2da44e"
                 fillOpacity={0.6}
               />
             </RadarChart>
