@@ -16,10 +16,11 @@ export default function App() {
   let breadcrumb: string | undefined;
   if (
     location.pathname.startsWith('/insights') ||
-    location.pathname.startsWith('/pr') ||
-    location.pathname.startsWith('/developer')
+    location.pathname.startsWith('/pr')
   ) {
     breadcrumb = 'Pull request insights';
+  } else if (location.pathname.startsWith('/developer')) {
+    breadcrumb = 'Developer insights';
   }
 
   return (
