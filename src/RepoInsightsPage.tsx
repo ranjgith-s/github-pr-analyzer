@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Box, TextInput, Button, Heading, Text, Label } from '@primer/react';
 import { useAuth } from './AuthContext';
 import { useRepoInsights } from './hooks/useRepoInsights';
 import LoadingOverlay from './LoadingOverlay';
+import { useDocumentTitle } from './hooks/useDocumentTitle';
 
 export default function RepoInsightsPage() {
   const { token } = useAuth();
@@ -16,13 +17,7 @@ export default function RepoInsightsPage() {
     'Analyzing pull requests...',
   ];
 
-  useEffect(() => {
-    const prev = document.title;
-    document.title = 'Repo insights';
-    return () => {
-      document.title = prev;
-    };
-  }, []);
+  useDocumentTitle('Repo insights');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

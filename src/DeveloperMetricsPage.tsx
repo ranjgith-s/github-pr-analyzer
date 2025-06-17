@@ -5,12 +5,25 @@ import { useAuth } from './AuthContext';
 import { searchUsers } from './services/github';
 import { useDeveloperMetrics } from './hooks/useDeveloperMetrics';
 import { useDebounce } from './hooks/useDebounce';
+import { useDocumentTitle } from './hooks/useDocumentTitle';
 import { GitHubUser } from './services/auth';
 import LoadingOverlay from './LoadingOverlay';
 import SearchUserBox from './SearchUserBox';
 import DeveloperMetricCard from './DeveloperMetricCard';
 
-const METRIC_INFO = [
+import type { DeveloperMetrics } from './services/github';
+
+interface MetricInfo {
+  name: string;
+  key: keyof DeveloperMetrics;
+  valueKey: keyof DeveloperMetrics;
+  valueDesc: string;
+  brief: string;
+  details: string;
+  format?: (n: number) => string;
+}
+
+const METRIC_INFO: MetricInfo[] = [
   {
     name: 'Merge Success',
     key: 'mergeSuccess',
@@ -87,13 +100,7 @@ export default function DeveloperMetricsPage() {
     'Building radar charts...',
   ];
 
-  useEffect(() => {
-    const prev = document.title;
-    document.title = 'Developer insights';
-    return () => {
-      document.title = prev;
-    };
-  }, []);
+  useDocumentTitle('Developer insights');
 
   useEffect(() => {
     if (!debouncedQuery) {
@@ -241,10 +248,8 @@ export default function DeveloperMetricsPage() {
                   brief={info.brief}
                   details={info.details}
                   valueDesc={info.valueDesc}
-                  score={
-                    data ? (data as any)[info.key as keyof typeof data] : null
-                  }
-                  value={data ? (data as any)[info.valueKey] : 0}
+                  score={data ? (data[info.key] as number) : null}
+                  value={data ? (data[info.valueKey] as number) : 0}
                   format={info.format}
                 />
               ))}
