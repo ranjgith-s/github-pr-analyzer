@@ -114,3 +114,110 @@ export async function fetchPullRequestMetrics(
 
   return data;
 }
+
+export interface DeveloperMetrics {
+  login: string;
+  avatar_url: string;
+  acceptanceRate: number;
+  reviewCycles: number;
+  prSize: number;
+  leadTime: number;
+  reviewParticipation: number;
+  feedbackThoroughness: number;
+  issuesClosed: number;
+}
+
+export async function searchUsers(token: string, query: string) {
+  const octokit = new Octokit({ auth: token });
+  const { data } = await octokit.rest.search.users({ q: query, per_page: 5 });
+  return data.items.map((u: any) => ({
+    login: u.login,
+    avatar_url: u.avatar_url,
+  }));
+}
+
+export async function fetchDeveloperMetrics(
+  token: string,
+  login: string
+): Promise<DeveloperMetrics> {
+  const octokit = new Octokit({ auth: token });
+  const { data: user } = await octokit.rest.users.getByUsername({
+    username: login,
+  });
+
+  const authored = await octokit.rest.search.issuesAndPullRequests({
+    q: `is:pr author:${login}`,
+    per_page: 30,
+  });
+
+  const reviewed = await octokit.rest.search.issuesAndPullRequests({
+    q: `is:pr reviewed-by:${login}`,
+    per_page: 30,
+  });
+
+  let merged = 0;
+  const changes: number[] = [];
+  const sizes: number[] = [];
+  const leadTimes: number[] = [];
+  const comments: number[] = [];
+  let issuesClosed = 0;
+
+  for (const item of authored.data.items) {
+    const [owner, repo] = item.repository_url.split('/').slice(-2);
+    const prNumber = item.number;
+    const { repository } = await octokit.graphql<any>(
+      `query($owner:String!,$repo:String!,$number:Int!){
+         repository(owner:$owner,name:$repo){
+           pullRequest(number:$number){
+             mergedAt
+             createdAt
+             additions
+             deletions
+             comments { totalCount }
+             reviews(first:100){ nodes{ state } }
+             closingIssuesReferences(first:1){ totalCount }
+           }
+         }
+       }`,
+      { owner, repo, number: prNumber }
+    );
+    const pr = repository.pullRequest;
+    if (pr.mergedAt) {
+      merged += 1;
+      const diff =
+        new Date(pr.mergedAt).getTime() - new Date(pr.createdAt).getTime();
+      leadTimes.push(diff / 36e5);
+    }
+    const changeReq = pr.reviews.nodes.filter(
+      (n: any) => n.state === 'CHANGES_REQUESTED'
+    ).length;
+    changes.push(changeReq);
+    sizes.push(pr.additions + pr.deletions);
+    comments.push(pr.comments.totalCount);
+    issuesClosed += pr.closingIssuesReferences.totalCount;
+  }
+
+  const median = (arr: number[]) => {
+    if (arr.length === 0) return 0;
+    const s = [...arr].sort((a, b) => a - b);
+    const mid = Math.floor(s.length / 2);
+    return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
+  };
+
+  const average = (arr: number[]) =>
+    arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+
+  return {
+    login: user.login,
+    avatar_url: user.avatar_url,
+    acceptanceRate: authored.data.items.length
+      ? (merged / authored.data.items.length) * 100
+      : 0,
+    reviewCycles: average(changes),
+    prSize: median(sizes),
+    leadTime: median(leadTimes),
+    reviewParticipation: reviewed.data.items.length,
+    feedbackThoroughness: average(comments),
+    issuesClosed,
+  };
+}

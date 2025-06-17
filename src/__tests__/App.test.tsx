@@ -47,6 +47,7 @@ test('shows home card when authenticated', async () => {
     </AuthProvider>
   );
   expect(screen.getByText('Pull request insights')).toBeInTheDocument();
+  expect(screen.getByText('Developer PR Metrics Radar')).toBeInTheDocument();
   expect(screen.getByText('PR-ism')).toBeInTheDocument();
 });
 
