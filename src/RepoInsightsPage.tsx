@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Box, TextInput, Button, Heading, Spinner, Text } from '@primer/react';
+import { Box, TextInput, Button, Heading, Text } from '@primer/react';
 import { useAuth } from './AuthContext';
 import { useRepoInsights } from './hooks/useRepoInsights';
+import LoadingOverlay from './LoadingOverlay';
 
 export default function RepoInsightsPage() {
   const { token } = useAuth();
@@ -9,7 +10,6 @@ export default function RepoInsightsPage() {
   const [owner, setOwner] = useState<string | null>(null);
   const [repo, setRepo] = useState<string | null>(null);
   const { data, loading, error } = useRepoInsights(token!, owner, repo);
-  const [loadingMsgIndex, setLoadingMsgIndex] = useState(0);
   const loadingMessages = [
     'Fetching repo info...',
     'Crunching numbers...',
@@ -23,14 +23,6 @@ export default function RepoInsightsPage() {
       document.title = prev;
     };
   }, []);
-
-  useEffect(() => {
-    if (!loading) return;
-    const id = setInterval(() => {
-      setLoadingMsgIndex((i) => (i + 1) % loadingMessages.length);
-    }, 2000);
-    return () => clearInterval(id);
-  }, [loading, loadingMessages.length]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,31 +52,7 @@ export default function RepoInsightsPage() {
         </Box>
       </form>
 
-      {loading && (
-        <Box
-          position="fixed"
-          top={0}
-          left={0}
-          width="100%"
-          height="100%"
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          flexDirection="column"
-          sx={{ bg: 'canvas.overlay', opacity: 0.9, zIndex: 10 }}
-        >
-          <Spinner size="large" />
-          <Text
-            mt={2}
-            sx={{
-              fontFamily: 'mono',
-              animation: 'pulse 1.5s ease-in-out infinite',
-            }}
-          >
-            {loadingMessages[loadingMsgIndex]}
-          </Text>
-        </Box>
-      )}
+      <LoadingOverlay show={loading} messages={loadingMessages} />
 
       {error && (
         <Text color="danger.fg" mb={3} display="block">

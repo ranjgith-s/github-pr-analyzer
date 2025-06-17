@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Box,
   TextInput,
-  Spinner,
   Avatar,
   Heading,
   Text,
@@ -15,6 +14,7 @@ import { searchUsers } from './services/github';
 import { useDeveloperMetrics } from './hooks/useDeveloperMetrics';
 import { useDebounce } from './hooks/useDebounce';
 import { GitHubUser } from './services/auth';
+import LoadingOverlay from './LoadingOverlay';
 
 const METRIC_INFO = [
   {
@@ -87,6 +87,11 @@ export default function DeveloperMetricsPage() {
     token!,
     selected?.login || null
   );
+  const loadingMessages = [
+    'Fetching user info...',
+    'Analyzing contributions...',
+    'Building radar charts...',
+  ];
 
   useEffect(() => {
     const prev = document.title;
@@ -184,11 +189,7 @@ export default function DeveloperMetricsPage() {
         </Box>
       </Box>
 
-      {loading && (
-        <Box display="flex" justifyContent="center" p={3}>
-          <Spinner size="large" />
-        </Box>
-      )}
+      <LoadingOverlay show={loading} messages={loadingMessages} />
 
       {data && !loading && (
         <>
