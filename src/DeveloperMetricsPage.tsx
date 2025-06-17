@@ -8,7 +8,7 @@ import {
   Text,
   Link,
 } from '@primer/react';
-import { RadarChart, Radar, PolarAngleAxis, PolarRadiusAxis } from 'recharts';
+import { RadarChart, Radar, PolarAngleAxis } from 'recharts';
 import { useAuth } from './AuthContext';
 import { searchUsers } from './services/github';
 import { useDeveloperMetrics } from './hooks/useDeveloperMetrics';
@@ -162,13 +162,10 @@ export default function DeveloperMetricsPage() {
                 dataKey="metric"
                 tick={{ fontFamily: 'monospace', fontSize: 10 }}
               />
-              <PolarRadiusAxis
-                tick={{ fontFamily: 'monospace', fontSize: 10 }}
-              />
               <Radar
                 dataKey="value"
-                stroke="var(--color-accent-fg)"
-                fill="var(--color-accent-subtle)"
+                stroke="var(--color-fg-default)"
+                fill="var(--color-fg-default)"
                 fillOpacity={0.6}
               />
             </RadarChart>
