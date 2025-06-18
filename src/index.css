@@ -118,8 +118,8 @@ body {
   padding: 0 4px;
   background: var(--bgColor-neutral-muted);
   border-radius: 12px;
-  border: none;
   cursor: pointer;
+  outline: none;
 }
 
 .color-mode-switch.night {
@@ -130,11 +130,13 @@ body {
   width: 14px;
   height: 14px;
   color: var(--fgColor-muted);
+  fill: currentColor;
   transition: color 0.2s;
 }
 
 .color-mode-switch svg.active {
   color: var(--fgColor-accent);
+  fill: currentColor;
 }
 
 .color-mode-switch-thumb {
@@ -147,6 +149,11 @@ body {
   background: var(--bgColor-default);
   box-shadow: 0 0 0 2px var(--fgColor-accent) inset;
   transition: transform 0.2s;
+}
+
+.color-mode-switch:focus-visible {
+  outline: 2px solid var(--fgColor-accent);
+  outline-offset: 2px;
 }
 
 .color-mode-switch.night .color-mode-switch-thumb {
