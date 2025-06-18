@@ -4,6 +4,7 @@ import { Octokit } from '@octokit/rest';
 import { TriangleUpIcon, SignOutIcon } from '@primer/octicons-react';
 import { Link as RouterLink } from 'react-router-dom';
 import { useAuth } from './AuthContext';
+import ColorModeToggle from './ColorModeToggle';
 
 interface GitHubUser {
   login: string;
@@ -66,6 +67,7 @@ export default function Header({ breadcrumb }: HeaderProps) {
       </Box>
       {user && (
         <Box display="flex" alignItems="center" sx={{ gap: 2 }}>
+          <ColorModeToggle />
           <Avatar src={user.avatar_url} size={24} />
           <Text fontSize={1} sx={{ fontFamily: 'mono' }}>
             {user.login}
