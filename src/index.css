@@ -6,6 +6,10 @@ body {
   min-height: 100vh;
 }
 
+:root {
+  --magic-radius: 24px;
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -27,4 +31,78 @@ body {
   100% {
     opacity: 1;
   }
+}
+
+/* Glowing card effect */
+.glow-card {
+  position: relative;
+  background: var(--color-canvas-default, #0d1117);
+  border-radius: var(--magic-radius);
+  overflow: visible;
+  z-index: 0;
+}
+
+.glow-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 2px;
+  border-radius: inherit;
+  box-sizing: border-box;
+  background: linear-gradient(45deg, #00ffff, #8a2be2, #ff00ff, #00ffff);
+  background-size: 200% 200%;
+  filter: blur(10px);
+  animation: glow-rotate 6s linear infinite;
+  pointer-events: none;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  z-index: -1;
+}
+
+@keyframes glow-rotate {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Magic button effect */
+.magic-button {
+  position: relative;
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  color: #fff;
+  background: transparent;
+  border: none;
+  border-radius: calc(var(--magic-radius) / 2);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.magic-button::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(45deg, #00ffff, #8a2be2, #ff00ff, #00ffff);
+  background-size: 200% 200%;
+  filter: blur(8px);
+  transition: opacity 0.3s;
+  animation: glow-rotate 6s linear infinite;
+  z-index: -1;
+}
+
+.magic-button:hover::before {
+  opacity: 0.8;
+}
+
+.magic-button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
 }

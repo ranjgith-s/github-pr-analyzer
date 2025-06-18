@@ -50,9 +50,9 @@ export default function Header({ breadcrumb }: HeaderProps) {
       <Box
         display="flex"
         alignItems="center"
-        sx={{ gap: 2, color: 'accent.fg' }}
+        sx={{ gap: 2, color: 'fg.default' }}
       >
-        <TriangleUpIcon size={24} fill="blue" />
+        <TriangleUpIcon size={24} />
         <Breadcrumbs sx={{ fontWeight: 'bold' }}>
           <Breadcrumbs.Item as={RouterLink} to="/">
             PR-ism
