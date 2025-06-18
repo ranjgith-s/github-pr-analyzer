@@ -15,7 +15,7 @@ export default function GlowingCard({ children, className }: Props) {
         width: '100%',
         maxWidth: 400,
         position: 'relative',
-        borderRadius: 2,
+        borderRadius: 'var(--magic-radius)',
         overflow: 'visible',
       }}
     >

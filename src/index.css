@@ -6,6 +6,10 @@ body {
   min-height: 100vh;
 }
 
+:root {
+  --magic-radius: 24px;
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -33,7 +37,7 @@ body {
 .glow-card {
   position: relative;
   background: var(--color-canvas-default, #0d1117);
-  border-radius: 8px;
+  border-radius: var(--magic-radius);
   overflow: visible;
   z-index: 0;
 }
@@ -77,7 +81,7 @@ body {
   color: #fff;
   background: transparent;
   border: none;
-  border-radius: 6px;
+  border-radius: calc(var(--magic-radius) / 2);
   cursor: pointer;
   overflow: hidden;
 }
