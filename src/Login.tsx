@@ -48,7 +48,7 @@ export default function Login() {
             display="flex"
             alignItems="center"
             justifyContent="center"
-            sx={{ gap: 2, textAlign: 'center', mb: 3, color: 'accent.fg' }}
+            sx={{ gap: 2, textAlign: 'center', mb: 3, color: 'fg.default' }}
           >
             <TriangleUpIcon size={24} />
             PR-ism
