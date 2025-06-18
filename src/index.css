@@ -34,7 +34,8 @@ body {
   position: relative;
   background: var(--color-canvas-default, #0d1117);
   border-radius: 8px;
-  overflow: hidden;
+  overflow: visible;
+  z-index: 0;
 }
 
 .glow-card::before {
