@@ -112,9 +112,6 @@ body {
   position: relative;
   width: 48px;
   height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   padding: 0 4px;
   background: var(--bgColor-neutral-muted);
   border-radius: 12px;
@@ -126,18 +123,7 @@ body {
   background: var(--bgColor-neutral-emphasis);
 }
 
-.color-mode-switch svg {
-  width: 14px;
-  height: 14px;
-  color: var(--fgColor-muted);
-  fill: currentColor;
-  transition: color 0.2s;
-}
 
-.color-mode-switch svg.active {
-  color: var(--fgColor-accent);
-  fill: currentColor;
-}
 
 .color-mode-switch-thumb {
   position: absolute;
@@ -149,6 +135,16 @@ body {
   background: var(--bgColor-default);
   box-shadow: 0 0 0 2px var(--fgColor-accent) inset;
   transition: transform 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.color-mode-switch-thumb svg {
+  width: 14px;
+  height: 14px;
+  color: var(--fgColor-accent);
+  fill: currentColor;
 }
 
 .color-mode-switch:focus-visible {
