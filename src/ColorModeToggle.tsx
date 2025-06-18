@@ -7,14 +7,15 @@ export default function ColorModeToggle() {
   const isDay = colorMode === 'day';
   return (
     <button
+      type="button"
       role="switch"
       aria-checked={!isDay}
       onClick={toggleColorMode}
       aria-label={`Switch to ${isDay ? 'dark' : 'light'} mode`}
       className={`color-mode-switch${isDay ? '' : ' night'}`}
     >
-      <SunIcon />
-      <MoonIcon />
+      <SunIcon className={`color-mode-icon${isDay ? ' active' : ''}`} />
+      <MoonIcon className={`color-mode-icon${!isDay ? ' active' : ''}`} />
       <span className="color-mode-switch-thumb" />
     </button>
   );

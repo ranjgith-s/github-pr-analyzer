@@ -116,16 +116,25 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 0 4px;
-  background: var(--color-neutral-muted);
+  background: var(--bgColor-neutral-muted);
   border-radius: 12px;
   border: none;
   cursor: pointer;
 }
 
+.color-mode-switch.night {
+  background: var(--bgColor-neutral-emphasis);
+}
+
 .color-mode-switch svg {
   width: 14px;
   height: 14px;
-  color: var(--color-fg-default);
+  color: var(--fgColor-muted);
+  transition: color 0.2s;
+}
+
+.color-mode-switch svg.active {
+  color: var(--fgColor-accent);
 }
 
 .color-mode-switch-thumb {
@@ -135,7 +144,8 @@ body {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: var(--color-canvas-default);
+  background: var(--bgColor-default);
+  box-shadow: 0 0 0 2px var(--fgColor-accent) inset;
   transition: transform 0.2s;
 }
 
