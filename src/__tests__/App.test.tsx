@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import App from '../App';
 import { AuthProvider, useAuth } from '../AuthContext';
+import { ThemeModeProvider } from '../ThemeModeContext';
 import * as metricsHook from '../hooks/usePullRequestMetrics';
 
 jest.mock('../hooks/usePullRequestMetrics');
@@ -19,11 +20,13 @@ beforeEach(() => {
 
 test('shows login when not authenticated', () => {
   render(
-    <AuthProvider>
-      <MemoryRouter>
-        <App />
-      </MemoryRouter>
-    </AuthProvider>
+    <ThemeModeProvider>
+      <AuthProvider>
+        <MemoryRouter>
+          <App />
+        </MemoryRouter>
+      </AuthProvider>
+    </ThemeModeProvider>
   );
   expect(screen.getByText(/PR-ism/i)).toBeInTheDocument();
 });
@@ -42,9 +45,11 @@ function LoggedIn() {
 
 test('shows home card when authenticated', async () => {
   render(
-    <AuthProvider>
-      <LoggedIn />
-    </AuthProvider>
+    <ThemeModeProvider>
+      <AuthProvider>
+        <LoggedIn />
+      </AuthProvider>
+    </ThemeModeProvider>
   );
   expect(screen.getByText('Pull request insights')).toBeInTheDocument();
   expect(screen.getByText('Developer insights')).toBeInTheDocument();
@@ -66,9 +71,11 @@ test('shows breadcrumb on insights page', async () => {
   }
 
   render(
-    <AuthProvider>
-      <Wrapper />
-    </AuthProvider>
+    <ThemeModeProvider>
+      <AuthProvider>
+        <Wrapper />
+      </AuthProvider>
+    </ThemeModeProvider>
   );
   expect(screen.getByText('Pull request insights')).toBeInTheDocument();
 });

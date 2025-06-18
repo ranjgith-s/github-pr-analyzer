@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import Header from '../Header';
 import { AuthProvider, useAuth } from '../AuthContext';
+import { ThemeModeProvider } from '../ThemeModeContext';
 import { MemoryRouter } from 'react-router-dom';
 import { Octokit } from '@octokit/rest';
 
@@ -31,9 +32,11 @@ test('fetches and displays user info', async () => {
   }
 
   render(
-    <AuthProvider>
-      <Wrapper />
-    </AuthProvider>
+    <ThemeModeProvider>
+      <AuthProvider>
+        <Wrapper />
+      </AuthProvider>
+    </ThemeModeProvider>
   );
 
   await waitFor(() => expect(screen.getByText('octo')).toBeInTheDocument());
