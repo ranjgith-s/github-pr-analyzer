@@ -28,3 +28,69 @@ body {
     opacity: 1;
   }
 }
+
+/* Glowing card effect */
+.glow-card {
+  position: relative;
+  background: var(--color-canvas-default, #0d1117);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.glow-card::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(45deg, #00ffff, #8a2be2, #ff00ff, #00ffff);
+  background-size: 200% 200%;
+  filter: blur(20px);
+  animation: glow-rotate 6s linear infinite;
+  z-index: -1;
+}
+
+@keyframes glow-rotate {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Magic button effect */
+.magic-button {
+  position: relative;
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  color: #fff;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.magic-button::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(45deg, #00ffff, #8a2be2, #ff00ff, #00ffff);
+  background-size: 200% 200%;
+  filter: blur(8px);
+  transition: opacity 0.3s;
+  animation: glow-rotate 6s linear infinite;
+  z-index: -1;
+}
+
+.magic-button:hover::before {
+  opacity: 0.8;
+}
+
+.magic-button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}

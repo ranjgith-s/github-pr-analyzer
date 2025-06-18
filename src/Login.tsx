@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import {
   Box,
-  Button,
   TextInput,
   Heading,
   Text,
   FormControl,
   Link,
 } from '@primer/react';
-import { SignInIcon, TriangleUpIcon } from '@primer/octicons-react';
+import { TriangleUpIcon } from '@primer/octicons-react';
+import GlowingCard from './GlowingCard';
+import MagicButton from './MagicButton';
 
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
@@ -40,19 +41,7 @@ export default function Login() {
       alignItems="center"
       minHeight="100vh"
     >
-      <Box
-        sx={{
-          p: 4,
-          width: '100%',
-          maxWidth: 400,
-          borderWidth: '1px',
-          borderStyle: 'solid',
-          borderColor: 'border.default',
-          borderRadius: 2,
-          boxShadow: 'shadow.medium',
-          bg: 'canvas.default',
-        }}
-      >
+      <GlowingCard>
         <Box as="form" onSubmit={handleSubmit}>
           <Heading
             as="h1"
@@ -117,21 +106,18 @@ export default function Login() {
               </details>
             </Box>
           </FormControl>
-          <Button
-            type="submit"
-            variant="primary"
-            trailingIcon={SignInIcon}
-            sx={{ width: '100%', mt: 3 }}
-          >
-            Sign in
-          </Button>
+          <Box mt={3} width="100%">
+            <MagicButton type="submit" style={{ width: '100%' }}>
+              Sign in
+            </MagicButton>
+          </Box>
           {error && (
             <Text color="danger.fg" mt={2} display="block" textAlign="center">
               {error}
             </Text>
           )}
         </Box>
-      </Box>
+      </GlowingCard>
     </Box>
   );
 }
