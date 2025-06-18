@@ -114,6 +114,7 @@ body {
   height: 24px;
   padding: 0 4px;
   background: var(--bgColor-neutral-muted);
+  box-shadow: 0 0 0 1px var(--borderColor-default) inset;
   border-radius: 12px;
   cursor: pointer;
   outline: none;
