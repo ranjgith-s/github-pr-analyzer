@@ -13,16 +13,21 @@ The user interface relies on [Primer](https://primer.style) to match the look an
   - [Testing](#testing)
   - [Production build](#production-build)
 - [Developer insights](#developer-insights)
+- [Repository insights](#repository-insights)
   - [License](#license)
 
 ## Features
 
 - Authenticate with a personal access token.
 - View pull requests you authored or reviewed.
-- Metrics for draft time, first review and total lifespan.
+- See draft time, first review time and total lead time for each pull request.
+- Inspect diff statistics and comment counts.
+- Color‑coded timeline bar with tooltips for draft, review and merge phases.
 - Display reviewer names with links and change requests.
-- Filter by repository and author.
-- Direct links to each pull request.
+- Filter pull requests by repository and author.
+- Open pull requests directly on GitHub.
+- Search GitHub users and visualize contributions with a radar chart.
+- Explore repository metrics such as deployment frequency and lead time for changes.
 
 ## Architecture
 
@@ -97,8 +102,18 @@ Higher numbers indicate better performance:
 - **Feedback Score** – average number of comments per pull request.
 - **Issue Resolution** – number of issues closed via pull requests.
 
+## Repository insights
+
+Enter any GitHub repository to see DevOps metrics:
+
+- **Deployment Frequency** – number of pushes per period.
+- **Lead Time for Changes** – time from commit to production.
+- **Change Failure Rate** – percentage of failed deployments.
+- **Mean Time to Restore** – how quickly failures are resolved.
+- Additional stats for open issues, pull requests and commit activity.
+
 ## License
 
 This project is released under the [MIT License](LICENSE).
 
-Line coverage: 84.57%
+Line coverage: 66.73%
