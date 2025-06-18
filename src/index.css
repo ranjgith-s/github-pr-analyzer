@@ -41,11 +41,18 @@ body {
 .glow-card::before {
   content: "";
   position: absolute;
-  inset: -2px;
+  inset: 0;
+  padding: 2px;
+  border-radius: inherit;
+  box-sizing: border-box;
   background: linear-gradient(45deg, #00ffff, #8a2be2, #ff00ff, #00ffff);
   background-size: 200% 200%;
-  filter: blur(20px);
+  filter: blur(10px);
   animation: glow-rotate 6s linear infinite;
+  pointer-events: none;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
   z-index: -1;
 }
 
