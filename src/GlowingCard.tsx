@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box } from '@primer/react';
+import { Box } from '@heroui/react';
 
 interface Props {
   children: React.ReactNode;

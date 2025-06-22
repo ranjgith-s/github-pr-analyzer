@@ -2,7 +2,7 @@
 
 PR-ism is a small React and TypeScript application for exploring metrics about your pull requests. It shows how long a pull request stayed in draft, the time to the first review, and the total time until it was merged or closed. The app also lists the reviewers and how many change requests they made.
 
-The user interface uses [HeroUI](https://heroui.com) components to match the look and feel of GitHub. After you sign in with your GitHub token, a table shows the pull requests with filters for repository and author. Selecting a title in the table opens the pull request on GitHub.
+The user interface uses [heroUI](https://heroui.com) components to match GitHub's visual style. After you sign in with your GitHub token, the table lists pull requests with filters for repository and author. Selecting a pull request title opens it on GitHub.
 
 ## Table of Contents
 

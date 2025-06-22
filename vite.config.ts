@@ -10,10 +10,6 @@ export default defineConfig({
         find: '@heroui/react',
         replacement: path.resolve(__dirname, 'src/heroui-shim.tsx'),
       },
-      {
-        find: '@primer/react',
-        replacement: path.resolve(__dirname, 'src/primer-shim.tsx'),
-      },
     ],
   },
   build: {
