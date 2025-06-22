@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { ThemeProvider } from '@primer/react';
+import { HeroUIProvider } from '@heroui/system';
 
 export type ColorMode = 'day' | 'night';
 
@@ -30,6 +30,9 @@ export const ThemeModeProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, colorMode);
+    if (typeof document !== 'undefined') {
+      document.documentElement.classList.toggle('dark', colorMode === 'night');
+    }
   }, [colorMode]);
 
   const toggleColorMode = () => {
@@ -38,7 +41,7 @@ export const ThemeModeProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <ThemeModeContext.Provider value={{ colorMode, toggleColorMode }}>
-      <ThemeProvider colorMode={colorMode}>{children}</ThemeProvider>
+      <HeroUIProvider>{children}</HeroUIProvider>
     </ThemeModeContext.Provider>
   );
 };
