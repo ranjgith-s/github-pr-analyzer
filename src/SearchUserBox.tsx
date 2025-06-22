@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, TextInput, Avatar, Text } from '@primer/react';
+import { Box, Input, Avatar, Text } from '@heroui/react';
 import { GitHubUser } from './services/auth';
 
 interface Props {
@@ -17,7 +17,7 @@ export default function SearchUserBox({
 }: Props) {
   return (
     <Box position="relative" width="100%" maxWidth={300}>
-      <TextInput
+      <Input
         placeholder="Search GitHub users"
         value={query}
         onChange={(e) => onQueryChange(e.target.value)}

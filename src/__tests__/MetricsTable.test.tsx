@@ -6,12 +6,6 @@ import { AuthProvider } from '../AuthContext';
 import * as metricsHook from '../hooks/usePullRequestMetrics';
 import { PRItem } from '../types';
 
-jest.mock('@primer/react/drafts', () => ({
-  DataTable: (props: any) => <table>{props.children}</table>,
-  Table: { Pagination: () => null },
-  createColumnHelper: () => ({ column: (c: any) => c }),
-}));
-
 const sample: PRItem[] = [
   {
     id: '1',
