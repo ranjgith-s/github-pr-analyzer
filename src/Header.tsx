@@ -39,6 +39,8 @@ export default function Header({ breadcrumb }: HeaderProps) {
 
   return (
     <Box
+      as="header"
+      className="app-header"
       display="flex"
       alignItems="center"
       justifyContent="space-between"
@@ -54,7 +56,7 @@ export default function Header({ breadcrumb }: HeaderProps) {
         sx={{ gap: 2, color: 'fg.default' }}
       >
         <TriangleUpIcon size={24} />
-        <Breadcrumbs sx={{ fontWeight: 'bold' }}>
+        <Breadcrumbs className="breadcrumbs-modern" sx={{ fontWeight: 'bold' }}>
           <Breadcrumbs.Item as={RouterLink} to="/">
             PR-ism
           </Breadcrumbs.Item>
