@@ -181,3 +181,8 @@ body {
   font-weight: 600;
   font-size: 1rem;
 }
+
+/* Hide divider when only a single breadcrumb item exists */
+.breadcrumbs-modern ol > li:first-child:last-child::after {
+  content: none;
+}
