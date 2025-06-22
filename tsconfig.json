@@ -14,8 +14,7 @@
     "baseUrl": ".",
     "paths": {
       "@heroui/react": ["./src/heroui-shim.tsx"],
-      "@primer/react": ["./src/primer-shim.tsx"],
-      "@primer/react/drafts": ["./src/primer-drafts-shim.tsx"]
+      "@primer/react": ["./src/primer-shim.tsx"]
     },
     "resolveJsonModule": true,
     "isolatedModules": true,

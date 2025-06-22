@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-// Use the experimental DataTable component from Primer React
-import { DataTable, Table, createColumnHelper } from '@heroui/react';
+// Table components provided by HeroUI
+import { DataTable, Table } from '@heroui/react';
 import {
   Box,
   FormControl,
@@ -35,7 +35,6 @@ export default function MetricsTable() {
   const [pageIndex, setPageIndex] = useState<number>(0);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const PAGE_SIZE = 25;
-  const columnHelper = createColumnHelper<PRItem>();
   const navigate = useNavigate();
   const loadingMessages = [
     'Loading pull requests...',
@@ -71,27 +70,27 @@ export default function MetricsTable() {
   const selectedItem = items.find((i) => selectedIds.includes(i.id));
 
   const columns = [
-    columnHelper.column({
+    {
       id: 'select',
       header: '',
-      renderCell: (row) => (
+      cell: (row: PRItem) => (
         <input
           type="checkbox"
           checked={selectedIds.includes(row.id)}
           onChange={() => toggleSelect(row.id)}
         />
       ),
-    }),
-    columnHelper.column({
+    },
+    {
       id: 'repo',
       header: 'Repository',
-      field: 'repo',
+      accessorKey: 'repo',
       rowHeader: true,
-    }),
-    columnHelper.column({
+    },
+    {
       id: 'title',
       header: 'Title',
-      renderCell: (row) => (
+      cell: (row: PRItem) => (
         <Link
           href={row.url}
           target="_blank"
@@ -105,11 +104,11 @@ export default function MetricsTable() {
           {row.title}
         </Link>
       ),
-    }),
-    columnHelper.column({
+    },
+    {
       id: 'author',
       header: 'Author',
-      renderCell: (row) => (
+      cell: (row: PRItem) => (
         <Link
           href={`https://github.com/${row.author}`}
           target="_blank"
@@ -118,11 +117,11 @@ export default function MetricsTable() {
           {row.author}
         </Link>
       ),
-    }),
-    columnHelper.column({
+    },
+    {
       id: 'reviewers',
       header: 'Reviewers',
-      renderCell: (row) => (
+      cell: (row: PRItem) => (
         <>
           {row.reviewers.map((name: string, idx: number) => (
             <React.Fragment key={name}>
@@ -138,31 +137,31 @@ export default function MetricsTable() {
           ))}
         </>
       ),
-    }),
-    columnHelper.column({
+    },
+    {
       id: 'changes_requested',
       header: 'Changes Requested',
-      field: 'changes_requested',
-    }),
-    columnHelper.column({
+      accessorKey: 'changes_requested',
+    },
+    {
       id: 'diff',
       header: 'Diff',
-      renderCell: (row) => (
+      cell: (row: PRItem) => (
         <Text as="span">
           <Text as="span" color="success.fg">{`+${row.additions}`}</Text>{' '}
           <Text as="span" color="danger.fg">{`-${row.deletions}`}</Text>
         </Text>
       ),
-    }),
-    columnHelper.column({
+    },
+    {
       id: 'comment_count',
       header: 'Comments',
-      field: 'comment_count',
-    }),
-    columnHelper.column({
+      accessorKey: 'comment_count',
+    },
+    {
       id: 'timeline',
       header: 'Timeline',
-      renderCell: (row) => {
+      cell: (row: PRItem) => {
         const created = new Date(row.created_at);
         const published = row.published_at
           ? new Date(row.published_at)
@@ -212,16 +211,16 @@ export default function MetricsTable() {
           </Tooltip>
         );
       },
-    }),
-    columnHelper.column({
+    },
+    {
       id: 'lead_time',
       header: 'Lead Time',
-      renderCell: (row) => formatDuration(row.first_commit_at, row.closed_at),
-    }),
-    columnHelper.column({
+      cell: (row: PRItem) => formatDuration(row.first_commit_at, row.closed_at),
+    },
+    {
       id: 'state',
       header: 'State',
-      renderCell: (row) => {
+      cell: (row: PRItem) => {
         const statusMap = {
           open: 'pullOpened',
           closed: 'pullClosed',
@@ -232,7 +231,7 @@ export default function MetricsTable() {
           <StateLabel status={statusMap[row.state]}>{row.state}</StateLabel>
         );
       },
-    }),
+    },
   ];
 
   if (loading) {
@@ -297,9 +296,9 @@ export default function MetricsTable() {
       />
       <Table.Pagination
         aria-label="Pagination"
-        pageSize={PAGE_SIZE}
-        totalCount={filteredItems.length}
-        onChange={({ pageIndex }) => setPageIndex(pageIndex)}
+        page={pageIndex + 1}
+        pages={Math.ceil(filteredItems.length / PAGE_SIZE)}
+        onPageChange={(page: number) => setPageIndex(page - 1)}
       />
     </>
   );
