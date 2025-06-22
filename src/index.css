@@ -43,7 +43,7 @@ body {
 }
 
 .glow-card::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   padding: 2px;
@@ -54,9 +54,11 @@ body {
   filter: blur(10px);
   animation: glow-rotate 6s linear infinite;
   pointer-events: none;
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
-          mask-composite: exclude;
+  mask-composite: exclude;
   z-index: -1;
 }
 
@@ -87,7 +89,7 @@ body {
 }
 
 .magic-button::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: -2px;
   background: linear-gradient(45deg, #00ffff, #8a2be2, #ff00ff, #00ffff);
@@ -124,8 +126,6 @@ body {
   background: var(--bgColor-neutral-emphasis);
 }
 
-
-
 .color-mode-switch-thumb {
   position: absolute;
   top: 2px;
@@ -155,4 +155,29 @@ body {
 
 .color-mode-switch.night .color-mode-switch-thumb {
   transform: translateX(24px);
+}
+
+/* Modern header styling */
+.app-header {
+  background: var(--bgColor-default, rgba(255, 255, 255, 0.6));
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+  .app-header {
+    background: rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* Modern breadcrumbs styling */
+.breadcrumbs-modern {
+  display: flex;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 1rem;
 }
