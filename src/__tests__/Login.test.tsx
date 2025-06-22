@@ -29,7 +29,7 @@ test('login submits provided token', async () => {
       </AuthProvider>
     </ThemeModeProvider>
   );
-  const input = screen.getByPlaceholderText(/github token/i);
+  const input = screen.getByLabelText(/personal access token/i);
   const user = userEvent.setup();
   await user.type(input, 'token123');
   await user.click(screen.getByRole('button', { name: /sign in/i }));
@@ -49,7 +49,7 @@ test('shows error when token is invalid', async () => {
     </ThemeModeProvider>
   );
   const user = userEvent.setup();
-  await user.type(screen.getByPlaceholderText(/github token/i), 'bad');
+  await user.type(screen.getByLabelText(/personal access token/i), 'bad');
   await user.click(screen.getByRole('button', { name: /sign in/i }));
 
   await waitFor(() =>

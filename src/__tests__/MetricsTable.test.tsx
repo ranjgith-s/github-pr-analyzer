@@ -3,6 +3,8 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import MetricsTable from '../MetricsTable';
 import { AuthProvider } from '../AuthContext';
+
+jest.mock('@heroui/react', () => jest.requireActual('../heroui-shim.tsx'));
 import * as metricsHook from '../hooks/usePullRequestMetrics';
 import { PRItem } from '../types';
 
@@ -45,6 +47,7 @@ test('renders filters and data', () => {
   );
   expect(screen.getByLabelText('Repository')).toBeInTheDocument();
   expect(screen.getByLabelText('Author')).toBeInTheDocument();
+  expect(screen.getByLabelText('Pagination')).toBeInTheDocument();
 });
 
 test('shows spinner when loading', () => {
