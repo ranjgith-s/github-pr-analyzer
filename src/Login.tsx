@@ -15,12 +15,18 @@ import ColorModeToggle from './ColorModeToggle';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { validateToken } from './services/auth';
+import { useDocumentTitle } from './hooks/useDocumentTitle';
+import { useMetaDescription } from './hooks/useMetaDescription';
 
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [value, setValue] = useState('');
   const [error, setError] = useState<string | null>(null);
+  useDocumentTitle('Sign in to PR-ism');
+  useMetaDescription(
+    'Login with your GitHub token to access pull request metrics.'
+  );
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

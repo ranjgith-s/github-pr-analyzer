@@ -1,5 +1,7 @@
 import React from 'react';
 import { Box, Text } from '@primer/react';
+import { useDocumentTitle } from './hooks/useDocumentTitle';
+import { useMetaDescription } from './hooks/useMetaDescription';
 import {
   RepoIcon,
   PeopleIcon,
@@ -8,6 +10,8 @@ import {
 import { Link as RouterLink } from 'react-router-dom';
 
 export default function Home() {
+  useDocumentTitle('PR-ism Home');
+  useMetaDescription('Access GitHub pull request insights and metrics.');
   return (
     <Box display="flex" justifyContent="center" mt={6} sx={{ gap: 3 }}>
       <Box

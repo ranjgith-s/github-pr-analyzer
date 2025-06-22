@@ -6,6 +6,7 @@ import { searchUsers } from './services/github';
 import { useDeveloperMetrics } from './hooks/useDeveloperMetrics';
 import { useDebounce } from './hooks/useDebounce';
 import { useDocumentTitle } from './hooks/useDocumentTitle';
+import { useMetaDescription } from './hooks/useMetaDescription';
 import { GitHubUser } from './services/auth';
 import LoadingOverlay from './LoadingOverlay';
 import SearchUserBox from './SearchUserBox';
@@ -103,6 +104,7 @@ export default function DeveloperMetricsPage() {
   ];
 
   useDocumentTitle('Developer insights');
+  useMetaDescription('Developer insights for GitHub pull requests.');
 
   useEffect(() => {
     if (!debouncedQuery) {
