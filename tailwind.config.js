@@ -3,7 +3,11 @@ import { heroui } from '@heroui/theme';
 
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: ['./node_modules/@heroui/theme/dist/components/(card|ripple).js'],
+  content: [
+    './src/**/*.{js,ts,jsx,tsx}',
+    './index.html',
+    './node_modules/@heroui/theme/dist/components/(card|ripple).js',
+  ],
   theme: {
     extend: {},
   },

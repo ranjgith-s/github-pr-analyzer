@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { ChevronUpIcon } from '@heroicons/react/24/solid';
-import GlowingCard from './GlowingCard';
-import MagicButton from './MagicButton';
+import { Card, CardHeader, CardBody, CardFooter } from '@heroui/react';
+import { Button } from '@heroui/react';
+import { Input } from '@heroui/react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { validateToken } from './services/auth';
@@ -32,98 +33,77 @@ export default function Login() {
   };
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '100vh',
-      }}
-    >
-      <GlowingCard>
-        <form onSubmit={handleSubmit}>
-          <h1
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-              textAlign: 'center',
-              marginBottom: 24,
-              color: 'inherit',
-            }}
-          >
-            <ChevronUpIcon width={24} height={24} />
-            PR-ism
-          </h1>
-          <div>
-            <label htmlFor="token-input">Personal access token</label>
-            <input
+    <div className="flex items-center justify-center min-h-screen bg-background">
+      <Card className="w-full max-w-md shadow-lg">
+        <CardHeader>
+          <div className="flex flex-col items-center gap-2 w-full">
+            <div className="flex items-center gap-2 text-2xl font-bold">
+              <ChevronUpIcon width={28} height={28} />
+              PR-ism
+            </div>
+            <div className="text-sm text-muted-foreground text-center w-full">
+              Sign in with your GitHub personal access token to continue.
+            </div>
+          </div>
+        </CardHeader>
+        <CardBody>
+          <form onSubmit={handleSubmit} className="w-full flex flex-col gap-3">
+            <label htmlFor="token-input" className="block font-medium">
+              Personal access token
+            </label>
+            <Input
               id="token-input"
               type="password"
               value={value}
-              onChange={(e) => setValue(e.target.value)}
+              onChange={(e: any) => setValue(e.target.value)}
               placeholder="GitHub token"
-              style={{ width: '100%' }}
+              className="w-full"
+              autoFocus
             />
-            <span
-              style={{
-                display: 'block',
-                fontSize: 12,
-                marginTop: 4,
-              }}
-            >
+            <span className="block text-xs text-muted-foreground">
               This token is used only in the browser.
             </span>
-            <div style={{ marginTop: 8 }}>
-              <details>
-                <summary style={{ fontSize: 12, cursor: 'pointer' }}>
-                  How to generate a personal access token
-                </summary>
-                <ol style={{ paddingLeft: 16, marginTop: 8 }}>
-                  <li style={{ fontSize: 12 }}>
-                    Visit{' '}
-                    <a
-                      href="https://github.com/settings/tokens"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      GitHub settings
-                    </a>
-                    .
-                  </li>
-                  <li style={{ fontSize: 12 }}>
-                    Generate a new fine‑grained token with read‑only repository
-                    access.
-                  </li>
-                  <li style={{ fontSize: 12 }}>
-                    Enable SSO for your organization when prompted.
-                  </li>
-                  <li style={{ fontSize: 12 }}>
-                    Copy the token and paste it here.
-                  </li>
-                </ol>
-              </details>
-            </div>
-          </div>
-          <div style={{ marginTop: 24, width: '100%' }}>
-            <MagicButton type="submit" style={{ width: '100%' }}>
-              Sign in
-            </MagicButton>
-          </div>
-          {error && (
-            <div
-              style={{
-                color: 'red',
-                marginTop: 8,
-                textAlign: 'center',
-              }}
-            >
-              {error}
-            </div>
-          )}
-        </form>
-      </GlowingCard>
+            <details className="mt-1">
+              <summary className="text-xs cursor-pointer select-none">
+                How to generate a personal access token
+              </summary>
+              <ol className="pl-4 mt-2 list-decimal space-y-1">
+                <li className="text-xs">
+                  Visit{' '}
+                  <a
+                    href="https://github.com/settings/tokens"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline"
+                  >
+                    GitHub settings
+                  </a>
+                  .
+                </li>
+                <li className="text-xs">
+                  Generate a new fine‑grained token with read‑only repository
+                  access.
+                </li>
+                <li className="text-xs">
+                  Enable SSO for your organization when prompted.
+                </li>
+                <li className="text-xs">Copy the token and paste it here.</li>
+              </ol>
+            </details>
+            {/* CardFooter content moved here for form structure */}
+            <CardFooter className="flex flex-col gap-2 mt-2 p-0">
+              <Button type="submit" className="w-full">
+                Sign in
+              </Button>
+              {error && (
+                <div className="text-red-600 text-center text-sm mt-2">
+                  {error}
+                </div>
+              )}
+            </CardFooter>
+          </form>
+        </CardBody>
+      </Card>
     </div>
   );
 }

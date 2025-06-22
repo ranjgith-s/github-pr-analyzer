@@ -10,6 +10,10 @@ module.exports = {
   ],
   moduleNameMapper: {
     '\\.(css|less|scss)$': 'identity-obj-proxy',
+    '^framer-motion$': '<rootDir>/__mocks__/framer-motion.js',
+    '^@headlessui/react$': '<rootDir>/__mocks__/@headlessui/react.js',
+    '^@heroui/react$': '<rootDir>/__mocks__/@heroui/react.js',
+    '^@heroui/system$': '<rootDir>/__mocks__/@heroui/system.js',
   },
   coverageThreshold: {
     global: {
