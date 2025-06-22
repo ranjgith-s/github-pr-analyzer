@@ -120,6 +120,10 @@ body {
   border-radius: 12px;
   cursor: pointer;
   outline: none;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .color-mode-switch.night {

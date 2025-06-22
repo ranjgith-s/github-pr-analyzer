@@ -4,32 +4,24 @@ import { useThemeMode } from './ThemeModeContext';
 
 export default function ColorModeToggle() {
   const { colorMode, toggleColorMode } = useThemeMode();
-  const isDay = colorMode === 'day';
-
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      toggleColorMode();
-    }
-  };
+  const isNight = colorMode === 'night';
 
   return (
-    <div
+    <button
+      type="button"
       role="switch"
-      tabIndex={0}
-      aria-checked={!isDay}
+      aria-checked={isNight}
       onClick={toggleColorMode}
-      onKeyDown={handleKeyDown}
-      aria-label={`Switch to ${isDay ? 'dark' : 'light'} mode`}
-      className={`color-mode-switch${isDay ? '' : ' night'}`}
+      aria-label={`Switch to ${isNight ? 'light' : 'dark'} mode`}
+      className={`color-mode-switch${isNight ? ' night' : ''}`}
     >
       <span className="color-mode-switch-thumb">
-        {isDay ? (
-          <SunIcon className="color-mode-icon" />
-        ) : (
+        {isNight ? (
           <MoonIcon className="color-mode-icon" />
+        ) : (
+          <SunIcon className="color-mode-icon" />
         )}
       </span>
-    </div>
+    </button>
   );
 }
