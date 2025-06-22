@@ -1,20 +1,35 @@
 import React from 'react';
 import { MoonIcon, SunIcon } from '@primer/octicons-react';
-import { ToggleSwitch } from '@primer/react';
 import { useThemeMode } from './ThemeModeContext';
 
 export default function ColorModeToggle() {
   const { colorMode, toggleColorMode } = useThemeMode();
   const isNight = colorMode === 'night';
 
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      toggleColorMode();
+    }
+  };
+
   return (
-    <ToggleSwitch
-      aria-label={`Switch to ${isNight ? 'light' : 'dark'} mode`}
-      checked={isNight}
+    <div
+      role="switch"
+      tabIndex={0}
+      aria-checked={isNight}
       onClick={toggleColorMode}
-      size="small"
+      onKeyDown={handleKeyDown}
+      aria-label={`Switch to ${isNight ? 'light' : 'dark'} mode`}
+      className={`color-mode-switch${isNight ? ' night' : ''}`}
     >
-      {isNight ? <MoonIcon /> : <SunIcon />}
-    </ToggleSwitch>
+      <span className="color-mode-switch-thumb">
+        {isNight ? (
+          <MoonIcon className="color-mode-icon" />
+        ) : (
+          <SunIcon className="color-mode-icon" />
+        )}
+      </span>
+    </div>
   );
 }
