@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Text } from '@primer/react';
+import { Box, Text } from '@heroui/react';
 import { useDocumentTitle } from './hooks/useDocumentTitle';
 import { useMetaDescription } from './hooks/useMetaDescription';
 import {

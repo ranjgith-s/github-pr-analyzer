@@ -6,10 +6,20 @@ import { AuthProvider } from '../AuthContext';
 import * as metricsHook from '../hooks/usePullRequestMetrics';
 import { PRItem } from '../types';
 
-jest.mock('@primer/react/drafts', () => ({
-  DataTable: (props: any) => <table>{props.children}</table>,
+jest.mock('@heroui/react', () => ({
+  DataTable: () => <table />,
   Table: { Pagination: () => null },
   createColumnHelper: () => ({ column: (c: any) => c }),
+  FormControl: Object.assign(({ children }: any) => <div>{children}</div>, {
+    Label: ({ children }: any) => <label>{children}</label>,
+  }),
+  Select: ({ children, ...props }: any) => <select {...props}>{children}</select>,
+  Box: ({ children }: any) => <div>{children}</div>,
+  Button: ({ children }: any) => <button>{children}</button>,
+  Text: ({ children }: any) => <span>{children}</span>,
+  Link: ({ children, ...props }: any) => <a {...props}>{children}</a>,
+  StateLabel: ({ children }: any) => <span>{children}</span>,
+  Tooltip: ({ children }: any) => <span>{children}</span>,
 }));
 
 const sample: PRItem[] = [

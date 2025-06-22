@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Heading, Text, Label } from '@primer/react';
+import { Box, Heading, Text, Badge } from '@heroui/react';
 
 interface Props {
   name: string;
@@ -48,9 +48,9 @@ export default function DeveloperMetricCard({
       >
         {name}
         {typeof score === 'number' && (
-          <Label variant={variant} size="small">
+          <Badge variant={variant} size="small">
             {score}
-          </Label>
+          </Badge>
         )}
       </Heading>
       <Text sx={{ fontSize: 1 }}>{brief}</Text>
@@ -58,9 +58,9 @@ export default function DeveloperMetricCard({
         {details}
       </Text>
       <Text as="p" sx={{ mt: 1, fontSize: 0 }}>
-        <Label variant={variant} size="small" mr={1}>
+        <Badge variant={variant} size="small" mr={1}>
           {format ? format(value) : value}
-        </Label>{' '}
+        </Badge>{' '}
         {valueDesc}
       </Text>
     </Box>

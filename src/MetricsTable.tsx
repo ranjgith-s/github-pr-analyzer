@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 // Use the experimental DataTable component from Primer React
-import { DataTable, Table, createColumnHelper } from '@primer/react/drafts';
+import { DataTable, Table, createColumnHelper } from '@heroui/react';
 import {
   Box,
   FormControl,
@@ -10,7 +10,7 @@ import {
   Button,
   StateLabel,
   Tooltip,
-} from '@primer/react';
+} from '@heroui/react';
 import { useNavigate } from 'react-router-dom';
 import { usePullRequestMetrics } from './hooks/usePullRequestMetrics';
 import { PRItem } from './types';

@@ -7,6 +7,10 @@ export default defineConfig({
   resolve: {
     alias: [
       {
+        find: '@heroui/react',
+        replacement: path.resolve(__dirname, 'src/heroui-shim.tsx'),
+      },
+      {
         find: '@primer/react/drafts',
         replacement: path.resolve(__dirname, 'src/primer-drafts-shim.tsx'),
       },

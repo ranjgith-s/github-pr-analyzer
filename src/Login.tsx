@@ -1,12 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Box,
-  TextInput,
-  Heading,
-  Text,
-  FormControl,
-  Link,
-} from '@primer/react';
+import { Box, Input, Heading, Text, FormControl, Link } from '@heroui/react';
 import { TriangleUpIcon } from '@primer/octicons-react';
 import GlowingCard from './GlowingCard';
 import MagicButton from './MagicButton';
@@ -67,7 +60,7 @@ export default function Login() {
             <FormControl.Label htmlFor="token-input">
               Personal access token
             </FormControl.Label>
-            <TextInput
+            <Input
               id="token-input"
               type="password"
               value={value}

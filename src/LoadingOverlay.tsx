@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Spinner, Text } from '@primer/react';
+import { Box, Spinner, Text } from '@heroui/react';
 
 interface LoadingOverlayProps {
   show: boolean;

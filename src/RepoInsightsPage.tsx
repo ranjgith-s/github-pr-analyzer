@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, TextInput, Button, Heading, Text, Label } from '@primer/react';
+import { Box, Input, Button, Heading, Text, Badge } from '@heroui/react';
 import { useAuth } from './AuthContext';
 import { useRepoInsights } from './hooks/useRepoInsights';
 import LoadingOverlay from './LoadingOverlay';
@@ -39,7 +39,7 @@ export default function RepoInsightsPage() {
     <Box p={3} position="relative">
       <form onSubmit={handleSubmit}>
         <Box mb={3} display="flex" sx={{ gap: 2 }}>
-          <TextInput
+          <Input
             placeholder="owner/repo or URL"
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -123,9 +123,9 @@ function MetricCard({ title, value }: MetricCardProps) {
       <Heading as="h3" sx={{ fontSize: 2, mb: 2 }}>
         {title}
       </Heading>
-      <Label variant="accent" sx={{ fontSize: 1 }}>
+      <Badge variant="accent" sx={{ fontSize: 1 }}>
         {value}
-      </Label>
+      </Badge>
     </Box>
   );
 }
