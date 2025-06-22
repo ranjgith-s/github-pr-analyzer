@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BaseStyles } from '@primer/react';
+import { HeroUIProvider } from '@heroui/system';
 import { ThemeModeProvider } from './ThemeModeContext';
 import { BrowserRouter } from 'react-router-dom';
 import './index.css';
@@ -11,11 +11,11 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <BrowserRouter>
       <ThemeModeProvider>
-        <BaseStyles>
+        <HeroUIProvider>
           <AuthProvider>
             <App />
           </AuthProvider>
-        </BaseStyles>
+        </HeroUIProvider>
       </ThemeModeProvider>
     </BrowserRouter>
   </React.StrictMode>
