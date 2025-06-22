@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Octokit } from '@octokit/rest';
-import { Timeline, Heading, TabNav } from '@heroui/react';
-import { Box, Spinner, Button, Text } from '@heroui/react';
 import { useParams, useLocation, Link as RouterLink } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { useDocumentTitle } from './hooks/useDocumentTitle';
@@ -64,44 +62,37 @@ export default function PullRequestPage() {
           { label: 'Closed', date: pr.mergedAt || pr.closedAt },
         ].filter((e) => e.date);
         setEvents(timeline);
-      } catch (err) {
-        console.error(err);
-      } finally {
+        setLoading(false);
+      } catch {
         setLoading(false);
       }
     }
     fetchData();
-  }, [token, owner, repo, number, location.state]);
+  }, [token, location, owner, repo, number]);
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" p={3}>
-        <Spinner size="large" />
-      </Box>
+      <div style={{ textAlign: 'center', marginTop: 32 }}>
+        <span>Loading...</span>
+      </div>
     );
   }
 
   return (
-    <Box p={3}>
-      <Button as={RouterLink} to="/insights" sx={{ mb: 3 }}>
-        Back to insights
-      </Button>
-      <Heading as="h2" sx={{ mb: 3 }}>
-        {title}
-      </Heading>
-      <TabNav aria-label="Pull request views" sx={{ mb: 3 }}>
-        <TabNav.Link selected>Timeline</TabNav.Link>
-      </TabNav>
-      <Timeline>
-        {events?.map((ev, i) => (
-          <Timeline.Item key={i}>
-            <Timeline.Badge />
-            <Timeline.Body>
-              <Text>{`${ev.label}: ${new Date(ev.date).toLocaleString()}`}</Text>
-            </Timeline.Body>
-          </Timeline.Item>
-        ))}
-      </Timeline>
-    </Box>
+    <div style={{ padding: 24 }}>
+      <h2>{title}</h2>
+      <nav style={{ marginBottom: 16 }}>
+        <RouterLink to="/insights">Back to Insights</RouterLink>
+      </nav>
+      <div style={{ marginBottom: 24 }}>
+        {events &&
+          events.map((e, i) => (
+            <div key={i} style={{ marginBottom: 8 }}>
+              <span style={{ fontWeight: 'bold' }}>{e.label}:</span> {e.date}
+            </div>
+          ))}
+      </div>
+      {/* Add more PR details as needed */}
+    </div>
   );
 }

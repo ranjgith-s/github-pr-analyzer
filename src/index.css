@@ -1,7 +1,15 @@
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-    'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    Arial,
+    'Noto Sans',
+    sans-serif;
 }
 
 button,
@@ -23,7 +31,7 @@ textarea {
   --bgColor-neutral-emphasis: var(--nextui-content3-default, #e4e4e7);
   --bgColor-default: var(--nextui-background-default, #ffffff);
   --borderColor-default: var(--nextui-divider-default, rgba(17, 17, 17, 0.15));
-  --fgColor-accent: var(--nextui-primary-default, #006FEE);
+  --fgColor-accent: var(--nextui-primary-default, #006fee);
 }
 
 @keyframes fadeInUp {

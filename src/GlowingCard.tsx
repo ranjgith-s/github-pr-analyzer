@@ -1,5 +1,4 @@
 import React from 'react';
-import { Box } from '@heroui/react';
 
 interface Props {
   children: React.ReactNode;
@@ -8,18 +7,19 @@ interface Props {
 
 export default function GlowingCard({ children, className }: Props) {
   return (
-    <Box
+    <div
       className={`glow-card${className ? ` ${className}` : ''}`}
-      sx={{
-        p: 4,
-        width: '100%',
+      style={{
+        background: 'linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 100%)',
+        borderRadius: 16,
+        boxShadow: '0 4px 24px 0 rgba(80, 120, 255, 0.15)',
+        padding: 32,
+        minWidth: 320,
         maxWidth: 400,
-        position: 'relative',
-        borderRadius: 'var(--magic-radius)',
-        overflow: 'visible',
+        margin: '0 auto',
       }}
     >
       {children}
-    </Box>
+    </div>
   );
 }

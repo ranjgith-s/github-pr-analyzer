@@ -1,5 +1,4 @@
 import React from 'react';
-import { Box, Input, Avatar, Text } from '@heroui/react';
 import { GitHubUser } from './services/auth';
 
 interface Props {
@@ -16,40 +15,55 @@ export default function SearchUserBox({
   onSelect,
 }: Props) {
   return (
-    <Box position="relative" width="100%" maxWidth={300}>
-      <Input
+    <div style={{ position: 'relative', width: '100%', maxWidth: 300 }}>
+      <input
         placeholder="Search GitHub users"
         value={query}
         onChange={(e) => onQueryChange(e.target.value)}
-        sx={{ width: '100%' }}
+        style={{
+          width: '100%',
+          padding: 8,
+          borderRadius: 4,
+          border: '1px solid #ccc',
+        }}
       />
       {options.length > 0 && (
-        <Box
-          position="absolute"
-          width="100%"
-          borderWidth={1}
-          borderStyle="solid"
-          borderColor="border.default"
-          borderRadius={2}
-          bg="canvas.overlay"
-          mt={1}
-          zIndex={1}
+        <div
+          style={{
+            position: 'absolute',
+            width: '100%',
+            border: '1px solid #eee',
+            borderRadius: 8,
+            background: '#fff',
+            marginTop: 4,
+            zIndex: 1,
+          }}
         >
           {options.map((u) => (
-            <Box
+            <div
               key={u.login}
-              p={2}
-              display="flex"
-              alignItems="center"
-              sx={{ cursor: 'pointer', '&:hover': { bg: 'neutral.muted' } }}
+              style={{
+                padding: 8,
+                display: 'flex',
+                alignItems: 'center',
+                cursor: 'pointer',
+                gap: 8,
+                borderBottom: '1px solid #f0f0f0',
+              }}
               onClick={() => onSelect(u)}
             >
-              <Avatar src={u.avatar_url} size={20} mr={2} />
-              <Text>{u.login}</Text>
-            </Box>
+              <img
+                src={u.avatar_url}
+                alt="avatar"
+                width={20}
+                height={20}
+                style={{ borderRadius: '50%' }}
+              />
+              <span>{u.login}</span>
+            </div>
           ))}
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }

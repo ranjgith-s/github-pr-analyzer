@@ -9,8 +9,7 @@ module.exports = {
     '!src/**/__tests__/**'
   ],
   moduleNameMapper: {
-    '\\.(css|less|scss)$': 'identity-obj-proxy',
-    '^@heroui/react$': '<rootDir>/src/heroui-shim.tsx'
+    '\\.(css|less|scss)$': 'identity-obj-proxy'
   },
   coverageThreshold: {
     global: {

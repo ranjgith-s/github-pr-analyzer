@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
-import { Box, Input, Heading, Text, FormControl, Link } from '@heroui/react';
 import { ChevronUpIcon } from '@heroicons/react/24/solid';
 import GlowingCard from './GlowingCard';
 import MagicButton from './MagicButton';
 import ColorModeToggle from './ColorModeToggle';
-
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { validateToken } from './services/auth';
@@ -35,95 +33,101 @@ export default function Login() {
   };
 
   return (
-    <Box
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      minHeight="100vh"
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '100vh',
+      }}
     >
-      <Box position="absolute" top={3} right={3}>
+      <div style={{ position: 'absolute', top: 12, right: 12 }}>
         <ColorModeToggle />
-      </Box>
+      </div>
       <GlowingCard>
-        <Box as="form" onSubmit={handleSubmit}>
-          <Heading
-            as="h1"
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            sx={{ gap: 2, textAlign: 'center', mb: 3, color: 'fg.default' }}
+        <form onSubmit={handleSubmit}>
+          <h1
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              textAlign: 'center',
+              marginBottom: 24,
+              color: 'inherit',
+            }}
           >
             <ChevronUpIcon width={24} height={24} />
             PR-ism
-          </Heading>
-          <FormControl>
-            <FormControl.Label htmlFor="token-input">
-              Personal access token
-            </FormControl.Label>
-            <Input
+          </h1>
+          <div>
+            <label htmlFor="token-input">Personal access token</label>
+            <input
               id="token-input"
               type="password"
               value={value}
               onChange={(e) => setValue(e.target.value)}
               placeholder="GitHub token"
-              sx={{ width: '100%' }}
+              style={{ width: '100%' }}
             />
-            <FormControl.Caption>
-              <Text fontSize={1}>This token is used only in the browser.</Text>
-            </FormControl.Caption>
-            <Box mt={2}>
+            <span
+              style={{
+                display: 'block',
+                fontSize: 12,
+                marginTop: 4,
+              }}
+            >
+              This token is used only in the browser.
+            </span>
+            <div style={{ marginTop: 8 }}>
               <details>
-                <summary>
-                  <Text fontSize={1} sx={{ cursor: 'pointer' }}>
-                    How to generate a personal access token
-                  </Text>
+                <summary style={{ fontSize: 12, cursor: 'pointer' }}>
+                  How to generate a personal access token
                 </summary>
-                <Box as="ol" pl={3} mt={2}>
-                  <li>
-                    <Text as="span" fontSize={1}>
-                      Visit{' '}
-                      <Link
-                        href="https://github.com/settings/tokens"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        GitHub settings
-                      </Link>
-                      .
-                    </Text>
+                <ol style={{ paddingLeft: 16, marginTop: 8 }}>
+                  <li style={{ fontSize: 12 }}>
+                    Visit{' '}
+                    <a
+                      href="https://github.com/settings/tokens"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      GitHub settings
+                    </a>
+                    .
                   </li>
-                  <li>
-                    <Text as="span" fontSize={1}>
-                      Generate a new fine‑grained token with read‑only
-                      repository access.
-                    </Text>
+                  <li style={{ fontSize: 12 }}>
+                    Generate a new fine‑grained token with read‑only repository
+                    access.
                   </li>
-                  <li>
-                    <Text as="span" fontSize={1}>
-                      Enable SSO for your organization when prompted.
-                    </Text>
+                  <li style={{ fontSize: 12 }}>
+                    Enable SSO for your organization when prompted.
                   </li>
-                  <li>
-                    <Text as="span" fontSize={1}>
-                      Copy the token and paste it here.
-                    </Text>
+                  <li style={{ fontSize: 12 }}>
+                    Copy the token and paste it here.
                   </li>
-                </Box>
+                </ol>
               </details>
-            </Box>
-          </FormControl>
-          <Box mt={3} width="100%">
+            </div>
+          </div>
+          <div style={{ marginTop: 24, width: '100%' }}>
             <MagicButton type="submit" style={{ width: '100%' }}>
               Sign in
             </MagicButton>
-          </Box>
+          </div>
           {error && (
-            <Text color="danger.fg" mt={2} display="block" textAlign="center">
+            <div
+              style={{
+                color: 'red',
+                marginTop: 8,
+                textAlign: 'center',
+              }}
+            >
               {error}
-            </Text>
+            </div>
           )}
-        </Box>
+        </form>
       </GlowingCard>
-    </Box>
+    </div>
   );
 }

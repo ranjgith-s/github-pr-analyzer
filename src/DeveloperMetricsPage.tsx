@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Avatar, Heading, Text, Link } from '@heroui/react';
 import { RadarChart, Radar, PolarAngleAxis } from 'recharts';
 import { useAuth } from './AuthContext';
 import { searchUsers } from './services/github';
@@ -145,83 +144,87 @@ export default function DeveloperMetricsPage() {
     : [];
 
   return (
-    <Box p={3}>
-      <Box
-        mb={3}
-        display="flex"
-        alignItems="center"
-        justifyContent="space-between"
-        flexWrap="wrap"
-        sx={{ gap: 3 }}
+    <div style={{ padding: 24 }}>
+      <div
+        style={{
+          marginBottom: 24,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: 24,
+        }}
       >
-        <Heading as="h2" sx={{ fontSize: 4 }}>
-          Developer insights
-        </Heading>
+        <h2 style={{ fontSize: 32 }}>Developer insights</h2>
         <SearchUserBox
           query={query}
           options={options}
           onQueryChange={setQuery}
           onSelect={handleSelect}
         />
-      </Box>
+      </div>
 
       <LoadingOverlay show={loading} messages={loadingMessages} />
 
       {data && !loading && (
         <>
-          <Box
-            display="grid"
-            sx={{
+          <div
+            style={{
+              display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-              gap: 4,
+              gap: 32,
             }}
           >
-            <Box
-              p={3}
-              borderWidth={1}
-              borderStyle="solid"
-              borderColor="border.default"
-              borderRadius={2}
-              boxShadow="shadow.medium"
-              sx={{ animation: 'fadeInUp 0.3s ease-out' }}
+            <div
+              style={{
+                padding: 24,
+                border: '1px solid #eee',
+                borderRadius: 16,
+                boxShadow: '0 2px 8px 0 rgba(80, 120, 255, 0.08)',
+                animation: 'fadeInUp 0.3s ease-out',
+              }}
             >
-              <Box display="flex" alignItems="center" sx={{ gap: 2 }}>
-                <Avatar src={data.avatar_url} size={64} />
-                <Box>
-                  <Heading as="h2" sx={{ fontSize: 3 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                <img
+                  src={data.avatar_url}
+                  alt="avatar"
+                  width={64}
+                  height={64}
+                  style={{ borderRadius: '50%' }}
+                />
+                <div>
+                  <h2 style={{ fontSize: 24, margin: 0 }}>
                     {data.name || data.login}
-                  </Heading>
-                  <Text color="fg.muted">{data.login}</Text>
-                </Box>
-              </Box>
+                  </h2>
+                  <span style={{ color: '#888' }}>{data.login}</span>
+                </div>
+              </div>
               {data.bio && (
-                <Text as="p" mt={2} sx={{ maxWidth: 300 }}>
-                  {data.bio}
-                </Text>
+                <p style={{ marginTop: 16, maxWidth: 300 }}>{data.bio}</p>
               )}
-              <Box mt={2} sx={{ display: 'grid', rowGap: 1 }}>
-                {data.company && <Text>🏢 {data.company}</Text>}
-                {data.location && <Text>📍 {data.location}</Text>}
-                <Text>Repos: {data.public_repos}</Text>
-                <Text>Followers: {data.followers}</Text>
-                <Text>Following: {data.following}</Text>
-                <Link
+              <div style={{ marginTop: 16, display: 'grid', rowGap: 4 }}>
+                {data.company && <span>🏢 {data.company}</span>}
+                {data.location && <span>📍 {data.location}</span>}
+                <span>Repos: {data.public_repos}</span>
+                <span>Followers: {data.followers}</span>
+                <span>Following: {data.following}</span>
+                <a
                   href={data.html_url}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
                   View on GitHub
-                </Link>
-              </Box>
-            </Box>
-            <Box
-              p={3}
-              borderWidth={1}
-              borderStyle="solid"
-              borderColor="border.default"
-              borderRadius={2}
-              boxShadow="shadow.medium"
-              sx={{ animation: 'fadeInUp 0.3s ease-out' }}
+                </a>
+              </div>
+            </div>
+            <div
+              style={{
+                padding: 24,
+                border: '1px solid #eee',
+                borderRadius: 16,
+                boxShadow: '0 2px 8px 0 rgba(80, 120, 255, 0.08)',
+                animation: 'fadeInUp 0.3s ease-out',
+              }}
             >
               <RadarChart width={500} height={400} data={chartData}>
                 <PolarAngleAxis
@@ -235,14 +238,14 @@ export default function DeveloperMetricsPage() {
                   fillOpacity={0.6}
                 />
               </RadarChart>
-            </Box>
-          </Box>
-          <Box mt={4}>
-            <Box
-              display="grid"
-              sx={{
+            </div>
+          </div>
+          <div style={{ marginTop: 32 }}>
+            <div
+              style={{
+                display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-                gap: 3,
+                gap: 24,
               }}
             >
               {METRIC_INFO.map((info) => (
@@ -257,10 +260,10 @@ export default function DeveloperMetricsPage() {
                   format={info.format}
                 />
               ))}
-            </Box>
-          </Box>
+            </div>
+          </div>
         </>
       )}
-    </Box>
+    </div>
   );
 }

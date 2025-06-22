@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Box, Input, Button, Heading, Text, Badge } from '@heroui/react';
 import { useAuth } from './AuthContext';
 import { useRepoInsights } from './hooks/useRepoInsights';
 import LoadingOverlay from './LoadingOverlay';
@@ -36,72 +35,92 @@ export default function RepoInsightsPage() {
   };
 
   return (
-    <Box p={3} position="relative">
+    <div style={{ padding: 24, position: 'relative' }}>
       <form onSubmit={handleSubmit}>
-        <Box mb={3} display="flex" sx={{ gap: 2 }}>
-          <Input
+        <div style={{ marginBottom: 24, display: 'flex', gap: 8 }}>
+          <input
             placeholder="owner/repo or URL"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            sx={{ flexGrow: 1 }}
+            style={{
+              flexGrow: 1,
+              padding: 8,
+              borderRadius: 4,
+              border: '1px solid #ccc',
+            }}
           />
-          <Button type="submit">Load</Button>
-        </Box>
+          <button
+            type="submit"
+            style={{
+              padding: '8px 16px',
+              borderRadius: 4,
+              background: '#2da44e',
+              color: '#fff',
+              border: 'none',
+            }}
+          >
+            Load
+          </button>
+        </div>
       </form>
 
       <LoadingOverlay show={loading} messages={loadingMessages} />
 
-      {error && (
-        <Text color="danger.fg" mb={3} display="block">
-          {error}
-        </Text>
-      )}
+      {error && <div style={{ color: 'red', marginBottom: 24 }}>{error}</div>}
 
       {data && !loading && (
-        <Box
-          display="grid"
-          sx={{
-            gridTemplateColumns: 'repeat(auto-fit,minmax(250px,1fr))',
-            gap: 3,
-          }}
-        >
-          <MetricCard
-            title="Deployment Frequency"
-            value={`${data.deploymentFrequency} pushes`}
-          />
-          <MetricCard
-            title="Lead Time for Changes"
-            value={`${data.leadTime.toFixed(2)}h`}
-          />
-          <MetricCard
-            title="Change Failure Rate"
-            value={`${(data.changeFailureRate * 100).toFixed(1)}%`}
-          />
-          <MetricCard
-            title="Mean Time to Restore"
-            value={`${data.meanTimeToRestore.toFixed(2)}h`}
-          />
-          <MetricCard title="Open Issue Count" value={data.openIssues} />
-          <MetricCard
-            title="Open Pull Request Count"
-            value={data.openPullRequests}
-          />
-          <MetricCard
-            title="Average PR Merge Time"
-            value={`${data.averageMergeTime.toFixed(2)}h`}
-          />
-          <MetricCard
-            title="Weekly Commit Activity"
-            value={data.weeklyCommits.join(', ')}
-          />
-          <MetricCard title="Contributor Count" value={data.contributorCount} />
-          <MetricCard
-            title="Community Health Score"
-            value={data.communityHealthScore}
-          />
-        </Box>
+        <div>
+          <h2 style={{ fontSize: 24, marginBottom: 16 }}>
+            Repository Insights
+          </h2>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit,minmax(250px,1fr))',
+              gap: 24,
+            }}
+          >
+            <MetricCard
+              title="Deployment Frequency"
+              value={`${data.deploymentFrequency} pushes`}
+            />
+            <MetricCard
+              title="Lead Time for Changes"
+              value={`${data.leadTime.toFixed(2)}h`}
+            />
+            <MetricCard
+              title="Change Failure Rate"
+              value={`${(data.changeFailureRate * 100).toFixed(1)}%`}
+            />
+            <MetricCard
+              title="Mean Time to Restore"
+              value={`${data.meanTimeToRestore.toFixed(2)}h`}
+            />
+            <MetricCard title="Open Issue Count" value={data.openIssues} />
+            <MetricCard
+              title="Open Pull Request Count"
+              value={data.openPullRequests}
+            />
+            <MetricCard
+              title="Average PR Merge Time"
+              value={`${data.averageMergeTime.toFixed(2)}h`}
+            />
+            <MetricCard
+              title="Weekly Commit Activity"
+              value={data.weeklyCommits.join(', ')}
+            />
+            <MetricCard
+              title="Contributor Count"
+              value={data.contributorCount}
+            />
+            <MetricCard
+              title="Community Health Score"
+              value={data.communityHealthScore}
+            />
+          </div>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }
 
@@ -112,20 +131,20 @@ interface MetricCardProps {
 
 function MetricCard({ title, value }: MetricCardProps) {
   return (
-    <Box
-      borderWidth={1}
-      borderStyle="solid"
-      borderColor="border.default"
-      borderRadius={2}
-      p={3}
-      boxShadow="shadow.medium"
+    <div
+      style={{
+        borderWidth: 1,
+        borderStyle: 'solid',
+        borderColor: '#ddd',
+        borderRadius: 8,
+        padding: 16,
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+      }}
     >
-      <Heading as="h3" sx={{ fontSize: 2, mb: 2 }}>
-        {title}
-      </Heading>
-      <Badge variant="accent" sx={{ fontSize: 1 }}>
+      <h3 style={{ fontSize: 18, marginBottom: 8 }}>{title}</h3>
+      <span style={{ fontSize: 16, fontWeight: 'bold', color: '#333' }}>
         {value}
-      </Badge>
-    </Box>
+      </span>
+    </div>
   );
 }

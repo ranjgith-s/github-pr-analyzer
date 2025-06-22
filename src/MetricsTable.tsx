@@ -1,16 +1,4 @@
 import React, { useEffect, useState } from 'react';
-// Table components provided by HeroUI
-import { DataTable, Table } from '@heroui/react';
-import {
-  Box,
-  FormControl,
-  Select,
-  Text,
-  Link,
-  Button,
-  StateLabel,
-  Tooltip,
-} from '@heroui/react';
 import { useNavigate } from 'react-router-dom';
 import { usePullRequestMetrics } from './hooks/usePullRequestMetrics';
 import { PRItem } from './types';
@@ -19,7 +7,7 @@ import LoadingOverlay from './LoadingOverlay';
 
 export function formatDuration(start?: string | null, end?: string | null) {
   if (!start || !end) return 'N/A';
-  const diffMs = new Date(end) - new Date(start);
+  const diffMs = new Date(end).getTime() - new Date(start).getTime();
   if (diffMs < 0) return 'N/A';
   const diffHours = Math.floor(diffMs / 36e5);
   const days = Math.floor(diffHours / 24);
@@ -91,51 +79,47 @@ export default function MetricsTable() {
       id: 'title',
       header: 'Title',
       cell: (row: PRItem) => (
-        <Link
+        <a
           href={row.url}
           target="_blank"
           rel="noopener noreferrer"
-          sx={{
-            color: 'fg.default',
-            textDecoration: 'none',
-            '&:hover': { color: 'accent.fg', textDecoration: 'underline' },
-          }}
+          style={{ color: 'inherit', textDecoration: 'none' }}
         >
           {row.title}
-        </Link>
+        </a>
       ),
     },
     {
       id: 'author',
       header: 'Author',
       cell: (row: PRItem) => (
-        <Link
+        <a
           href={`https://github.com/${row.author}`}
           target="_blank"
           rel="noopener noreferrer"
         >
           {row.author}
-        </Link>
+        </a>
       ),
     },
     {
       id: 'reviewers',
       header: 'Reviewers',
       cell: (row: PRItem) => (
-        <>
+        <span>
           {row.reviewers.map((name: string, idx: number) => (
             <React.Fragment key={name}>
-              <Link
+              <a
                 href={`https://github.com/${name}`}
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 {name}
-              </Link>
+              </a>
               {idx < row.reviewers.length - 1 && ', '}
             </React.Fragment>
           ))}
-        </>
+        </span>
       ),
     },
     {
@@ -147,10 +131,10 @@ export default function MetricsTable() {
       id: 'diff',
       header: 'Diff',
       cell: (row: PRItem) => (
-        <Text as="span">
-          <Text as="span" color="success.fg">{`+${row.additions}`}</Text>{' '}
-          <Text as="span" color="danger.fg">{`-${row.deletions}`}</Text>
-        </Text>
+        <span>
+          <span style={{ color: 'green' }}>{`+${row.additions}`}</span>{' '}
+          <span style={{ color: 'red' }}>{`-${row.deletions}`}</span>
+        </span>
       ),
     },
     {
@@ -188,27 +172,35 @@ export default function MetricsTable() {
         ].join('\n');
 
         return (
-          <Tooltip aria-label={tooltipText} direction="s">
-            <Box
-              display="flex"
-              height="6px"
-              width={80}
-              sx={{ overflow: 'hidden', borderRadius: 1 }}
-            >
-              <Box
-                bg="accent.emphasis"
-                style={{ width: `${(draftMs / total) * 100}%` }}
-              />
-              <Box
-                bg="attention.emphasis"
-                style={{ width: `${(reviewMs / total) * 100}%` }}
-              />
-              <Box
-                bg="success.emphasis"
-                style={{ width: `${(closeMs / total) * 100}%` }}
-              />
-            </Box>
-          </Tooltip>
+          <div
+            aria-label={tooltipText}
+            style={{
+              display: 'flex',
+              height: '6px',
+              width: 80,
+              overflow: 'hidden',
+              borderRadius: 4,
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: '#d1e7dd',
+                width: `${(draftMs / total) * 100}%`,
+              }}
+            />
+            <div
+              style={{
+                backgroundColor: '#fff3cd',
+                width: `${(reviewMs / total) * 100}%`,
+              }}
+            />
+            <div
+              style={{
+                backgroundColor: '#cce5ff',
+                width: `${(closeMs / total) * 100}%`,
+              }}
+            />
+          </div>
         );
       },
     },
@@ -220,17 +212,7 @@ export default function MetricsTable() {
     {
       id: 'state',
       header: 'State',
-      cell: (row: PRItem) => {
-        const statusMap = {
-          open: 'pullOpened',
-          closed: 'pullClosed',
-          merged: 'pullMerged',
-          draft: 'draft',
-        };
-        return (
-          <StateLabel status={statusMap[row.state]}>{row.state}</StateLabel>
-        );
-      },
+      cell: (row: PRItem) => <span>{row.state}</span>,
     },
   ];
 
@@ -240,43 +222,41 @@ export default function MetricsTable() {
 
   return (
     <>
-      <Box display="flex" marginBottom={3} sx={{ gap: 3 }}>
-        <FormControl>
-          <FormControl.Label htmlFor="repo-filter">
-            Repository
-          </FormControl.Label>
-          <Select
+      <div style={{ display: 'flex', marginBottom: 24, gap: 12 }}>
+        <div>
+          <label htmlFor="repo-filter">Repository</label>
+          <select
             id="repo-filter"
             value={repoFilter}
             onChange={(e) => setRepoFilter(e.target.value)}
           >
-            <Select.Option value="">All</Select.Option>
+            <option value="">All</option>
             {repos.map((r) => (
-              <Select.Option key={r} value={r}>
+              <option key={r} value={r}>
                 {r}
-              </Select.Option>
+              </option>
             ))}
-          </Select>
-        </FormControl>
-        <FormControl>
-          <FormControl.Label htmlFor="author-filter">Author</FormControl.Label>
-          <Select
+          </select>
+        </div>
+        <div>
+          <label htmlFor="author-filter">Author</label>
+          <select
             id="author-filter"
             value={authorFilter}
             onChange={(e) => setAuthorFilter(e.target.value)}
           >
-            <Select.Option value="">All</Select.Option>
+            <option value="">All</option>
             {authors.map((a) => (
-              <Select.Option key={a} value={a}>
+              <option key={a} value={a}>
                 {a}
-              </Select.Option>
+              </option>
             ))}
-          </Select>
-        </FormControl>
-      </Box>
+          </select>
+        </div>
+      </div>
       {selectedIds.length === 1 && (
-        <Box marginBottom={2}>
-          <Button
+        <div style={{ marginBottom: 16 }}>
+          <button
             onClick={() =>
               navigate(
                 `/pr/${selectedItem!.owner}/${selectedItem!.repo_name}/${selectedItem!.number}`,
@@ -285,21 +265,57 @@ export default function MetricsTable() {
             }
           >
             View pull request
-          </Button>
-        </Box>
+          </button>
+        </div>
       )}
-      <DataTable
+      <table
         aria-labelledby="pr-table"
-        columns={columns}
-        data={paginatedItems}
-        cellPadding="condensed"
-      />
-      <Table.Pagination
-        aria-label="Pagination"
-        page={pageIndex + 1}
-        pages={Math.ceil(filteredItems.length / PAGE_SIZE)}
-        onPageChange={(page: number) => setPageIndex(page - 1)}
-      />
+        style={{ width: '100%', borderCollapse: 'collapse' }}
+      >
+        <thead>
+          <tr>
+            {columns.map((col) => (
+              <th key={col.id}>{col.header}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {paginatedItems.map((row) => (
+            <tr key={row.id}>
+              {columns.map((col) => (
+                <td key={col.id}>
+                  {col.cell ? col.cell(row) : (row as any)[col.accessorKey]}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div style={{ marginTop: 16 }} aria-label="Pagination">
+        <span>
+          Page {pageIndex + 1} of {Math.ceil(filteredItems.length / PAGE_SIZE)}
+        </span>
+        <button
+          onClick={() => setPageIndex((p) => Math.max(0, p - 1))}
+          disabled={pageIndex === 0}
+          style={{ marginLeft: 8 }}
+        >
+          Previous
+        </button>
+        <button
+          onClick={() =>
+            setPageIndex((p) =>
+              Math.min(Math.ceil(filteredItems.length / PAGE_SIZE) - 1, p + 1)
+            )
+          }
+          disabled={
+            pageIndex >= Math.ceil(filteredItems.length / PAGE_SIZE) - 1
+          }
+          style={{ marginLeft: 8 }}
+        >
+          Next
+        </button>
+      </div>
     </>
   );
 }

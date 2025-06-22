@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Avatar, Text, Button, Breadcrumbs } from '@heroui/react';
 import { Octokit } from '@octokit/rest';
 import {
   ChevronUpIcon,
@@ -41,47 +40,53 @@ export default function Header({ breadcrumb }: HeaderProps) {
   }, [token]);
 
   return (
-    <Box
-      as="header"
+    <div
       className="app-header"
-      display="flex"
-      alignItems="center"
-      justifyContent="space-between"
-      p={3}
-      borderBottomWidth="1px"
-      borderBottomStyle="solid"
-      borderColor="border.default"
-      sx={{ bg: 'canvas.subtle' }}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: 16,
+        borderBottom: '1px solid #eee',
+        background: '#f8fafc',
+      }}
     >
-      <Box
-        display="flex"
-        alignItems="center"
-        sx={{ gap: 2, color: 'fg.default' }}
+      <div
+        style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#222' }}
       >
-        <ChevronUpIcon className="icon" width={24} height={24} />
-        <Breadcrumbs className="breadcrumbs-modern" sx={{ fontWeight: 'bold' }}>
-          <Breadcrumbs.Item as={RouterLink} to="/">
-            PR-ism
-          </Breadcrumbs.Item>
+        <ChevronUpIcon width={24} height={24} />
+        <nav
+          className="breadcrumbs-modern"
+          style={{ fontWeight: 'bold', display: 'flex', gap: 8 }}
+        >
+          <RouterLink to="/">PR-ism</RouterLink>
           {breadcrumb && (
-            <Breadcrumbs.Item as={RouterLink} to={breadcrumb.to}>
-              {breadcrumb.label}
-            </Breadcrumbs.Item>
+            <RouterLink to={breadcrumb.to}>{breadcrumb.label}</RouterLink>
           )}
-        </Breadcrumbs>
-      </Box>
+        </nav>
+      </div>
       {user && (
-        <Box display="flex" alignItems="center" sx={{ gap: 2 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <ColorModeToggle />
-          <Avatar src={user.avatar_url} size={24} />
-          <Text fontSize={1} sx={{ fontFamily: 'mono' }}>
+          <img
+            src={user.avatar_url}
+            alt="avatar"
+            width={24}
+            height={24}
+            style={{ borderRadius: '50%' }}
+          />
+          <span style={{ fontFamily: 'monospace', fontSize: 14 }}>
             {user.login}
-          </Text>
-          <Button onClick={logout} trailingIcon={ArrowRightOnRectangleIcon}>
-            Sign out
-          </Button>
-        </Box>
+          </span>
+          <button
+            onClick={logout}
+            style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+          >
+            <ArrowRightOnRectangleIcon width={18} height={18} />
+            Logout
+          </button>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }

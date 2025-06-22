@@ -1,5 +1,4 @@
 import React from 'react';
-import { Box } from '@heroui/react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Login from './Login';
 import MetricsPage from './MetricsPage';
@@ -27,9 +26,9 @@ export default function App() {
   }
 
   return (
-    <Box bg="canvas.default" minHeight="100vh">
+    <div style={{ background: '#f8fafc', minHeight: '100vh' }}>
       {token && <Header breadcrumb={breadcrumb} />}
-      <Box p={token ? 3 : 0}>
+      <div style={{ padding: token ? 24 : 0 }}>
         <Routes>
           <Route
             path="/login"
@@ -39,29 +38,15 @@ export default function App() {
             path="/"
             element={token ? <Home /> : <Navigate to="/login" replace />}
           />
-          <Route
-            path="/insights"
-            element={token ? <MetricsPage /> : <Navigate to="/" replace />}
-          />
-          <Route
-            path="/developer"
-            element={
-              token ? <DeveloperMetricsPage /> : <Navigate to="/" replace />
-            }
-          />
-          <Route
-            path="/repo"
-            element={token ? <RepoInsightsPage /> : <Navigate to="/" replace />}
-          />
+          <Route path="/insights" element={<MetricsPage />} />
           <Route
             path="/pr/:owner/:repo/:number"
-            element={
-              token ? <PullRequestPage /> : <Navigate to="/login" replace />
-            }
+            element={<PullRequestPage />}
           />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="/developer" element={<DeveloperMetricsPage />} />
+          <Route path="/repo" element={<RepoInsightsPage />} />
         </Routes>
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }

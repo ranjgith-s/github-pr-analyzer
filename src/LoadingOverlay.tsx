@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Spinner, Text } from '@heroui/react';
 
 interface LoadingOverlayProps {
   show: boolean;
@@ -23,28 +22,31 @@ export default function LoadingOverlay({
   if (!show) return null;
 
   return (
-    <Box
-      position="fixed"
-      top={0}
-      left={0}
-      width="100%"
-      height="100%"
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      flexDirection="column"
-      sx={{ bg: 'canvas.overlay', opacity: 0.9, zIndex: 10 }}
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column',
+        background: 'rgba(248, 250, 252, 0.9)',
+        opacity: 0.9,
+        zIndex: 10,
+      }}
     >
-      <Spinner size="large" />
-      <Text
-        mt={2}
-        sx={{
-          fontFamily: 'mono',
+      <span style={{ fontSize: 32, marginBottom: 16 }}>⏳</span>
+      <p
+        style={{
+          fontFamily: 'monospace',
           animation: 'pulse 1.5s ease-in-out infinite',
         }}
       >
         {messages[index]}
-      </Text>
-    </Box>
+      </p>
+    </div>
   );
 }
