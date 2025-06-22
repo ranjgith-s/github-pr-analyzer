@@ -1,5 +1,6 @@
 import React from 'react';
-import { Box, Heading, Text, Badge } from '@heroui/react';
+import { Badge } from '@heroui/react';
+import { Box, Heading, Text } from './primer-shim';
 
 interface Props {
   name: string;

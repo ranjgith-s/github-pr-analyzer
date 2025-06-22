@@ -5,12 +5,7 @@ import path from 'path';
 export default defineConfig({
   plugins: [react()],
   resolve: {
-    alias: [
-      {
-        find: '@heroui/react',
-        replacement: path.resolve(__dirname, 'src/heroui-shim.tsx'),
-      },
-    ],
+    alias: [],
   },
   build: {
     outDir: 'build',

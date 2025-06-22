@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Avatar, Text, Button, Breadcrumbs } from '@heroui/react';
+import { Avatar, Button, Breadcrumbs } from '@heroui/react';
+import { Box, Text } from './primer-shim';
 import { Octokit } from '@octokit/rest';
 import {
   ChevronUpIcon,

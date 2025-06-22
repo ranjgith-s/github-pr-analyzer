@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Octokit } from '@octokit/rest';
-import { Timeline, Heading, TabNav } from '@heroui/react';
-import { Box, Spinner, Button, Text } from '@heroui/react';
+import { Spinner, Button } from '@heroui/react';
+import { Box, Heading, Text, TabNav, Timeline } from './primer-shim';
 import { useParams, useLocation, Link as RouterLink } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { useDocumentTitle } from './hooks/useDocumentTitle';

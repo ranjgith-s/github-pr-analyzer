@@ -3,8 +3,6 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import MetricsTable from '../MetricsTable';
 import { AuthProvider } from '../AuthContext';
-
-jest.mock('@heroui/react', () => jest.requireActual('../heroui-shim.tsx'));
 import * as metricsHook from '../hooks/usePullRequestMetrics';
 import { PRItem } from '../types';
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box } from '@heroui/react';
+import { Box } from './primer-shim';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Login from './Login';
 import MetricsPage from './MetricsPage';

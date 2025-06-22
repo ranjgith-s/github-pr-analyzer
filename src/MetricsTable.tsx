@@ -1,16 +1,8 @@
 import React, { useEffect, useState } from 'react';
 // Table components provided by HeroUI
-import { DataTable, Table } from '@heroui/react';
-import {
-  Box,
-  FormControl,
-  Select,
-  Text,
-  Link,
-  Button,
-  StateLabel,
-  Tooltip,
-} from '@heroui/react';
+import { DataTable, Table } from './simple-table';
+import { Select, Link, Button, Tooltip } from '@heroui/react';
+import { Box, Text, StateLabel } from './primer-shim';
 import { useNavigate } from 'react-router-dom';
 import { usePullRequestMetrics } from './hooks/usePullRequestMetrics';
 import { PRItem } from './types';
@@ -241,38 +233,32 @@ export default function MetricsTable() {
   return (
     <>
       <Box display="flex" marginBottom={3} sx={{ gap: 3 }}>
-        <FormControl>
-          <FormControl.Label htmlFor="repo-filter">
-            Repository
-          </FormControl.Label>
-          <Select
-            id="repo-filter"
-            value={repoFilter}
-            onChange={(e) => setRepoFilter(e.target.value)}
-          >
-            <Select.Option value="">All</Select.Option>
-            {repos.map((r) => (
-              <Select.Option key={r} value={r}>
-                {r}
-              </Select.Option>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl>
-          <FormControl.Label htmlFor="author-filter">Author</FormControl.Label>
-          <Select
-            id="author-filter"
-            value={authorFilter}
-            onChange={(e) => setAuthorFilter(e.target.value)}
-          >
-            <Select.Option value="">All</Select.Option>
-            {authors.map((a) => (
-              <Select.Option key={a} value={a}>
-                {a}
-              </Select.Option>
-            ))}
-          </Select>
-        </FormControl>
+        <Select
+          id="repo-filter"
+          label="Repository"
+          value={repoFilter}
+          onChange={(e) => setRepoFilter(e.target.value)}
+        >
+          <Select.Option value="">All</Select.Option>
+          {repos.map((r) => (
+            <Select.Option key={r} value={r}>
+              {r}
+            </Select.Option>
+          ))}
+        </Select>
+        <Select
+          id="author-filter"
+          label="Author"
+          value={authorFilter}
+          onChange={(e) => setAuthorFilter(e.target.value)}
+        >
+          <Select.Option value="">All</Select.Option>
+          {authors.map((a) => (
+            <Select.Option key={a} value={a}>
+              {a}
+            </Select.Option>
+          ))}
+        </Select>
       </Box>
       {selectedIds.length === 1 && (
         <Box marginBottom={2}>

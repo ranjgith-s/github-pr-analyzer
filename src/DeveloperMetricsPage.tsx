@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Avatar, Heading, Text, Link } from '@heroui/react';
+import { Avatar, Link } from '@heroui/react';
+import { Box, Heading, Text } from './primer-shim';
 import { RadarChart, Radar, PolarAngleAxis } from 'recharts';
 import { useAuth } from './AuthContext';
 import { searchUsers } from './services/github';

@@ -1,5 +1,6 @@
 import React from 'react';
-import { Box, Input, Avatar, Text } from '@heroui/react';
+import { Input, Avatar } from '@heroui/react';
+import { Box, Text } from './primer-shim';
 import { GitHubUser } from './services/auth';
 
 interface Props {
