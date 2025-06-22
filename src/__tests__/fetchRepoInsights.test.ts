@@ -33,15 +33,28 @@ describe('fetchRepoInsights', () => {
   });
 
   it('returns repo insights', async () => {
-    mockInstance.rest.repos.get.mockResolvedValue({ data: { default_branch: 'main', open_issues_count: 10 } });
+    mockInstance.rest.repos.get.mockResolvedValue({
+      data: { default_branch: 'main', open_issues_count: 10 },
+    });
     mockInstance.paginate
       .mockResolvedValueOnce([{}, {}]) // commits
-      .mockResolvedValueOnce([{ merged_at: '2023-12-15T00:00:00Z', created_at: '2023-12-10T00:00:00Z' }]) // closed PRs
+      .mockResolvedValueOnce([
+        {
+          merged_at: '2023-12-15T00:00:00Z',
+          created_at: '2023-12-10T00:00:00Z',
+        },
+      ]) // closed PRs
       .mockResolvedValueOnce([]) // open PRs
-      .mockResolvedValueOnce([{ created_at: '2023-12-20T00:00:00Z', conclusion: 'success' }]) // workflow runs
+      .mockResolvedValueOnce([
+        { created_at: '2023-12-20T00:00:00Z', conclusion: 'success' },
+      ]) // workflow runs
       .mockResolvedValueOnce([{}, {}]); // contributors
-    mockInstance.rest.repos.getCommitActivityStats.mockResolvedValue({ data: [{ days: [1, 2, 3, 4, 5, 6, 7] }] });
-    mockInstance.rest.repos.getCommunityProfileMetrics.mockResolvedValue({ data: { health_percentage: 80 } });
+    mockInstance.rest.repos.getCommitActivityStats.mockResolvedValue({
+      data: [{ days: [1, 2, 3, 4, 5, 6, 7] }],
+    });
+    mockInstance.rest.repos.getCommunityProfileMetrics.mockResolvedValue({
+      data: { health_percentage: 80 },
+    });
 
     const result = await fetchRepoInsights('tok', 'o', 'r');
     expect(result).toHaveProperty('deploymentFrequency', 2);

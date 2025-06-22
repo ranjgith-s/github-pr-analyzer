@@ -1,4 +1,4 @@
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, waitFor } from '@testing-library/react';
 import { useRepoInsights } from '../hooks/useRepoInsights';
 import * as githubService from '../services/github';
 
@@ -14,7 +14,9 @@ describe('useRepoInsights', () => {
   });
 
   it('loads data on mount', async () => {
-    (githubService.fetchRepoInsights as jest.Mock).mockResolvedValue({ foo: 'bar' });
+    (githubService.fetchRepoInsights as jest.Mock).mockResolvedValue({
+      foo: 'bar',
+    });
     const { result } = renderHook(() => useRepoInsights(token, owner, repo));
     expect(result.current.loading).toBe(true);
     await waitFor(() => expect(result.current.loading).toBe(false));
@@ -23,7 +25,9 @@ describe('useRepoInsights', () => {
   });
 
   it('sets error on failure', async () => {
-    (githubService.fetchRepoInsights as jest.Mock).mockRejectedValue(new Error('fail'));
+    (githubService.fetchRepoInsights as jest.Mock).mockRejectedValue(
+      new Error('fail')
+    );
     const { result } = renderHook(() => useRepoInsights(token, owner, repo));
     expect(result.current.loading).toBe(true);
     await waitFor(() => expect(result.current.loading).toBe(false));

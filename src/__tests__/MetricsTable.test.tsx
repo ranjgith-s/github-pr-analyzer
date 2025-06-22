@@ -1,10 +1,18 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { MemoryRouter, useNavigate } from 'react-router-dom';
 import MetricsTable from '../MetricsTable';
 import { AuthProvider } from '../AuthContext';
 import * as metricsHook from '../hooks/usePullRequestMetrics';
 import { PRItem } from '../types';
+
+jest.mock('react-router-dom', () => {
+  const actual = jest.requireActual('react-router-dom');
+  return {
+    ...actual,
+    useNavigate: jest.fn(() => jest.fn()),
+  };
+});
 
 const sample: PRItem[] = [
   {
@@ -48,6 +56,20 @@ test('renders filters and data', () => {
   expect(screen.getByLabelText('Pagination')).toBeInTheDocument();
 });
 
+test('renders empty state', () => {
+  jest
+    .spyOn(metricsHook, 'usePullRequestMetrics')
+    .mockReturnValue({ items: [], loading: false });
+  render(
+    <AuthProvider>
+      <MemoryRouter>
+        <MetricsTable />
+      </MemoryRouter>
+    </AuthProvider>
+  );
+  expect(screen.getByText('Page 1 of 0')).toBeInTheDocument();
+});
+
 test('shows spinner when loading', () => {
   (metricsHook.usePullRequestMetrics as jest.Mock).mockReturnValue({
     items: [],
@@ -61,4 +83,71 @@ test('shows spinner when loading', () => {
     </AuthProvider>
   );
   expect(screen.getByText(/loading pull requests/i)).toBeInTheDocument();
+});
+
+test('renders loading overlay', () => {
+  jest
+    .spyOn(metricsHook, 'usePullRequestMetrics')
+    .mockReturnValue({ items: [], loading: true });
+  render(
+    <AuthProvider>
+      <MemoryRouter>
+        <MetricsTable />
+      </MemoryRouter>
+    </AuthProvider>
+  );
+  expect(screen.getByText(/loading pull requests/i)).toBeInTheDocument();
+});
+
+test('filters by repo and author', () => {
+  jest
+    .spyOn(metricsHook, 'usePullRequestMetrics')
+    .mockReturnValue({ items: sample, loading: false });
+  render(
+    <AuthProvider>
+      <MemoryRouter>
+        <MetricsTable />
+      </MemoryRouter>
+    </AuthProvider>
+  );
+  fireEvent.change(screen.getByLabelText('Repository'), {
+    target: { value: 'octo/repo' },
+  });
+  fireEvent.change(screen.getByLabelText('Author'), {
+    target: { value: 'octo' },
+  });
+  expect(screen.getByText('Test PR')).toBeInTheDocument();
+});
+
+test('selects and navigates to PR', () => {
+  const navigate = jest.fn();
+  jest
+    .spyOn(metricsHook, 'usePullRequestMetrics')
+    .mockReturnValue({ items: sample, loading: false });
+  (useNavigate as jest.Mock).mockReturnValue(navigate);
+  render(
+    <AuthProvider>
+      <MemoryRouter>
+        <MetricsTable />
+      </MemoryRouter>
+    </AuthProvider>
+  );
+  screen.getAllByRole('checkbox')[0].click();
+  screen.getByRole('button', { name: /view pull request/i }).click();
+  expect(navigate).toHaveBeenCalled();
+});
+
+test('renders timeline and lead time', () => {
+  jest
+    .spyOn(metricsHook, 'usePullRequestMetrics')
+    .mockReturnValue({ items: sample, loading: false });
+  render(
+    <AuthProvider>
+      <MemoryRouter>
+        <MetricsTable />
+      </MemoryRouter>
+    </AuthProvider>
+  );
+  expect(screen.getByLabelText(/Draft:/)).toBeInTheDocument();
+  expect(screen.getByText(/0h/i)).toBeInTheDocument();
 });

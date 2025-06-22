@@ -1,5 +1,11 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  act,
+} from '@testing-library/react';
 import RepoInsightsPage from '../RepoInsightsPage';
 import { AuthProvider } from '../AuthContext';
 import { ThemeModeProvider } from '../ThemeModeContext';
@@ -39,7 +45,9 @@ describe('RepoInsightsPage', () => {
     const input = screen.getByPlaceholderText(/owner\/repo/i);
     fireEvent.change(input, { target: { value: 'foo/bar' } });
     fireEvent.click(screen.getByRole('button', { name: /load/i }));
-    await waitFor(() => expect(githubService.fetchRepoInsights).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(githubService.fetchRepoInsights).toHaveBeenCalled()
+    );
     // You can add more assertions here for the loaded data if the component renders it
   });
 
@@ -57,11 +65,15 @@ describe('RepoInsightsPage', () => {
     const input = screen.getByPlaceholderText(/owner\/repo/i);
     fireEvent.change(input, { target: { value: 'invalid' } });
     fireEvent.click(screen.getByRole('button', { name: /load/i }));
-    expect(window.alert).toHaveBeenCalledWith('Enter a repository in the format owner/repo');
+    expect(window.alert).toHaveBeenCalledWith(
+      'Enter a repository in the format owner/repo'
+    );
   });
 
   it('shows loading overlay', async () => {
-    (githubService.fetchRepoInsights as jest.Mock).mockImplementation(() => new Promise(() => {}));
+    (githubService.fetchRepoInsights as jest.Mock).mockImplementation(
+      () => new Promise(() => {})
+    );
     await act(async () => {
       render(
         <ThemeModeProvider>
@@ -74,11 +86,15 @@ describe('RepoInsightsPage', () => {
     const input = screen.getByPlaceholderText(/owner\/repo/i);
     fireEvent.change(input, { target: { value: 'foo/bar' } });
     fireEvent.click(screen.getByRole('button', { name: /load/i }));
-    await waitFor(() => expect(screen.getByText(/fetching repository info/i)).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText(/fetching repository info/i)).toBeInTheDocument()
+    );
   });
 
   it('shows error message on fetch failure', async () => {
-    (githubService.fetchRepoInsights as jest.Mock).mockRejectedValue(new Error('fail'));
+    (githubService.fetchRepoInsights as jest.Mock).mockRejectedValue(
+      new Error('fail')
+    );
     await act(async () => {
       render(
         <ThemeModeProvider>
@@ -91,6 +107,8 @@ describe('RepoInsightsPage', () => {
     const input = screen.getByPlaceholderText(/owner\/repo/i);
     fireEvent.change(input, { target: { value: 'foo/bar' } });
     fireEvent.click(screen.getByRole('button', { name: /load/i }));
-    await waitFor(() => expect(screen.getByText(/failed to load data/i)).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText(/failed to load data/i)).toBeInTheDocument()
+    );
   });
 });
