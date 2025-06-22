@@ -64,8 +64,11 @@ export default function Login() {
             PR-ism
           </Heading>
           <FormControl>
-            <FormControl.Label>Personal access token</FormControl.Label>
+            <FormControl.Label htmlFor="token-input">
+              Personal access token
+            </FormControl.Label>
             <TextInput
+              id="token-input"
               type="password"
               value={value}
               onChange={(e) => setValue(e.target.value)}

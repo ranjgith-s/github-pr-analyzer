@@ -243,8 +243,11 @@ export default function MetricsTable() {
     <>
       <Box display="flex" marginBottom={3} sx={{ gap: 3 }}>
         <FormControl>
-          <FormControl.Label>Repository</FormControl.Label>
+          <FormControl.Label htmlFor="repo-filter">
+            Repository
+          </FormControl.Label>
           <Select
+            id="repo-filter"
             value={repoFilter}
             onChange={(e) => setRepoFilter(e.target.value)}
           >
@@ -257,8 +260,9 @@ export default function MetricsTable() {
           </Select>
         </FormControl>
         <FormControl>
-          <FormControl.Label>Author</FormControl.Label>
+          <FormControl.Label htmlFor="author-filter">Author</FormControl.Label>
           <Select
+            id="author-filter"
             value={authorFilter}
             onChange={(e) => setAuthorFilter(e.target.value)}
           >
