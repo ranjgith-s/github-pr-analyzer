@@ -4,6 +4,7 @@ import { useAuth } from './AuthContext';
 import { useRepoInsights } from './hooks/useRepoInsights';
 import LoadingOverlay from './LoadingOverlay';
 import { useDocumentTitle } from './hooks/useDocumentTitle';
+import { useMetaDescription } from './hooks/useMetaDescription';
 
 export default function RepoInsightsPage() {
   const { token } = useAuth();
@@ -18,6 +19,7 @@ export default function RepoInsightsPage() {
   ];
 
   useDocumentTitle('Repository insights');
+  useMetaDescription('Repository metrics and DevOps insights.');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
