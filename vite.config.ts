@@ -18,10 +18,6 @@ export default defineConfig({
         find: '@primer/react',
         replacement: path.resolve(__dirname, 'src/primer-shim.tsx'),
       },
-      {
-        find: '@primer/octicons-react',
-        replacement: path.resolve(__dirname, 'src/octicons-shim.tsx'),
-      },
     ],
   },
   build: {
