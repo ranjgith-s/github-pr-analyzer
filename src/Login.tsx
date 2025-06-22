@@ -1,21 +1,32 @@
 import React, { useState } from 'react';
-import { Box, Input, Heading, Text, FormControl, Link } from '@heroui/react';
+import {
+  Box,
+  Input,
+  Heading,
+  Text,
+  FormControl,
+  Link,
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  Switch,
+} from '@heroui/react';
 import { ChevronUpIcon } from '@heroicons/react/24/solid';
-import GlowingCard from './GlowingCard';
-import MagicButton from './MagicButton';
-import ColorModeToggle from './ColorModeToggle';
 
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { validateToken } from './services/auth';
 import { useDocumentTitle } from './hooks/useDocumentTitle';
 import { useMetaDescription } from './hooks/useMetaDescription';
+import { useThemeMode } from './ThemeModeContext';
 
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [value, setValue] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const { colorMode, toggleColorMode } = useThemeMode();
   useDocumentTitle('Sign in to PR-ism');
   useMetaDescription(
     'Login with your GitHub token to access pull request metrics.'
@@ -42,35 +53,45 @@ export default function Login() {
       minHeight="100vh"
     >
       <Box position="absolute" top={3} right={3}>
-        <ColorModeToggle />
+        <Switch
+          isSelected={colorMode === 'night'}
+          onValueChange={toggleColorMode}
+          aria-label={`Switch to ${colorMode === 'night' ? 'light' : 'dark'} mode`}
+        />
       </Box>
-      <GlowingCard>
-        <Box as="form" onSubmit={handleSubmit}>
+      <Card sx={{ p: 4, width: '100%', maxWidth: 400 }}>
+        <CardHeader>
           <Heading
             as="h1"
             display="flex"
             alignItems="center"
             justifyContent="center"
-            sx={{ gap: 2, textAlign: 'center', mb: 3, color: 'fg.default' }}
+            sx={{ gap: 2, textAlign: 'center', color: 'fg.default' }}
           >
             <ChevronUpIcon width={24} height={24} />
             PR-ism
           </Heading>
-          <FormControl>
-            <FormControl.Label htmlFor="token-input">
-              Personal access token
-            </FormControl.Label>
-            <Input
-              id="token-input"
-              type="password"
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              placeholder="GitHub token"
-              sx={{ width: '100%' }}
-            />
-            <FormControl.Caption>
-              <Text fontSize={1}>This token is used only in the browser.</Text>
-            </FormControl.Caption>
+        </CardHeader>
+        <CardBody>
+          <Box as="form" onSubmit={handleSubmit}>
+            <FormControl>
+              <FormControl.Label htmlFor="token-input">
+                Personal access token
+              </FormControl.Label>
+              <Input
+                id="token-input"
+                type="password"
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                placeholder="GitHub token"
+                sx={{ width: '100%' }}
+              />
+              <FormControl.Caption>
+                <Text fontSize={1}>
+                  This token is used only in the browser.
+                </Text>
+              </FormControl.Caption>
+            </FormControl>
             <Box mt={2}>
               <details>
                 <summary>
@@ -111,19 +132,19 @@ export default function Login() {
                 </Box>
               </details>
             </Box>
-          </FormControl>
-          <Box mt={3} width="100%">
-            <MagicButton type="submit" style={{ width: '100%' }}>
-              Sign in
-            </MagicButton>
+            <Box mt={3}>
+              <Button type="submit" color="primary" fullWidth>
+                Sign in
+              </Button>
+            </Box>
+            {error && (
+              <Text color="danger.fg" mt={2} display="block" textAlign="center">
+                {error}
+              </Text>
+            )}
           </Box>
-          {error && (
-            <Text color="danger.fg" mt={2} display="block" textAlign="center">
-              {error}
-            </Text>
-          )}
-        </Box>
-      </GlowingCard>
+        </CardBody>
+      </Card>
     </Box>
   );
 }

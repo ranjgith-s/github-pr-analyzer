@@ -118,3 +118,37 @@ export const Link: React.FC<React.AnchorHTMLAttributes<HTMLAnchorElement>> = ({
   children,
   ...props
 }) => <a {...props}>{children}</a>;
+
+export const Card: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
+  children,
+  ...props
+}) => <div {...props}>{children}</div>;
+export const CardHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
+  children,
+  ...props
+}) => <div {...props}>{children}</div>;
+export const CardBody: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
+  children,
+  ...props
+}) => <div {...props}>{children}</div>;
+export const CardFooter: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
+  children,
+  ...props
+}) => <div {...props}>{children}</div>;
+(Card as any).Header = CardHeader;
+(Card as any).Body = CardBody;
+(Card as any).Footer = CardFooter;
+
+export const Switch: React.FC<
+  React.InputHTMLAttributes<HTMLInputElement> & {
+    isSelected?: boolean;
+    onValueChange?: (v: boolean) => void;
+  }
+> = ({ isSelected, onValueChange, ...props }) => (
+  <input
+    type="checkbox"
+    checked={isSelected}
+    onChange={(e) => onValueChange?.(e.target.checked)}
+    {...props}
+  />
+);
