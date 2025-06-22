@@ -13,8 +13,7 @@
     "moduleResolution": "Bundler",
     "baseUrl": ".",
     "paths": {
-      "@heroui/react": ["./src/heroui-shim.tsx"],
-      "@primer/react": ["./src/primer-shim.tsx"]
+      "@heroui/react": ["./src/heroui-shim.tsx"]
     },
     "resolveJsonModule": true,
     "isolatedModules": true,

@@ -10,7 +10,6 @@ module.exports = {
   ],
   moduleNameMapper: {
     '\\.(css|less|scss)$': 'identity-obj-proxy',
-    '^@primer/react$': '<rootDir>/src/primer-shim.tsx',
     '^@heroui/react$': '<rootDir>/src/heroui-shim.tsx'
   },
   coverageThreshold: {
