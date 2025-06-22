@@ -6,14 +6,14 @@ module.exports = {
     'src/**/*.{ts,tsx}',
     '!src/main.tsx',
     '!src/setupTests.ts',
-    '!src/**/__tests__/**'
+    '!src/**/__tests__/**',
   ],
   moduleNameMapper: {
-    '\\.(css|less|scss)$': 'identity-obj-proxy'
+    '\\.(css|less|scss)$': 'identity-obj-proxy',
   },
   coverageThreshold: {
     global: {
-      lines: 50
-    }
-  }
+      lines: 50,
+    },
+  },
 };
