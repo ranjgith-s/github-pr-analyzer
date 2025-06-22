@@ -26,7 +26,7 @@ export default function App() {
   }
 
   return (
-    <div style={{ background: '#f8fafc', minHeight: '100vh' }}>
+    <div className="text-foreground bg-background min-h-screen">
       {token && <Header breadcrumb={breadcrumb} />}
       <div style={{ padding: token ? 24 : 0 }}>
         <Routes>
