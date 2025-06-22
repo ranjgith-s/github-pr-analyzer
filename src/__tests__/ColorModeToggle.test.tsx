@@ -15,8 +15,8 @@ test('toggles theme with accessible switch', async () => {
       <ColorModeToggle />
     </ThemeModeProvider>
   );
-  const button = screen.getByRole('switch');
-  expect(button).toHaveAttribute('aria-checked', 'false');
+  const button = screen.getByRole('button');
+  expect(button).toHaveAttribute('aria-pressed', 'false');
   await user.click(button);
-  expect(button).toHaveAttribute('aria-checked', 'true');
+  expect(button).toHaveAttribute('aria-pressed', 'true');
 });

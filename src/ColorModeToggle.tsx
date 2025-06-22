@@ -1,5 +1,6 @@
 import React from 'react';
 import { MoonIcon, SunIcon } from '@primer/octicons-react';
+import { ToggleSwitch } from '@primer/react';
 import { useThemeMode } from './ThemeModeContext';
 
 export default function ColorModeToggle() {
@@ -7,21 +8,13 @@ export default function ColorModeToggle() {
   const isNight = colorMode === 'night';
 
   return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={isNight}
-      onClick={toggleColorMode}
+    <ToggleSwitch
       aria-label={`Switch to ${isNight ? 'light' : 'dark'} mode`}
-      className={`color-mode-switch${isNight ? ' night' : ''}`}
+      checked={isNight}
+      onClick={toggleColorMode}
+      size="small"
     >
-      <span className="color-mode-switch-thumb">
-        {isNight ? (
-          <MoonIcon className="color-mode-icon" />
-        ) : (
-          <SunIcon className="color-mode-icon" />
-        )}
-      </span>
-    </button>
+      {isNight ? <MoonIcon /> : <SunIcon />}
+    </ToggleSwitch>
   );
 }
