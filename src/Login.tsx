@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Input, Heading, Text, FormControl, Link } from '@heroui/react';
-import { TriangleUpIcon } from '@primer/octicons-react';
+import { ChevronUpIcon } from '@heroicons/react/24/solid';
 import GlowingCard from './GlowingCard';
 import MagicButton from './MagicButton';
 import ColorModeToggle from './ColorModeToggle';
@@ -53,7 +53,7 @@ export default function Login() {
             justifyContent="center"
             sx={{ gap: 2, textAlign: 'center', mb: 3, color: 'fg.default' }}
           >
-            <TriangleUpIcon size={24} />
+            <ChevronUpIcon width={24} height={24} />
             PR-ism
           </Heading>
           <FormControl>

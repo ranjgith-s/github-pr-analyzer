@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Avatar, Text, Button, Breadcrumbs } from '@heroui/react';
 import { Octokit } from '@octokit/rest';
-import { TriangleUpIcon, SignOutIcon } from '@primer/octicons-react';
+import {
+  ChevronUpIcon,
+  ArrowRightOnRectangleIcon,
+} from '@heroicons/react/24/solid';
 import { Link as RouterLink } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import ColorModeToggle from './ColorModeToggle';
@@ -55,7 +58,7 @@ export default function Header({ breadcrumb }: HeaderProps) {
         alignItems="center"
         sx={{ gap: 2, color: 'fg.default' }}
       >
-        <TriangleUpIcon size={24} />
+        <ChevronUpIcon className="icon" width={24} height={24} />
         <Breadcrumbs className="breadcrumbs-modern" sx={{ fontWeight: 'bold' }}>
           <Breadcrumbs.Item as={RouterLink} to="/">
             PR-ism
@@ -74,7 +77,7 @@ export default function Header({ breadcrumb }: HeaderProps) {
           <Text fontSize={1} sx={{ fontFamily: 'mono' }}>
             {user.login}
           </Text>
-          <Button onClick={logout} trailingIcon={SignOutIcon}>
+          <Button onClick={logout} trailingIcon={ArrowRightOnRectangleIcon}>
             Sign out
           </Button>
         </Box>

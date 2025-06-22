@@ -1,5 +1,5 @@
 import React from 'react';
-import { MoonIcon, SunIcon } from '@primer/octicons-react';
+import { MoonIcon, SunIcon } from '@heroicons/react/24/solid';
 import { useThemeMode } from './ThemeModeContext';
 
 export default function ColorModeToggle() {

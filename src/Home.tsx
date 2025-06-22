@@ -3,10 +3,10 @@ import { Box, Text } from '@heroui/react';
 import { useDocumentTitle } from './hooks/useDocumentTitle';
 import { useMetaDescription } from './hooks/useMetaDescription';
 import {
-  RepoIcon,
-  PeopleIcon,
-  GitPullRequestIcon,
-} from '@primer/octicons-react';
+  FolderIcon,
+  UserGroupIcon,
+  ArrowsRightLeftIcon,
+} from '@heroicons/react/24/solid';
 import { Link as RouterLink } from 'react-router-dom';
 
 export default function Home() {
@@ -32,7 +32,7 @@ export default function Home() {
         }}
       >
         <Box display="flex" alignItems="center" sx={{ gap: 2 }}>
-          <GitPullRequestIcon />
+          <ArrowsRightLeftIcon width={20} height={20} />
           <Text fontSize={2} fontWeight="bold">
             Pull request insights
           </Text>
@@ -60,7 +60,7 @@ export default function Home() {
         }}
       >
         <Box display="flex" alignItems="center" sx={{ gap: 2 }}>
-          <PeopleIcon />
+          <UserGroupIcon width={20} height={20} />
           <Text fontSize={2} fontWeight="bold">
             Developer insights
           </Text>
@@ -88,7 +88,7 @@ export default function Home() {
         }}
       >
         <Box display="flex" alignItems="center" sx={{ gap: 2 }}>
-          <RepoIcon />
+          <FolderIcon width={20} height={20} />
           <Text fontSize={2} fontWeight="bold">
             Repository insights
           </Text>
