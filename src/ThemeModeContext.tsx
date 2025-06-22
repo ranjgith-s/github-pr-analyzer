@@ -6,7 +6,3 @@ export const ThemeModeProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   return <HeroUIProvider>{children}</HeroUIProvider>;
 };
-
-export function useThemeMode() {
-  throw new Error('Theme mode is not supported.');
-}

@@ -6,7 +6,6 @@ import {
 } from '@heroicons/react/24/solid';
 import { Link as RouterLink } from 'react-router-dom';
 import { useAuth } from './AuthContext';
-import ColorModeToggle from './ColorModeToggle';
 
 interface GitHubUser {
   login: string;
@@ -67,7 +66,6 @@ export default function Header({ breadcrumb }: HeaderProps) {
       </div>
       {user && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <ColorModeToggle />
           <img
             src={user.avatar_url}
             alt="avatar"

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { ChevronUpIcon } from '@heroicons/react/24/solid';
 import GlowingCard from './GlowingCard';
 import MagicButton from './MagicButton';
-import ColorModeToggle from './ColorModeToggle';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { validateToken } from './services/auth';
@@ -41,9 +40,6 @@ export default function Login() {
         minHeight: '100vh',
       }}
     >
-      <div style={{ position: 'absolute', top: 12, right: 12 }}>
-        <ColorModeToggle />
-      </div>
       <GlowingCard>
         <form onSubmit={handleSubmit}>
           <h1
