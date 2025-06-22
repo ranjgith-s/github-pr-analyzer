@@ -10,6 +10,7 @@ import {
 import { TriangleUpIcon } from '@primer/octicons-react';
 import GlowingCard from './GlowingCard';
 import MagicButton from './MagicButton';
+import ColorModeToggle from './ColorModeToggle';
 
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
@@ -41,6 +42,9 @@ export default function Login() {
       alignItems="center"
       minHeight="100vh"
     >
+      <Box position="absolute" top={3} right={3}>
+        <ColorModeToggle />
+      </Box>
       <GlowingCard>
         <Box as="form" onSubmit={handleSubmit}>
           <Heading

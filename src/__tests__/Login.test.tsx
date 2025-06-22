@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import Login from '../Login';
 import { AuthProvider, useAuth } from '../AuthContext';
+import { ThemeModeProvider } from '../ThemeModeContext';
 import { MemoryRouter } from 'react-router-dom';
 import * as authService from '../services/auth';
 
@@ -20,11 +21,13 @@ test('login submits provided token', async () => {
     return <Login />;
   }
   render(
-    <AuthProvider>
-      <MemoryRouter>
-        <Wrapper />
-      </MemoryRouter>
-    </AuthProvider>
+    <ThemeModeProvider>
+      <AuthProvider>
+        <MemoryRouter>
+          <Wrapper />
+        </MemoryRouter>
+      </AuthProvider>
+    </ThemeModeProvider>
   );
   const input = screen.getByPlaceholderText(/github token/i);
   const user = userEvent.setup();
@@ -37,11 +40,13 @@ test('shows error when token is invalid', async () => {
   (authService.validateToken as jest.Mock).mockRejectedValue(new Error('bad'));
 
   render(
-    <AuthProvider>
-      <MemoryRouter>
-        <Login />
-      </MemoryRouter>
-    </AuthProvider>
+    <ThemeModeProvider>
+      <AuthProvider>
+        <MemoryRouter>
+          <Login />
+        </MemoryRouter>
+      </AuthProvider>
+    </ThemeModeProvider>
   );
   const user = userEvent.setup();
   await user.type(screen.getByPlaceholderText(/github token/i), 'bad');

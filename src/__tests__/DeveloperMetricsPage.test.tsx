@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import DeveloperMetricsPage from '../DeveloperMetricsPage';
 import { AuthProvider, useAuth } from '../AuthContext';
+import { ThemeModeProvider } from '../ThemeModeContext';
 import * as metricsHook from '../hooks/useDeveloperMetrics';
 import * as github from '../services/github';
 
@@ -28,9 +29,11 @@ test('renders page heading', () => {
     loading: false,
   });
   render(
-    <AuthProvider>
-      <Wrapper />
-    </AuthProvider>
+    <ThemeModeProvider>
+      <AuthProvider>
+        <Wrapper />
+      </AuthProvider>
+    </ThemeModeProvider>
   );
   expect(
     screen.getByRole('heading', { name: /developer insights/i })
@@ -46,9 +49,11 @@ test('displays suggestions and handles selection', async () => {
     { login: 'octo', avatar_url: 'x' },
   ]);
   render(
-    <AuthProvider>
-      <Wrapper />
-    </AuthProvider>
+    <ThemeModeProvider>
+      <AuthProvider>
+        <Wrapper />
+      </AuthProvider>
+    </ThemeModeProvider>
   );
   const user = userEvent.setup();
   await user.type(screen.getByPlaceholderText(/search github user/i), 'oct');
@@ -66,9 +71,11 @@ test('logs error on search failure', async () => {
   (github.searchUsers as jest.Mock).mockRejectedValue(new Error('fail'));
   const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
   render(
-    <AuthProvider>
-      <Wrapper />
-    </AuthProvider>
+    <ThemeModeProvider>
+      <AuthProvider>
+        <Wrapper />
+      </AuthProvider>
+    </ThemeModeProvider>
   );
   const user = userEvent.setup();
   await user.type(screen.getByPlaceholderText(/search github user/i), 'oct');
