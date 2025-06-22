@@ -56,7 +56,7 @@ test('displays suggestions and handles selection', async () => {
     </ThemeModeProvider>
   );
   const user = userEvent.setup();
-  await user.type(screen.getByPlaceholderText(/search github user/i), 'oct');
+  await user.type(screen.getByPlaceholderText(/search github users/i), 'oct');
   await waitFor(() => expect(github.searchUsers).toHaveBeenCalled());
   await waitFor(() => screen.getByText('octo'));
   await user.click(screen.getByText('octo'));
@@ -78,7 +78,7 @@ test('logs error on search failure', async () => {
     </ThemeModeProvider>
   );
   const user = userEvent.setup();
-  await user.type(screen.getByPlaceholderText(/search github user/i), 'oct');
+  await user.type(screen.getByPlaceholderText(/search github users/i), 'oct');
   await waitFor(() => expect(github.searchUsers).toHaveBeenCalled());
   await waitFor(() => expect(spy).toHaveBeenCalled());
   spy.mockRestore();
