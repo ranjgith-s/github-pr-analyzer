@@ -9,7 +9,10 @@ module.exports = {
     '!src/**/__tests__/**'
   ],
   moduleNameMapper: {
-    '\\.(css|less|scss)$': 'identity-obj-proxy'
+    '\\.(css|less|scss)$': 'identity-obj-proxy',
+    '^@primer/react$': '<rootDir>/src/primer-shim.tsx',
+    '^@primer/react/drafts$': '<rootDir>/src/primer-drafts-shim.tsx',
+    '^@primer/octicons-react$': '<rootDir>/src/octicons-shim.tsx'
   },
   coverageThreshold: {
     global: {
