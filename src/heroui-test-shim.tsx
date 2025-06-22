@@ -36,9 +36,18 @@ Breadcrumbs.Item = ({ to, href, children, ...props }: any) => (
   </a>
 );
 
-export const Input: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (
-  props
-) => <input {...props} />;
+export const Input: React.FC<
+  React.InputHTMLAttributes<HTMLInputElement> & {
+    label?: React.ReactNode;
+    description?: React.ReactNode;
+  }
+> = ({ label, description, id, ...props }) => (
+  <div>
+    {label && <label htmlFor={id}>{label}</label>}
+    <input id={id} {...props} />
+    {description && <span>{description}</span>}
+  </div>
+);
 
 export const Heading: React.FC<any> = ({
   as: Component = 'h2',
@@ -72,9 +81,23 @@ FormControl.Caption = ({ children }: { children?: React.ReactNode }) => (
   <span>{children}</span>
 );
 
-export const Select: React.FC<React.SelectHTMLAttributes<HTMLSelectElement>> & {
-  Option: React.FC<React.OptionHTMLAttributes<HTMLOptionElement>>;
-} = ({ children, ...props }) => <select {...props}>{children}</select>;
+export const Select: React.FC<
+  React.SelectHTMLAttributes<HTMLSelectElement> & {
+    label?: React.ReactNode;
+  }
+> & { Option: React.FC<React.OptionHTMLAttributes<HTMLOptionElement>> } = ({
+  children,
+  label,
+  id,
+  ...props
+}) => (
+  <div>
+    {label && <label htmlFor={id}>{label}</label>}
+    <select id={id} {...props}>
+      {children}
+    </select>
+  </div>
+);
 Select.Option = (props) => <option {...props}>{props.children}</option>;
 
 export const Timeline: React.FC<{ children?: React.ReactNode }> & {
@@ -101,9 +124,7 @@ export const DataTable: React.FC<{
   cellPadding?: any;
 }> = ({ children }) => <table>{children}</table>;
 
-export const createColumnHelper = () => ({
-  column: (config: any) => config,
-});
+export const createColumnHelper = () => ({ column: (config: any) => config });
 
 export const StateLabel: React.FC<{
   status?: string;

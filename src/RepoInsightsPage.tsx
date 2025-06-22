@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Box, Input, Button, Heading, Text, Badge } from '@heroui/react';
+import { Input, Button, Badge } from '@heroui/react';
+import { Box, Heading, Text } from './primer-shim';
 import { useAuth } from './AuthContext';
 import { useRepoInsights } from './hooks/useRepoInsights';
 import LoadingOverlay from './LoadingOverlay';

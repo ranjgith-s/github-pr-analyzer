@@ -1,10 +1,6 @@
 import React, { useState } from 'react';
 import {
-  Box,
   Input,
-  Heading,
-  Text,
-  FormControl,
   Link,
   Button,
   Card,
@@ -12,6 +8,7 @@ import {
   CardHeader,
   Switch,
 } from '@heroui/react';
+import { Box, Heading, Text } from './primer-shim';
 import { ChevronUpIcon } from '@heroicons/react/24/solid';
 
 import { useNavigate } from 'react-router-dom';
@@ -74,24 +71,16 @@ export default function Login() {
         </CardHeader>
         <CardBody>
           <Box as="form" onSubmit={handleSubmit}>
-            <FormControl>
-              <FormControl.Label htmlFor="token-input">
-                Personal access token
-              </FormControl.Label>
-              <Input
-                id="token-input"
-                type="password"
-                value={value}
-                onChange={(e) => setValue(e.target.value)}
-                placeholder="GitHub token"
-                sx={{ width: '100%' }}
-              />
-              <FormControl.Caption>
-                <Text fontSize={1}>
-                  This token is used only in the browser.
-                </Text>
-              </FormControl.Caption>
-            </FormControl>
+            <Input
+              id="token-input"
+              type="password"
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              placeholder="GitHub token"
+              label="Personal access token"
+              description="This token is used only in the browser."
+              sx={{ width: '100%' }}
+            />
             <Box mt={2}>
               <details>
                 <summary>
