@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { HeroUIProvider } from '@heroui/system';
+import { HeroUIProvider } from '@heroui/react';
 
 export type ColorMode = 'day' | 'night';
 
