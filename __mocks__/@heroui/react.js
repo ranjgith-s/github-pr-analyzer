@@ -13,6 +13,7 @@ const CUSTOM_PROPS = [
   'alt',
   'className',
   'children',
+  'isClearable', // <-- add this to filter out isClearable
 ];
 
 function filterProps(props) {
@@ -30,7 +31,9 @@ function passthrough({ children, ...props }) {
 }
 
 function InputMock(props) {
-  return React.createElement('input', filterProps(props));
+  // Remove isClearable from props
+  const { isClearable, ...rest } = props;
+  return React.createElement('input', filterProps(rest));
 }
 
 function ButtonMock({ children, onPress, onClick, ...props }) {
@@ -178,6 +181,20 @@ function PaginationMock({ total, page, onChange, ...props }) {
   );
 }
 
+// Add mocks for Dropdown, DropdownTrigger, DropdownMenu, DropdownItem
+function DropdownMock({ children }) {
+  return React.createElement('div', { 'data-testid': 'dropdown' }, children);
+}
+function DropdownTriggerMock({ children }) {
+  return React.createElement('div', { 'data-testid': 'dropdown-trigger' }, children);
+}
+function DropdownMenuMock({ children }) {
+  return React.createElement('div', { 'data-testid': 'dropdown-menu' }, children);
+}
+function DropdownItemMock({ children, ...props }) {
+  return React.createElement('div', { 'data-testid': 'dropdown-item', ...props }, children);
+}
+
 module.exports = {
   __esModule: true,
   Card: CardMock,
@@ -199,4 +216,8 @@ module.exports = {
   TableRow: TableRowMock,
   TableCell: TableCellMock,
   Pagination: PaginationMock,
+  Dropdown: DropdownMock,
+  DropdownTrigger: DropdownTriggerMock,
+  DropdownMenu: DropdownMenuMock,
+  DropdownItem: DropdownItemMock,
 };
