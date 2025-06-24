@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import DeveloperMetricsPage from '../DeveloperMetricsPage';
@@ -16,11 +16,7 @@ function Wrapper() {
   useEffect(() => {
     auth.login('tok');
   }, [auth]);
-  return (
-    <MemoryRouter>
-      <DeveloperMetricsPage />
-    </MemoryRouter>
-  );
+  return <DeveloperMetricsPage />;
 }
 
 test('renders page heading', () => {
@@ -29,11 +25,13 @@ test('renders page heading', () => {
     loading: false,
   });
   render(
-    <ThemeModeProvider>
-      <AuthProvider>
-        <Wrapper />
-      </AuthProvider>
-    </ThemeModeProvider>
+    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <ThemeModeProvider>
+        <AuthProvider>
+          <Wrapper />
+        </AuthProvider>
+      </ThemeModeProvider>
+    </MemoryRouter>
   );
   expect(
     screen.getByRole('heading', { name: /developer insights/i })
@@ -49,17 +47,23 @@ test('displays suggestions and handles selection', async () => {
     { login: 'octo', avatar_url: 'x' },
   ]);
   render(
-    <ThemeModeProvider>
-      <AuthProvider>
-        <Wrapper />
-      </AuthProvider>
-    </ThemeModeProvider>
+    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <ThemeModeProvider>
+        <AuthProvider>
+          <Wrapper />
+        </AuthProvider>
+      </ThemeModeProvider>
+    </MemoryRouter>
   );
   const user = userEvent.setup();
-  await user.type(screen.getByPlaceholderText(/search github users/i), 'oct');
+  await act(async () => {
+    await user.type(screen.getByPlaceholderText(/search github users/i), 'oct');
+  });
   await waitFor(() => expect(github.searchUsers).toHaveBeenCalled());
   await waitFor(() => screen.getByText('octo'));
-  await user.click(screen.getByText('octo'));
+  await act(async () => {
+    await user.click(screen.getByText('octo'));
+  });
   expect(screen.queryByText('octo')).not.toBeInTheDocument();
 });
 
@@ -71,11 +75,13 @@ test('logs error on search failure', async () => {
   (github.searchUsers as jest.Mock).mockRejectedValue(new Error('fail'));
   const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
   render(
-    <ThemeModeProvider>
-      <AuthProvider>
-        <Wrapper />
-      </AuthProvider>
-    </ThemeModeProvider>
+    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <ThemeModeProvider>
+        <AuthProvider>
+          <Wrapper />
+        </AuthProvider>
+      </ThemeModeProvider>
+    </MemoryRouter>
   );
   const user = userEvent.setup();
   await user.type(screen.getByPlaceholderText(/search github users/i), 'oct');
@@ -115,11 +121,13 @@ test('renders metrics UI with data', () => {
     loading: false,
   });
   render(
-    <ThemeModeProvider>
-      <AuthProvider>
-        <Wrapper />
-      </AuthProvider>
-    </ThemeModeProvider>
+    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <ThemeModeProvider>
+        <AuthProvider>
+          <Wrapper />
+        </AuthProvider>
+      </ThemeModeProvider>
+    </MemoryRouter>
   );
   expect(screen.getByText('Octo Cat')).toBeInTheDocument();
   expect(screen.getByText('bio')).toBeInTheDocument();
@@ -171,11 +179,13 @@ test('renders loading overlay', () => {
     loading: true,
   });
   render(
-    <ThemeModeProvider>
-      <AuthProvider>
-        <Wrapper />
-      </AuthProvider>
-    </ThemeModeProvider>
+    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <ThemeModeProvider>
+        <AuthProvider>
+          <Wrapper />
+        </AuthProvider>
+      </ThemeModeProvider>
+    </MemoryRouter>
   );
   expect(screen.getByText(/fetching user data/i)).toBeInTheDocument();
 });
@@ -211,11 +221,13 @@ test('handles missing optional fields', () => {
     loading: false,
   });
   render(
-    <ThemeModeProvider>
-      <AuthProvider>
-        <Wrapper />
-      </AuthProvider>
-    </ThemeModeProvider>
+    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <ThemeModeProvider>
+        <AuthProvider>
+          <Wrapper />
+        </AuthProvider>
+      </ThemeModeProvider>
+    </MemoryRouter>
   );
   expect(screen.getAllByText('octo').length).toBeGreaterThan(0);
   expect(screen.queryByText('bio')).not.toBeInTheDocument();

@@ -35,3 +35,5 @@ export const ThemeModeProvider: React.FC<{ children: React.ReactNode }> = ({
 };
 
 export const useThemeMode = () => useContext(ThemeModeContext);
+
+export default ThemeModeProvider;

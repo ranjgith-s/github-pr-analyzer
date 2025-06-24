@@ -6,7 +6,7 @@ export default {
   content: [
     './src/**/*.{js,ts,jsx,tsx}',
     './index.html',
-    './node_modules/@heroui/theme/dist/components/(card|ripple).js',
+    './node_modules/@heroui/theme/dist/components/**/*.js', // include all heroui components
   ],
   theme: {
     extend: {},

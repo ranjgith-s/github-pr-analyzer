@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import Login from '../Login';
 import { AuthProvider, useAuth } from '../AuthContext';
@@ -21,18 +21,20 @@ test('login submits provided token', async () => {
     return <Login />;
   }
   render(
-    <ThemeModeProvider>
-      <AuthProvider>
-        <MemoryRouter>
+    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <ThemeModeProvider>
+        <AuthProvider>
           <Wrapper />
-        </MemoryRouter>
-      </AuthProvider>
-    </ThemeModeProvider>
+        </AuthProvider>
+      </ThemeModeProvider>
+    </MemoryRouter>
   );
   const input = screen.getByLabelText(/personal access token/i);
   const user = userEvent.setup();
-  await user.type(input, 'token123');
-  await user.click(screen.getByRole('button', { name: /sign in/i }));
+  await act(async () => {
+    await user.type(input, 'token123');
+    await user.click(screen.getByRole('button', { name: /sign in/i }));
+  });
   await waitFor(() => expect(ctx!.token).toBe('token123'));
 });
 
@@ -40,18 +42,19 @@ test('shows error when token is invalid', async () => {
   (authService.validateToken as jest.Mock).mockRejectedValue(new Error('bad'));
 
   render(
-    <ThemeModeProvider>
-      <AuthProvider>
-        <MemoryRouter>
+    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <ThemeModeProvider>
+        <AuthProvider>
           <Login />
-        </MemoryRouter>
-      </AuthProvider>
-    </ThemeModeProvider>
+        </AuthProvider>
+      </ThemeModeProvider>
+    </MemoryRouter>
   );
   const user = userEvent.setup();
-  await user.type(screen.getByLabelText(/personal access token/i), 'bad');
-  await user.click(screen.getByRole('button', { name: /sign in/i }));
-
+  await act(async () => {
+    await user.type(screen.getByLabelText(/personal access token/i), 'bad');
+    await user.click(screen.getByRole('button', { name: /sign in/i }));
+  });
   await waitFor(() =>
     expect(screen.getByText(/invalid token/i)).toBeInTheDocument()
   );

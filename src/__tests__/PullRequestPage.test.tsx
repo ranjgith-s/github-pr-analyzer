@@ -12,15 +12,16 @@ const timeline = [
 
 test('renders timeline from router state', () => {
   render(
-    <AuthProvider>
-      <MemoryRouter
-        initialEntries={[
-          { pathname: '/pr/o/r/1', state: { title: 'PR', timeline } },
-        ]}
-      >
+    <MemoryRouter
+      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      initialEntries={[
+        { pathname: '/pr/o/r/1', state: { title: 'PR', timeline } },
+      ]}
+    >
+      <AuthProvider>
         <PullRequestPage />
-      </MemoryRouter>
-    </AuthProvider>
+      </AuthProvider>
+    </MemoryRouter>
   );
   expect(screen.getByText('PR')).toBeInTheDocument();
   expect(screen.getByText(/Created/)).toBeInTheDocument();
@@ -31,7 +32,7 @@ jest.mock('@octokit/rest');
 
 test('fetches data when no router state', async () => {
   const mockOctokit = { graphql: jest.fn() } as any;
-  (Octokit as jest.Mock).mockImplementation(() => mockOctokit);
+  (Octokit as unknown as jest.Mock).mockImplementation(() => mockOctokit);
   mockOctokit.graphql.mockResolvedValue({
     repository: {
       pullRequest: {
@@ -47,21 +48,21 @@ test('fetches data when no router state', async () => {
 
   function Wrapper() {
     return (
-      <MemoryRouter initialEntries={['/pr/o/r/1']}>
-        <Routes>
-          <Route
-            path="/pr/:owner/:repo/:number"
-            element={<PullRequestPage />}
-          />
-        </Routes>
-      </MemoryRouter>
+      <Routes>
+        <Route
+          path="/pr/:owner/:repo/:number"
+          element={<PullRequestPage />}
+        />
+      </Routes>
     );
   }
 
   render(
-    <AuthProvider>
-      <Wrapper />
-    </AuthProvider>
+    <MemoryRouter initialEntries={['/pr/o/r/1']} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <AuthProvider>
+        <Wrapper />
+      </AuthProvider>
+    </MemoryRouter>
   );
 
   await waitFor(() => screen.getByText('Fetched PR'));

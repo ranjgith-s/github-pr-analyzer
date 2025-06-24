@@ -10,6 +10,7 @@ import RepoInsightsPage from '../RepoInsightsPage';
 import { AuthProvider } from '../AuthContext';
 import { ThemeModeProvider } from '../ThemeModeContext';
 import * as githubService from '../services/github';
+import { MemoryRouter } from 'react-router-dom';
 
 jest.mock('../services/github');
 
@@ -35,11 +36,13 @@ describe('RepoInsightsPage', () => {
     });
     await act(async () => {
       render(
-        <ThemeModeProvider>
-          <AuthProvider>
-            <RepoInsightsPage />
-          </AuthProvider>
-        </ThemeModeProvider>
+        <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <ThemeModeProvider>
+            <AuthProvider>
+              <RepoInsightsPage />
+            </AuthProvider>
+          </ThemeModeProvider>
+        </MemoryRouter>
       );
     });
     const input = screen.getByPlaceholderText(/owner\/repo/i);
@@ -55,11 +58,13 @@ describe('RepoInsightsPage', () => {
     window.alert = jest.fn();
     act(() => {
       render(
-        <ThemeModeProvider>
-          <AuthProvider>
-            <RepoInsightsPage />
-          </AuthProvider>
-        </ThemeModeProvider>
+        <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <ThemeModeProvider>
+            <AuthProvider>
+              <RepoInsightsPage />
+            </AuthProvider>
+          </ThemeModeProvider>
+        </MemoryRouter>
       );
     });
     const input = screen.getByPlaceholderText(/owner\/repo/i);
@@ -76,11 +81,13 @@ describe('RepoInsightsPage', () => {
     );
     await act(async () => {
       render(
-        <ThemeModeProvider>
-          <AuthProvider>
-            <RepoInsightsPage />
-          </AuthProvider>
-        </ThemeModeProvider>
+        <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <ThemeModeProvider>
+            <AuthProvider>
+              <RepoInsightsPage />
+            </AuthProvider>
+          </ThemeModeProvider>
+        </MemoryRouter>
       );
     });
     const input = screen.getByPlaceholderText(/owner\/repo/i);
@@ -97,11 +104,13 @@ describe('RepoInsightsPage', () => {
     );
     await act(async () => {
       render(
-        <ThemeModeProvider>
-          <AuthProvider>
-            <RepoInsightsPage />
-          </AuthProvider>
-        </ThemeModeProvider>
+        <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <ThemeModeProvider>
+            <AuthProvider>
+              <RepoInsightsPage />
+            </AuthProvider>
+          </ThemeModeProvider>
+        </MemoryRouter>
       );
     });
     const input = screen.getByPlaceholderText(/owner\/repo/i);

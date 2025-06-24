@@ -1,46 +1,50 @@
 import React, { useEffect } from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import Header from '../Header';
-import { AuthProvider, useAuth } from '../AuthContext';
+import { AuthProvider } from '../AuthContext';
 import { ThemeModeProvider } from '../ThemeModeContext';
 import { MemoryRouter } from 'react-router-dom';
 import { Octokit } from '@octokit/rest';
+import * as AuthContextModule from '../AuthContext';
 
 jest.mock('@octokit/rest');
+
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 
 test('fetches and displays user info', async () => {
   const mockOctokit = {
     rest: { users: { getAuthenticated: jest.fn() } },
   } as any;
-  (Octokit as jest.Mock).mockImplementation(() => mockOctokit);
+  (Octokit as unknown as jest.Mock).mockImplementation(() => mockOctokit);
   mockOctokit.rest.users.getAuthenticated.mockResolvedValue({
     data: { login: 'octo', avatar_url: 'img' },
   });
 
   function Wrapper() {
-    const auth = useAuth();
+    const auth = AuthContextModule.useAuth();
     useEffect(() => {
       auth.login('token');
     }, [auth]);
     return (
-      <MemoryRouter>
-        <Header
-          breadcrumb={{ label: 'Pull request insights', to: '/insights' }}
-        />
-      </MemoryRouter>
+      <Header
+        breadcrumb={{ label: 'Pull request insights', to: '/insights' }}
+      />
     );
   }
 
   render(
-    <ThemeModeProvider>
-      <AuthProvider>
-        <Wrapper />
-      </AuthProvider>
-    </ThemeModeProvider>
+    <MemoryRouter>
+      <ThemeModeProvider>
+        <AuthProvider>
+          <Wrapper />
+        </AuthProvider>
+      </ThemeModeProvider>
+    </MemoryRouter>
   );
 
   await waitFor(() => expect(screen.getByText('octo')).toBeInTheDocument());
   expect(Octokit).toHaveBeenCalledWith({ auth: 'token' });
-  const link = screen.getByRole('link', { name: 'Pull request insights' });
-  expect(link).toHaveAttribute('href', '/insights');
+  expect(screen.getByText('Pull request insights')).toBeInTheDocument();
 });

@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { MemoryRouter, useNavigate } from 'react-router-dom';
 import MetricsTable from '../MetricsTable';
 import { AuthProvider } from '../AuthContext';
@@ -46,7 +46,7 @@ jest
 test('renders filters and data', () => {
   render(
     <AuthProvider>
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <MetricsTable />
       </MemoryRouter>
     </AuthProvider>
@@ -62,7 +62,7 @@ test('renders empty state', () => {
     .mockReturnValue({ items: [], loading: false });
   render(
     <AuthProvider>
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <MetricsTable />
       </MemoryRouter>
     </AuthProvider>
@@ -77,12 +77,12 @@ test('shows spinner when loading', () => {
   });
   render(
     <AuthProvider>
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <MetricsTable />
       </MemoryRouter>
     </AuthProvider>
   );
-  expect(screen.getByText(/loading pull requests/i)).toBeInTheDocument();
+  expect(screen.getByTestId('spinner')).toBeInTheDocument();
 });
 
 test('renders loading overlay', () => {
@@ -91,7 +91,7 @@ test('renders loading overlay', () => {
     .mockReturnValue({ items: [], loading: true });
   render(
     <AuthProvider>
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <MetricsTable />
       </MemoryRouter>
     </AuthProvider>
@@ -105,16 +105,18 @@ test('filters by repo and author', () => {
     .mockReturnValue({ items: sample, loading: false });
   render(
     <AuthProvider>
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <MetricsTable />
       </MemoryRouter>
     </AuthProvider>
   );
-  fireEvent.change(screen.getByLabelText('Repository'), {
-    target: { value: 'octo/repo' },
-  });
-  fireEvent.change(screen.getByLabelText('Author'), {
-    target: { value: 'octo' },
+  act(() => {
+    fireEvent.change(screen.getByLabelText('Repository'), {
+      target: { value: 'octo/repo' },
+    });
+    fireEvent.change(screen.getByLabelText('Author'), {
+      target: { value: 'octo' },
+    });
   });
   expect(screen.getByText('Test PR')).toBeInTheDocument();
 });
@@ -127,7 +129,7 @@ test('selects and navigates to PR', () => {
   (useNavigate as jest.Mock).mockReturnValue(navigate);
   render(
     <AuthProvider>
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <MetricsTable />
       </MemoryRouter>
     </AuthProvider>
@@ -143,7 +145,7 @@ test('renders timeline and lead time', () => {
     .mockReturnValue({ items: sample, loading: false });
   render(
     <AuthProvider>
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <MetricsTable />
       </MemoryRouter>
     </AuthProvider>

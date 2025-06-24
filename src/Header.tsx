@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Octokit } from '@octokit/rest';
 import {
   ChevronUpIcon,
-  ArrowRightOnRectangleIcon,
+  ArrowLeftStartOnRectangleIcon,
 } from '@heroicons/react/24/solid';
 import { Link as RouterLink } from 'react-router-dom';
 import { useAuth } from './AuthContext';
+import { Avatar, Breadcrumbs, BreadcrumbItem, Button } from '@heroui/react';
 
 interface GitHubUser {
   login: string;
@@ -39,50 +40,46 @@ export default function Header({ breadcrumb }: HeaderProps) {
   }, [token]);
 
   return (
-    <div
-      className="app-header"
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: 16,
-        borderBottom: '1px solid #eee',
-        background: '#f8fafc',
-      }}
-    >
-      <div
-        style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#222' }}
-      >
+    <div className="app-header flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-background/60 backdrop-blur-md dark:bg-background/60">
+      <div className="flex items-center gap-2 text-foreground">
         <ChevronUpIcon width={24} height={24} />
-        <nav
-          className="breadcrumbs-modern"
-          style={{ fontWeight: 'bold', display: 'flex', gap: 8 }}
+        <Breadcrumbs
+          variant="light"
+          color="primary"
+          size="md"
+          underline="hover"
+          className="font-bold"
         >
-          <RouterLink to="/">PR-ism</RouterLink>
+          <BreadcrumbItem color="primary">
+            <RouterLink to="/">PR-ism</RouterLink>
+          </BreadcrumbItem>
           {breadcrumb && (
-            <RouterLink to={breadcrumb.to}>{breadcrumb.label}</RouterLink>
+            <BreadcrumbItem color="foreground" isCurrent>
+              {breadcrumb.label}
+            </BreadcrumbItem>
           )}
-        </nav>
+        </Breadcrumbs>
       </div>
       {user && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <img
+        <div className="flex items-center gap-2">
+          <Avatar
             src={user.avatar_url}
             alt="avatar"
-            width={24}
-            height={24}
-            style={{ borderRadius: '50%' }}
+            size="sm"
           />
-          <span style={{ fontFamily: 'monospace', fontSize: 14 }}>
-            {user.login}
-          </span>
-          <button
-            onClick={logout}
-            style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+          <span className="font-mono text-sm">{user.login}</span>
+          <Button
+            variant="bordered"
+            color="primary"
+            size="sm"
+            className="flex items-center gap-1 px-3 py-1"
+            endContent={
+              <ArrowLeftStartOnRectangleIcon className="w-5 h-5" />
+            }
+            onPress={logout}
           >
-            <ArrowRightOnRectangleIcon width={18} height={18} />
             Logout
-          </button>
+          </Button>
         </div>
       )}
     </div>

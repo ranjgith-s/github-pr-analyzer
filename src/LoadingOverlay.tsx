@@ -23,6 +23,7 @@ export default function LoadingOverlay({
 
   return (
     <div
+      data-testid="spinner"
       style={{
         position: 'fixed',
         top: 0,
