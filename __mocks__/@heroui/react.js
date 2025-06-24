@@ -40,9 +40,18 @@ function ButtonMock({ children, onPress, onClick, ...props }) {
   return React.createElement('button', domProps, children);
 }
 
+function Spinner() {
+  // Only return a simple span for test, not a div with data-testid
+  return React.createElement('span', null, 'Loading...');
+}
+
+function CardMock({ children, ...props }) {
+  return React.createElement('div', { ...filterProps(props), className: (props.className || '') + ' mock-card' }, children);
+}
+
 module.exports = {
   __esModule: true,
-  Card: passthrough,
+  Card: CardMock,
   CardHeader: passthrough,
   CardBody: passthrough,
   CardFooter: passthrough,
@@ -51,4 +60,5 @@ module.exports = {
   Avatar: passthrough,
   Breadcrumbs: passthrough,
   BreadcrumbItem: passthrough,
+  Spinner,
 };

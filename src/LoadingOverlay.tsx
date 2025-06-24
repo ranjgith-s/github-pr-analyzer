@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Spinner, Card } from '@heroui/react';
 
 interface LoadingOverlayProps {
   show: boolean;
@@ -24,30 +25,15 @@ export default function LoadingOverlay({
   return (
     <div
       data-testid="spinner"
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexDirection: 'column',
-        background: 'rgba(248, 250, 252, 0.9)',
-        opacity: 0.9,
-        zIndex: 10,
-      }}
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm"
+      style={{ minHeight: '100vh' }}
     >
-      <span style={{ fontSize: 32, marginBottom: 16 }}>⏳</span>
-      <p
-        style={{
-          fontFamily: 'monospace',
-          animation: 'pulse 1.5s ease-in-out infinite',
-        }}
-      >
-        {messages[index]}
-      </p>
+      <Card className="flex flex-col items-center gap-4 p-8 shadow-xl border border-divider bg-content1/90">
+        <Spinner size="lg" color="primary" />
+        <p className="text-base font-mono animate-pulse text-foreground/80 text-center min-w-[200px] min-h-[24px]">
+          {messages[index]}
+        </p>
+      </Card>
     </div>
   );
 }
