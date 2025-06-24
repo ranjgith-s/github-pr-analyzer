@@ -153,3 +153,30 @@ test('renders timeline and lead time', () => {
   expect(screen.getByLabelText(/Draft:/)).toBeInTheDocument();
   expect(screen.getByText(/0h/i)).toBeInTheDocument();
 });
+
+test('pagination works and changes page', () => {
+  const manyItems = Array.from({ length: 60 }, (_, i) => ({
+    ...sample[0],
+    id: String(i + 1),
+    number: i + 1,
+    title: `PR ${i + 1}`,
+  }));
+  jest.spyOn(metricsHook, 'usePullRequestMetrics').mockReturnValue({ items: manyItems, loading: false });
+  render(
+    <AuthProvider>
+      <MemoryRouter>
+        <MetricsTable />
+      </MemoryRouter>
+    </AuthProvider>
+  );
+  // Should show page 1 by default
+  expect(screen.getByText('PR 1')).toBeInTheDocument();
+  expect(screen.queryByText('PR 26')).not.toBeInTheDocument();
+  // Click page 2 in pagination
+  const page2Btn = screen.getByTestId('pagination').querySelectorAll('button')[1];
+  act(() => {
+    page2Btn.click();
+  });
+  expect(screen.getByText('PR 26')).toBeInTheDocument();
+  expect(screen.queryByText('PR 1')).not.toBeInTheDocument();
+});

@@ -4,6 +4,7 @@ import { usePullRequestMetrics } from './hooks/usePullRequestMetrics';
 import { PRItem } from './types';
 import { useAuth } from './AuthContext';
 import LoadingOverlay from './LoadingOverlay';
+import { Table, TableHeader, TableBody, TableColumn, TableRow, TableCell, Button, Select, SelectItem, Pagination } from '@heroui/react';
 
 export function formatDuration(start?: string | null, end?: string | null) {
   if (!start || !end) return 'N/A';
@@ -20,7 +21,7 @@ export default function MetricsTable() {
   const { items, loading } = usePullRequestMetrics(token!);
   const [repoFilter, setRepoFilter] = useState<string>('');
   const [authorFilter, setAuthorFilter] = useState<string>('');
-  const [pageIndex, setPageIndex] = useState<number>(0);
+  const [pageIndex, setPageIndex] = useState<number>(1); // 1-based for Pagination
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const PAGE_SIZE = 25;
   const navigate = useNavigate();
@@ -47,28 +48,17 @@ export default function MetricsTable() {
   });
 
   useEffect(() => {
-    setPageIndex(0);
+    setPageIndex(1);
   }, [repoFilter, authorFilter]);
 
   const paginatedItems = filteredItems.slice(
-    pageIndex * PAGE_SIZE,
-    pageIndex * PAGE_SIZE + PAGE_SIZE
+    (pageIndex - 1) * PAGE_SIZE,
+    pageIndex * PAGE_SIZE
   );
 
   const selectedItem = items.find((i) => selectedIds.includes(i.id));
 
   const columns = [
-    {
-      id: 'select',
-      header: '',
-      cell: (row: PRItem) => (
-        <input
-          type="checkbox"
-          checked={selectedIds.includes(row.id)}
-          onChange={() => toggleSelect(row.id)}
-        />
-      ),
-    },
     {
       id: 'repo',
       header: 'Repository',
@@ -225,38 +215,43 @@ export default function MetricsTable() {
       <div style={{ display: 'flex', marginBottom: 24, gap: 12 }}>
         <div>
           <label htmlFor="repo-filter">Repository</label>
-          <select
+          <Select
             id="repo-filter"
-            value={repoFilter}
-            onChange={(e) => setRepoFilter(e.target.value)}
+            selectedKeys={repoFilter ? [repoFilter] : []}
+            onSelectionChange={(keys) => setRepoFilter(Array.from(keys)[0] as string)}
+            aria-label="Repository"
+            style={{ minWidth: 160 }}
           >
-            <option value="">All</option>
-            {repos.map((r) => (
-              <option key={r} value={r}>
-                {r}
-              </option>
-            ))}
-          </select>
+            <>
+              <SelectItem key="">All</SelectItem>
+              {repos.map((r) => (
+                <SelectItem key={r}>{r}</SelectItem>
+              ))}
+            </>
+          </Select>
         </div>
         <div>
           <label htmlFor="author-filter">Author</label>
-          <select
+          <Select
             id="author-filter"
-            value={authorFilter}
-            onChange={(e) => setAuthorFilter(e.target.value)}
+            selectedKeys={authorFilter ? [authorFilter] : []}
+            onSelectionChange={(keys) => setAuthorFilter(Array.from(keys)[0] as string)}
+            aria-label="Author"
+            style={{ minWidth: 160 }}
           >
-            <option value="">All</option>
-            {authors.map((a) => (
-              <option key={a} value={a}>
-                {a}
-              </option>
-            ))}
-          </select>
+            <>
+              <SelectItem key="">All</SelectItem>
+              {authors.map((a) => (
+                <SelectItem key={a}>{a}</SelectItem>
+              ))}
+            </>
+          </Select>
         </div>
       </div>
       {selectedIds.length === 1 && (
         <div style={{ marginBottom: 16 }}>
-          <button
+          <Button
+            color="primary"
             onClick={() =>
               navigate(
                 `/pr/${selectedItem!.owner}/${selectedItem!.repo_name}/${selectedItem!.number}`,
@@ -265,57 +260,151 @@ export default function MetricsTable() {
             }
           >
             View pull request
-          </button>
+          </Button>
         </div>
       )}
-      <table
-        aria-labelledby="pr-table"
-        style={{ width: '100%', borderCollapse: 'collapse' }}
+      <Table
+        aria-label="PR Metrics Table"
+        selectionMode="multiple"
+        selectedKeys={new Set(selectedIds)}
+        onSelectionChange={(keys) => setSelectedIds(Array.from(keys as Set<string>))}
+        isStriped
+        fullWidth
+        bottomContent={
+          <Pagination
+            total={Math.ceil(filteredItems.length / PAGE_SIZE)}
+            page={pageIndex}
+            onChange={setPageIndex}
+            showControls
+            size="sm"
+            className="mt-4"
+          />
+        }
+        bottomContentPlacement="inside"
       >
-        <thead>
-          <tr>
-            {columns.map((col) => (
-              <th key={col.id}>{col.header}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {paginatedItems.map((row) => (
-            <tr key={row.id}>
-              {columns.map((col) => (
-                <td key={col.id}>
-                  {col.cell ? col.cell(row) : (row as any)[col.accessorKey]}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <div style={{ marginTop: 16 }} aria-label="Pagination">
-        <span>
-          Page {pageIndex + 1} of {Math.ceil(filteredItems.length / PAGE_SIZE)}
-        </span>
-        <button
-          onClick={() => setPageIndex((p) => Math.max(0, p - 1))}
-          disabled={pageIndex === 0}
-          style={{ marginLeft: 8 }}
-        >
-          Previous
-        </button>
-        <button
-          onClick={() =>
-            setPageIndex((p) =>
-              Math.min(Math.ceil(filteredItems.length / PAGE_SIZE) - 1, p + 1)
-            )
-          }
-          disabled={
-            pageIndex >= Math.ceil(filteredItems.length / PAGE_SIZE) - 1
-          }
-          style={{ marginLeft: 8 }}
-        >
-          Next
-        </button>
-      </div>
+        <TableHeader>
+          <TableColumn key="repo">REPOSITORY</TableColumn>
+          <TableColumn key="title">TITLE</TableColumn>
+          <TableColumn key="author">AUTHOR</TableColumn>
+          <TableColumn key="reviewers">REVIEWERS</TableColumn>
+          <TableColumn key="changes_requested">CHANGES REQUESTED</TableColumn>
+          <TableColumn key="diff">DIFF</TableColumn>
+          <TableColumn key="comment_count">COMMENTS</TableColumn>
+          <TableColumn key="timeline">TIMELINE</TableColumn>
+          <TableColumn key="lead_time">LEAD TIME</TableColumn>
+          <TableColumn key="state">STATE</TableColumn>
+        </TableHeader>
+        <TableBody items={paginatedItems} emptyContent={<span>No pull requests found.</span>}>
+          {(row: PRItem) => (
+            <TableRow key={row.id}>
+              <TableCell>{row.repo}</TableCell>
+              <TableCell>
+                <a
+                  href={row.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: 'inherit', textDecoration: 'none' }}
+                >
+                  {row.title}
+                </a>
+              </TableCell>
+              <TableCell>
+                <a
+                  href={`https://github.com/${row.author}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {row.author}
+                </a>
+              </TableCell>
+              <TableCell>
+                <span>
+                  {row.reviewers.map((name: string, idx: number) => (
+                    <React.Fragment key={name}>
+                      <a
+                        href={`https://github.com/${name}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {name}
+                      </a>
+                      {idx < row.reviewers.length - 1 && ', '}
+                    </React.Fragment>
+                  ))}
+                </span>
+              </TableCell>
+              <TableCell>{row.changes_requested}</TableCell>
+              <TableCell>
+                <span>
+                  <span style={{ color: 'green' }}>{`+${row.additions}`}</span>{' '}
+                  <span style={{ color: 'red' }}>{`-${row.deletions}`}</span>
+                </span>
+              </TableCell>
+              <TableCell>{row.comment_count}</TableCell>
+              <TableCell>
+                {(() => {
+                  const created = new Date(row.created_at);
+                  const published = row.published_at
+                    ? new Date(row.published_at)
+                    : created;
+                  const reviewed = row.first_review_at
+                    ? new Date(row.first_review_at)
+                    : published;
+                  const closed = row.closed_at ? new Date(row.closed_at) : reviewed;
+                  const draftMs = Math.max(published.getTime() - created.getTime(), 0);
+                  const reviewMs = Math.max(reviewed.getTime() - published.getTime(), 0);
+                  const closeMs = Math.max(closed.getTime() - reviewed.getTime(), 0);
+                  const total = draftMs + reviewMs + closeMs || 1;
+                  const tooltipText = [
+                    `Draft: ${formatDuration(row.created_at, row.published_at)}`,
+                    `Review: ${formatDuration(
+                      row.published_at || row.created_at,
+                      row.first_review_at
+                    )}`,
+                    `Close: ${formatDuration(
+                      row.first_review_at || row.published_at || row.created_at,
+                      row.closed_at
+                    )}`,
+                  ].join('\n');
+                  return (
+                    <div
+                      aria-label={tooltipText}
+                      style={{
+                        display: 'flex',
+                        height: '6px',
+                        width: 80,
+                        overflow: 'hidden',
+                        borderRadius: 4,
+                      }}
+                    >
+                      <div
+                        style={{
+                          backgroundColor: '#d1e7dd',
+                          width: `${(draftMs / total) * 100}%`,
+                        }}
+                      />
+                      <div
+                        style={{
+                          backgroundColor: '#fff3cd',
+                          width: `${(reviewMs / total) * 100}%`,
+                        }}
+                      />
+                      <div
+                        style={{
+                          backgroundColor: '#cce5ff',
+                          width: `${(closeMs / total) * 100}%`,
+                        }}
+                      />
+                    </div>
+                  );
+                })()}
+              </TableCell>
+              <TableCell>{formatDuration(row.first_commit_at, row.closed_at)}</TableCell>
+              <TableCell>{row.state}</TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
     </>
   );
 }
