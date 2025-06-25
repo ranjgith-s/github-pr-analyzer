@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Octokit } from '@octokit/rest';
-import {
-  ChevronUpIcon,
-  ArrowLeftStartOnRectangleIcon,
-} from '@heroicons/react/24/solid';
+import { ArrowLeftStartOnRectangleIcon } from '@heroicons/react/24/solid';
 import { Link as RouterLink } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { Avatar, Breadcrumbs, BreadcrumbItem, Button } from '@heroui/react';
+import { ChevronUpIcon } from 'lucide-react';
 
 interface GitHubUser {
   login: string;
@@ -40,18 +38,19 @@ export default function Header({ breadcrumb }: HeaderProps) {
   }, [token]);
 
   return (
-    <div className="app-header flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-background/60 backdrop-blur-md dark:bg-background/60">
-      <div className="flex items-center gap-2 text-foreground">
-        <ChevronUpIcon width={24} height={24} />
+    <header className="w-full px-6 py-3 border-divider bg-background/80 backdrop-blur-md flex items-center justify-between">
+      <div className="flex items-center gap-4 min-w-0">
         <Breadcrumbs
           variant="light"
-          color="primary"
           size="md"
           underline="hover"
           className="font-bold"
         >
-          <BreadcrumbItem color="primary">
-            <RouterLink to="/">PR-ism</RouterLink>
+          <BreadcrumbItem>
+            <RouterLink to="/" className="flex items-center gap-1">
+              <ChevronUpIcon/>
+              PR-ism
+            </RouterLink>
           </BreadcrumbItem>
           {breadcrumb && (
             <BreadcrumbItem color="foreground" isCurrent>
@@ -62,17 +61,12 @@ export default function Header({ breadcrumb }: HeaderProps) {
       </div>
       {user && (
         <div className="flex items-center gap-2">
-          <Avatar
-            src={user.avatar_url}
-            alt="avatar"
-            size="sm"
-          />
-          <span className="font-mono text-sm">{user.login}</span>
+          <Avatar src={user.avatar_url} alt="avatar" size="sm" />
+          <span className="font-mono text-sm px-2">{user.login}</span>
           <Button
             variant="bordered"
             color="primary"
             size="sm"
-            className="flex items-center gap-1 px-3 py-1"
             endContent={
               <ArrowLeftStartOnRectangleIcon className="w-5 h-5" />
             }
@@ -82,6 +76,6 @@ export default function Header({ breadcrumb }: HeaderProps) {
           </Button>
         </div>
       )}
-    </div>
+    </header>
   );
 }
