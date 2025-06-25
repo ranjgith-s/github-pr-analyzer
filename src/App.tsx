@@ -10,6 +10,7 @@ import RepoInsightsPage from './RepoInsightsPage';
 import DeveloperProfilePage from './DeveloperProfilePage';
 import { useAuth } from './AuthContext';
 import { getDeveloperProfile } from './services/github';
+import RepoMetrics from './RepoMetrics';
 
 export default function App() {
   const { token } = useAuth();
@@ -48,6 +49,12 @@ export default function App() {
     ];
   } else if (location.pathname.startsWith('/developer')) {
     breadcrumbs = [{ label: 'Developer Insights', to: '/developer' }];
+  } else if (location.pathname.startsWith('/repo/')) {
+    const match = location.pathname.match(/^\/repo\/([^/]+)\/([^/]+)/);
+    breadcrumbs = [
+      { label: 'Repo insights', to: '/repo' },
+      match ? { label: match[2], to: location.pathname } : { label: '', to: location.pathname },
+    ];
   } else if (location.pathname.startsWith('/repo')) {
     breadcrumbs = [{ label: 'Repo insights', to: '/repo' }];
   }
@@ -73,6 +80,7 @@ export default function App() {
           <Route path="/developer" element={<DeveloperMetricsPage />} />
           <Route path="/developer/:username" element={<DeveloperProfilePage />} />
           <Route path="/repo" element={<RepoInsightsPage />} />
+          <Route path="/repo/:owner/:repo" element={<RepoMetrics />} />
         </Routes>
       </div>
     </div>
