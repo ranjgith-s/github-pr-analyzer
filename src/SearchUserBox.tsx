@@ -18,7 +18,7 @@ export default function SearchUserBox({
   return (
     <div className="relative w-full max-w-xs">
       <Input
-        placeholder="Search GitHub users by username"
+        placeholder="Search gitHub users by username"
         value={query}
         onChange={(e) => onQueryChange(e.target.value)}
         className="w-full"

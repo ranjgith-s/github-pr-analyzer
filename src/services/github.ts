@@ -59,10 +59,10 @@ export async function fetchPullRequestMetrics(
         per_page: 100,
       });
       const firstCommitAt = commits.reduce<string | null>((earliest, c) => {
-        const date = c.commit.author?.date || c.commit.committer?.date;
-        return !earliest || new Date(date) < new Date(earliest)
-          ? date
-          : earliest;
+        const date = c.commit.author?.date || c.commit.committer?.date || null;
+        if (!date) return earliest;
+        if (!earliest) return date;
+        return new Date(date) < new Date(earliest) ? date : earliest;
       }, null);
 
       const reviewerSet = new Set<string>();
@@ -269,6 +269,24 @@ export async function fetchDeveloperMetrics(
   };
 }
 
+// Utility to fetch developer profile (login, name, etc) only
+export async function getDeveloperProfile(token: string, login: string) {
+  const octokit = new Octokit({ auth: token });
+  const { data: user } = await octokit.rest.users.getByUsername({ username: login });
+  return {
+    login: user.login,
+    name: user.name,
+    avatar_url: user.avatar_url,
+    html_url: user.html_url,
+    bio: user.bio,
+    company: user.company,
+    location: user.location,
+    followers: user.followers,
+    following: user.following,
+    public_repos: user.public_repos,
+  };
+}
+
 export interface RepoInsights {
   deploymentFrequency: number;
   leadTime: number;
@@ -366,10 +384,13 @@ export async function fetchRepoInsights(
     owner,
     repo,
   });
-  const weeklyCommits =
-    commitActivity.data && commitActivity.data.length > 0
-      ? commitActivity.data[commitActivity.data.length - 1].days
-      : [];
+  let weeklyCommits: number[] = [];
+  if (Array.isArray(commitActivity.data) && commitActivity.data.length > 0) {
+    const last = commitActivity.data[commitActivity.data.length - 1];
+    if (last && Array.isArray(last.days)) {
+      weeklyCommits = last.days;
+    }
+  }
 
   const contributors = await octokit.paginate(
     octokit.rest.repos.listContributors,

@@ -17,10 +17,10 @@ interface BreadcrumbItem {
 }
 
 interface HeaderProps {
-  breadcrumb?: BreadcrumbItem;
+  breadcrumbs?: BreadcrumbItem[];
 }
 
-export default function Header({ breadcrumb }: HeaderProps) {
+export default function Header({ breadcrumbs }: HeaderProps) {
   const { token, logout } = useAuth();
   const [user, setUser] = useState<GitHubUser | null>(null);
 
@@ -52,11 +52,11 @@ export default function Header({ breadcrumb }: HeaderProps) {
               PR-ism
             </RouterLink>
           </BreadcrumbItem>
-          {breadcrumb && (
-            <BreadcrumbItem color="foreground" isCurrent>
-              {breadcrumb.label}
+          {breadcrumbs && breadcrumbs.map((bc, i) => (
+            <BreadcrumbItem key={i} color={i === breadcrumbs.length - 1 ? 'foreground' : undefined} isCurrent={i === breadcrumbs.length - 1}>
+              {bc.to ? <RouterLink to={bc.to}>{bc.label}</RouterLink> : bc.label}
             </BreadcrumbItem>
-          )}
+          ))}
         </Breadcrumbs>
       </div>
       {user && (

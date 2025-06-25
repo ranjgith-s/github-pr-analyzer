@@ -7,21 +7,17 @@ import { MemoryRouter } from 'react-router-dom';
 import { Octokit } from '@octokit/rest';
 import * as AuthContextModule from '../AuthContext';
 
-jest.mock('@octokit/rest');
+jest.mock('@octokit/rest', () => ({
+  Octokit: jest.fn().mockImplementation(() => ({
+    rest: { users: { getAuthenticated: jest.fn().mockResolvedValue({ data: { login: 'octo', avatar_url: 'img' } }) } },
+  })),
+}));
 
 afterEach(() => {
   jest.restoreAllMocks();
 });
 
 test('fetches and displays user info', async () => {
-  const mockOctokit = {
-    rest: { users: { getAuthenticated: jest.fn() } },
-  } as any;
-  (Octokit as unknown as jest.Mock).mockImplementation(() => mockOctokit);
-  mockOctokit.rest.users.getAuthenticated.mockResolvedValue({
-    data: { login: 'octo', avatar_url: 'img' },
-  });
-
   function Wrapper() {
     const auth = AuthContextModule.useAuth();
     useEffect(() => {
@@ -29,7 +25,7 @@ test('fetches and displays user info', async () => {
     }, [auth]);
     return (
       <Header
-        breadcrumb={{ label: 'Pull request insights', to: '/insights' }}
+        breadcrumbs={[{ label: 'Pull request insights', to: '/insights' }]}
       />
     );
   }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Login from './Login';
 import MetricsPage from './MetricsPage';
@@ -7,27 +7,54 @@ import Header from './Header';
 import PullRequestPage from './PullRequest';
 import DeveloperMetricsPage from './DeveloperMetricsPage';
 import RepoInsightsPage from './RepoInsightsPage';
+import DeveloperProfilePage from './DeveloperProfilePage';
 import { useAuth } from './AuthContext';
+import { getDeveloperProfile } from './services/github';
 
 export default function App() {
   const { token } = useAuth();
   const location = useLocation();
+  const [developerName, setDeveloperName] = useState<string | null>(null);
 
-  let breadcrumb: { label: string; to: string } | undefined;
+  useEffect(() => {
+    async function fetchName() {
+      const match = location.pathname.match(/^\/developer\/(\w+)/);
+      if (match && token) {
+        try {
+          const profile = await getDeveloperProfile(token, match[1]);
+          setDeveloperName(profile.name || profile.login);
+        } catch {
+          setDeveloperName(null);
+        }
+      } else {
+        setDeveloperName(null);
+      }
+    }
+    fetchName();
+  }, [location.pathname, token]);
+
+  let breadcrumbs: { label: string; to: string }[] = [];
   if (
     location.pathname.startsWith('/insights') ||
     location.pathname.startsWith('/pr')
   ) {
-    breadcrumb = { label: 'Pull request insights', to: '/insights' };
+    breadcrumbs = [{ label: 'Pull request insights', to: '/insights' }];
+  } else if (location.pathname.startsWith('/developer/')) {
+    breadcrumbs = [
+      { label: 'Developer Insights', to: '/developer' },
+      developerName
+        ? { label: developerName, to: location.pathname }
+        : { label: 'Unknown', to: location.pathname },
+    ];
   } else if (location.pathname.startsWith('/developer')) {
-    breadcrumb = { label: 'Developer insights', to: '/developer' };
+    breadcrumbs = [{ label: 'Developer Insights', to: '/developer' }];
   } else if (location.pathname.startsWith('/repo')) {
-    breadcrumb = { label: 'Repo insights', to: '/repo' };
+    breadcrumbs = [{ label: 'Repo insights', to: '/repo' }];
   }
 
   return (
     <div className="text-foreground bg-background min-h-screen">
-      {token && <Header breadcrumb={breadcrumb} />}
+      {token && <Header breadcrumbs={breadcrumbs} />}
       <div style={{ padding: token ? 24 : 0 }}>
         <Routes>
           <Route
@@ -44,6 +71,7 @@ export default function App() {
             element={<PullRequestPage />}
           />
           <Route path="/developer" element={<DeveloperMetricsPage />} />
+          <Route path="/developer/:username" element={<DeveloperProfilePage />} />
           <Route path="/repo" element={<RepoInsightsPage />} />
         </Routes>
       </div>
