@@ -23,7 +23,8 @@ test('renders timeline from router state', () => {
       </AuthProvider>
     </MemoryRouter>
   );
-  expect(screen.getByText('PR')).toBeInTheDocument();
+  // Use heading role for the PR title
+  expect(screen.getByRole('heading', { name: 'PR' })).toBeInTheDocument();
   expect(screen.getByText(/Created/)).toBeInTheDocument();
   expect(screen.getByText(/Closed/)).toBeInTheDocument();
 });
@@ -65,7 +66,8 @@ test('fetches data when no router state', async () => {
     </MemoryRouter>
   );
 
-  await waitFor(() => screen.getByText('Fetched PR'));
+  // Use heading role for the fetched PR title
+  await waitFor(() => screen.getByRole('heading', { name: 'Fetched PR' }));
   expect(document.title).toBe('Fetched PR');
   expect(Octokit).toHaveBeenCalled();
 });

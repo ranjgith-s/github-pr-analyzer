@@ -4,6 +4,7 @@ import { useParams, useLocation, Link as RouterLink } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { useDocumentTitle } from './hooks/useDocumentTitle';
 import { useMetaDescription } from './hooks/useMetaDescription';
+import { Card, Button, Breadcrumbs, BreadcrumbItem } from '@heroui/react';
 
 interface TimelineEntry {
   label: string;
@@ -47,8 +48,8 @@ export default function PullRequestPage() {
         );
         const pr = repository.pullRequest;
         setTitle(pr.title);
-        const firstReview = pr.reviews.nodes.reduce<string | null>(
-          (acc, rv) => {
+        const firstReview = pr.reviews.nodes.reduce(
+          (acc: string | null, rv: { submittedAt: string }) => {
             return !acc || new Date(rv.submittedAt) < new Date(acc)
               ? rv.submittedAt
               : acc;
@@ -72,26 +73,32 @@ export default function PullRequestPage() {
 
   if (loading) {
     return (
-      <div style={{ textAlign: 'center', marginTop: 32 }}>
-        <span>Loading...</span>
+      <div className="flex justify-center items-center mt-12">
+        <span>Loading pull request details...</span>
       </div>
     );
   }
 
   return (
-    <div style={{ padding: 24 }}>
-      <h2>{title}</h2>
-      <nav style={{ marginBottom: 16 }}>
-        <RouterLink to="/insights">Back to Insights</RouterLink>
-      </nav>
-      <div style={{ marginBottom: 24 }}>
-        {events &&
-          events.map((e, i) => (
-            <div key={i} style={{ marginBottom: 8 }}>
-              <span style={{ fontWeight: 'bold' }}>{e.label}:</span> {e.date}
-            </div>
-          ))}
-      </div>
+    <div className="p-6">
+      <Breadcrumbs className="mb-4">
+        <BreadcrumbItem href="/insights">Insights</BreadcrumbItem>
+        <BreadcrumbItem isCurrent>{title}</BreadcrumbItem>
+      </Breadcrumbs>
+      <Card className="mb-6 p-4">
+        <h2 className="text-xl font-bold mb-2">{title}</h2>
+        <div className="mb-4">
+          {events &&
+            events.map((e, i) => (
+              <div key={i} className="mb-2">
+                <span className="font-semibold">{e.label}:</span> {e.date}
+              </div>
+            ))}
+        </div>
+        <Button as="a" href="/insights" color="primary" variant="flat">
+          Back to Insights
+        </Button>
+      </Card>
       {/* Add more PR details as needed */}
     </div>
   );

@@ -4,6 +4,7 @@ import { useRepoInsights } from './hooks/useRepoInsights';
 import LoadingOverlay from './LoadingOverlay';
 import { useDocumentTitle } from './hooks/useDocumentTitle';
 import { useMetaDescription } from './hooks/useMetaDescription';
+import { Input, Button, Card } from '@heroui/react';
 
 export default function RepoInsightsPage() {
   const { token } = useAuth();
@@ -35,58 +36,38 @@ export default function RepoInsightsPage() {
   };
 
   return (
-    <div style={{ padding: 24, position: 'relative' }}>
+    <div className="p-6 relative">
       <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: 24, display: 'flex', gap: 8 }}>
-          <input
-            placeholder="owner/repo or URL"
+        <div className="mb-6 flex gap-2">
+          <Input
+            placeholder="Enter repository (owner/repo or URL)"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            style={{
-              flexGrow: 1,
-              padding: 8,
-              borderRadius: 4,
-              border: '1px solid #ccc',
-            }}
+            className="flex-grow"
+            aria-label="Repository input"
+            isClearable
           />
-          <button
-            type="submit"
-            style={{
-              padding: '8px 16px',
-              borderRadius: 4,
-              background: '#2da44e',
-              color: '#fff',
-              border: 'none',
-            }}
-          >
-            Load
-          </button>
+          <Button type="submit" color="primary" className="px-6">
+            Load Insights
+          </Button>
         </div>
       </form>
 
       <LoadingOverlay show={loading} messages={loadingMessages} />
 
-      {error && <div style={{ color: 'red', marginBottom: 24 }}>{error}</div>}
+      {error && <div className="text-danger mb-6">{error}</div>}
 
       {data && !loading && (
         <div>
-          <h2 style={{ fontSize: 24, marginBottom: 16 }}>
-            Repository Insights
-          </h2>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit,minmax(250px,1fr))',
-              gap: 24,
-            }}
-          >
+          <h2 className="text-2xl font-bold mb-4">Repository Insights</h2>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             <MetricCard
               title="Deployment Frequency"
               value={`${data.deploymentFrequency} pushes`}
             />
             <MetricCard
               title="Lead Time for Changes"
-              value={`${data.leadTime.toFixed(2)}h`}
+              value={`${data.leadTime.toFixed(2)} hours`}
             />
             <MetricCard
               title="Change Failure Rate"
@@ -94,7 +75,7 @@ export default function RepoInsightsPage() {
             />
             <MetricCard
               title="Mean Time to Restore"
-              value={`${data.meanTimeToRestore.toFixed(2)}h`}
+              value={`${data.meanTimeToRestore.toFixed(2)} hours`}
             />
             <MetricCard title="Open Issue Count" value={data.openIssues} />
             <MetricCard
@@ -103,7 +84,7 @@ export default function RepoInsightsPage() {
             />
             <MetricCard
               title="Average PR Merge Time"
-              value={`${data.averageMergeTime.toFixed(2)}h`}
+              value={`${data.averageMergeTime.toFixed(2)} hours`}
             />
             <MetricCard
               title="Weekly Commit Activity"
@@ -131,20 +112,9 @@ interface MetricCardProps {
 
 function MetricCard({ title, value }: MetricCardProps) {
   return (
-    <div
-      style={{
-        borderWidth: 1,
-        borderStyle: 'solid',
-        borderColor: '#ddd',
-        borderRadius: 8,
-        padding: 16,
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-      }}
-    >
-      <h3 style={{ fontSize: 18, marginBottom: 8 }}>{title}</h3>
-      <span style={{ fontSize: 16, fontWeight: 'bold', color: '#333' }}>
-        {value}
-      </span>
-    </div>
+    <Card className="p-4 rounded-lg border border-divider shadow-md">
+      <h3 className="text-lg font-semibold mb-2">{title}</h3>
+      <span className="text-base font-bold text-foreground">{value}</span>
+    </Card>
   );
 }

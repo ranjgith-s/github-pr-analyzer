@@ -1,17 +1,17 @@
+import { Button, ButtonProps } from '@heroui/react';
 import React from 'react';
 
-interface Props extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface Props extends ButtonProps {
   className?: string;
 }
 
 export default function MagicButton({ children, className, ...props }: Props) {
   return (
-    <button
+    <Button
       {...props}
-      className={`magic-button${className ? ` ${className}` : ''}`}
-      type={props.type || 'button'}
+      className={className}
     >
       {children}
-    </button>
+    </Button>
   );
 }

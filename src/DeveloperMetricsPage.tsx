@@ -10,6 +10,7 @@ import { GitHubUser } from './services/auth';
 import LoadingOverlay from './LoadingOverlay';
 import SearchUserBox from './SearchUserBox';
 import DeveloperMetricCard from './DeveloperMetricCard';
+import { Card } from '@heroui/react';
 
 import type { DeveloperMetrics } from './services/github';
 
@@ -168,41 +169,25 @@ export default function DeveloperMetricsPage() {
 
       {data && !loading && (
         <>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-              gap: 32,
-            }}
-          >
-            <div
-              style={{
-                padding: 24,
-                border: '1px solid #eee',
-                borderRadius: 16,
-                boxShadow: '0 2px 8px 0 rgba(80, 120, 255, 0.08)',
-                animation: 'fadeInUp 0.3s ease-out',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div className="grid gap-8 md:grid-cols-2">
+            <Card className="p-6 animate-fadeInUp">
+              <div className="flex items-center gap-4">
                 <img
                   src={data.avatar_url}
                   alt="avatar"
                   width={64}
                   height={64}
-                  style={{ borderRadius: '50%' }}
+                  className="rounded-full"
                 />
                 <div>
-                  <h2 style={{ fontSize: 24, margin: 0 }}>
-                    {data.name || data.login}
-                  </h2>
-                  <span style={{ color: '#888' }}>{data.login}</span>
+                  <h2 className="text-2xl m-0">{data.name || data.login}</h2>
+                  <span className="text-foreground/60">{data.login}</span>
                 </div>
               </div>
               {data.bio && (
-                <p style={{ marginTop: 16, maxWidth: 300 }}>{data.bio}</p>
+                <p className="mt-4 max-w-[300px]">{data.bio}</p>
               )}
-              <div style={{ marginTop: 16, display: 'grid', rowGap: 4 }}>
+              <div className="mt-4 grid gap-1">
                 {data.company && <span>🏢 {data.company}</span>}
                 {data.location && <span>📍 {data.location}</span>}
                 <span>Repos: {data.public_repos}</span>
@@ -212,20 +197,13 @@ export default function DeveloperMetricsPage() {
                   href={data.html_url}
                   target="_blank"
                   rel="noopener noreferrer"
+                  className="text-primary underline"
                 >
                   View on GitHub
                 </a>
               </div>
-            </div>
-            <div
-              style={{
-                padding: 24,
-                border: '1px solid #eee',
-                borderRadius: 16,
-                boxShadow: '0 2px 8px 0 rgba(80, 120, 255, 0.08)',
-                animation: 'fadeInUp 0.3s ease-out',
-              }}
-            >
+            </Card>
+            <Card className="p-6 animate-fadeInUp flex items-center justify-center">
               <RadarChart width={500} height={400} data={chartData}>
                 <PolarAngleAxis
                   dataKey="metric"
@@ -238,16 +216,10 @@ export default function DeveloperMetricsPage() {
                   fillOpacity={0.6}
                 />
               </RadarChart>
-            </div>
+            </Card>
           </div>
-          <div style={{ marginTop: 32 }}>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-                gap: 24,
-              }}
-            >
+          <div className="mt-8">
+            <div className="grid gap-6 md:grid-cols-3">
               {METRIC_INFO.map((info) => (
                 <DeveloperMetricCard
                   key={info.name}

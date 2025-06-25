@@ -194,6 +194,12 @@ function DropdownMenuMock({ children }) {
 function DropdownItemMock({ children, ...props }) {
   return React.createElement('div', { 'data-testid': 'dropdown-item', ...props }, children);
 }
+function BadgeMock({ children, ...props }) {
+  return React.createElement('span', { ...filterProps(props), 'data-testid': 'badge' }, children);
+}
+function SwitchMock({ children, ...props }) {
+  return React.createElement('button', { ...filterProps(props), role: 'switch', 'aria-checked': props.isSelected ? 'true' : 'false', onClick: props.onChange }, children);
+}
 
 module.exports = {
   __esModule: true,
@@ -220,4 +226,6 @@ module.exports = {
   DropdownTrigger: DropdownTriggerMock,
   DropdownMenu: DropdownMenuMock,
   DropdownItem: DropdownItemMock,
+  Badge: BadgeMock,
+  Switch: SwitchMock,
 };

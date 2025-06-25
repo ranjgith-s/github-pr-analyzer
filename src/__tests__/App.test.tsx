@@ -53,10 +53,10 @@ test('shows home card when authenticated', async () => {
       </ThemeModeProvider>
     </MemoryRouter>
   );
-  expect(screen.getByText('Pull request insights')).toBeInTheDocument();
-  expect(screen.getByText('Developer insights')).toBeInTheDocument();
-  expect(screen.getByText('Repository insights')).toBeInTheDocument();
-  expect(screen.getByText('PR-ism')).toBeInTheDocument();
+  expect(screen.getByText((content) => /pull request insights/i.test(content))).toBeInTheDocument();
+  expect(screen.getByText((content) => /developer insights/i.test(content))).toBeInTheDocument();
+  expect(screen.getByText((content) => /repository insights/i.test(content))).toBeInTheDocument();
+  expect(screen.getByText(/PR-ism/i)).toBeInTheDocument();
 });
 
 test('shows breadcrumb on insights page', async () => {

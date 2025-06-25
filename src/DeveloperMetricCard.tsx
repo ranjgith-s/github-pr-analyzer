@@ -1,4 +1,5 @@
 import React from 'react';
+import { Card, Badge } from '@heroui/react';
 
 interface Props {
   name: string;
@@ -19,56 +20,32 @@ export default function DeveloperMetricCard({
   value,
   format,
 }: Props) {
-  const variant =
+  const color =
     score === null
       ? 'default'
       : score < 3
         ? 'danger'
         : score <= 8
-          ? 'attention'
+          ? 'warning'
           : 'success';
-  const badgeStyle = {
-    padding: '2px 8px',
-    borderRadius: '8px',
-    fontSize: '0.8em',
-    marginLeft: 8,
-    background:
-      variant === 'danger'
-        ? '#ffdddd'
-        : variant === 'attention'
-          ? '#fff3cd'
-          : variant === 'success'
-            ? '#d1e7dd'
-            : '#eee',
-    color:
-      variant === 'danger'
-        ? '#842029'
-        : variant === 'attention'
-          ? '#664d03'
-          : variant === 'success'
-            ? '#0f5132'
-            : '#333',
-  };
   return (
-    <div style={{ border: '1px solid #ddd', borderRadius: 8, padding: 16 }}>
-      <h3
-        style={{
-          fontSize: 18,
-          marginBottom: 8,
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
+    <Card className="p-4 rounded-lg border border-divider">
+      <h3 className="flex justify-between items-center text-lg mb-2">
         {name}
-        {typeof score === 'number' && <span style={badgeStyle}>{score}</span>}
+        {typeof score === 'number' && (
+          <Badge color={color} variant="flat" className="ml-2">
+            {score}
+          </Badge>
+        )}
       </h3>
-      <span style={{ fontSize: 14 }}>{brief}</span>
-      <p style={{ marginTop: 8, color: '#888', fontSize: 12 }}>{details}</p>
-      <p style={{ marginTop: 8, fontSize: 12 }}>
-        <span style={badgeStyle}>{format ? format(value) : value}</span>{' '}
+      <span className="text-base">{brief}</span>
+      <p className="mt-2 text-foreground/60 text-xs">{details}</p>
+      <p className="mt-2 text-xs">
+        <Badge color={color} variant="flat" className="mr-1">
+          {format ? format(value) : value}
+        </Badge>
         {valueDesc}
       </p>
-    </div>
+    </Card>
   );
 }

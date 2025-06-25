@@ -1,19 +1,19 @@
 import React from 'react';
+import { Switch } from '@heroui/react';
 import { useThemeMode } from './ThemeModeContext';
 
 const ColorModeToggle: React.FC = () => {
   const { colorMode, toggleColorMode } = useThemeMode();
   const isNight = colorMode === 'night';
   return (
-    <button
-      role="switch"
-      aria-checked={isNight}
+    <Switch
+      isSelected={isNight}
+      onChange={toggleColorMode}
       aria-label={isNight ? 'Switch to light mode' : 'Switch to dark mode'}
-      onClick={toggleColorMode}
-      style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc' }}
+      className="px-3 py-2 rounded border border-divider"
     >
       {isNight ? '🌙 Night' : '☀️ Day'}
-    </button>
+    </Switch>
   );
 };
 

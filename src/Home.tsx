@@ -6,91 +6,54 @@ import {
   UserGroupIcon,
   ArrowsRightLeftIcon,
 } from '@heroicons/react/24/solid';
-import { Link as RouterLink } from 'react-router-dom';
+import { Card } from '@heroui/react';
 
 export default function Home() {
   useDocumentTitle('PR-ism Home');
   useMetaDescription('Access GitHub pull request insights and metrics.');
   return (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'center',
-        marginTop: 48,
-        gap: 24,
-      }}
-    >
-      <RouterLink
-        to="/insights"
-        style={{
-          padding: 32,
-          width: '100%',
-          maxWidth: 400,
-          border: '1px solid #eee',
-          borderRadius: 16,
-          boxShadow: '0 2px 8px 0 rgba(80, 120, 255, 0.08)',
-          textDecoration: 'none',
-          color: 'inherit',
-        }}
+    <div className="flex justify-center mt-12 gap-6">
+      <Card
+        as="a"
+        href="/insights"
+        className="p-8 w-full max-w-sm hover:shadow-xl transition-shadow"
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div className="flex items-center gap-2 mb-2">
           <ArrowsRightLeftIcon width={20} height={20} />
-          <span style={{ fontSize: 18, fontWeight: 'bold' }}>
-            Pull request insights
-          </span>
+          <span className="text-lg font-bold">Pull Request Insights</span>
         </div>
-        <p style={{ marginTop: 16, color: '#888' }}>
+        <p className="mt-4 text-foreground/60">
           See metrics for your pull requests, including review time and lead
           time.
         </p>
-      </RouterLink>
-      <RouterLink
-        to="/developer"
-        style={{
-          padding: 32,
-          width: '100%',
-          maxWidth: 400,
-          border: '1px solid #eee',
-          borderRadius: 16,
-          boxShadow: '0 2px 8px 0 rgba(80, 120, 255, 0.08)',
-          textDecoration: 'none',
-          color: 'inherit',
-        }}
+      </Card>
+      <Card
+        as="a"
+        href="/developer"
+        className="p-8 w-full max-w-sm hover:shadow-xl transition-shadow"
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div className="flex items-center gap-2 mb-2">
           <UserGroupIcon width={20} height={20} />
-          <span style={{ fontSize: 18, fontWeight: 'bold' }}>
-            Developer insights
-          </span>
+          <span className="text-lg font-bold">Developer Insights</span>
         </div>
-        <p style={{ marginTop: 16, color: '#888' }}>
+        <p className="mt-4 text-foreground/60">
           View a developer&apos;s contributions and review activity across
           GitHub repositories with radar charts.
         </p>
-      </RouterLink>
-      <RouterLink
-        to="/repo"
-        style={{
-          padding: 32,
-          width: '100%',
-          maxWidth: 400,
-          border: '1px solid #eee',
-          borderRadius: 16,
-          boxShadow: '0 2px 8px 0 rgba(80, 120, 255, 0.08)',
-          textDecoration: 'none',
-          color: 'inherit',
-        }}
+      </Card>
+      <Card
+        as="a"
+        href="/repo"
+        className="p-8 w-full max-w-sm hover:shadow-xl transition-shadow"
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div className="flex items-center gap-2 mb-2">
           <FolderIcon width={20} height={20} />
-          <span style={{ fontSize: 18, fontWeight: 'bold' }}>
-            Repository insights
-          </span>
+          <span className="text-lg font-bold">Repository Insights</span>
         </div>
-        <p style={{ marginTop: 16, color: '#888' }}>
+        <p className="mt-4 text-foreground/60">
           Explore repository health and DevOps metrics from GitHub.
         </p>
-      </RouterLink>
+      </Card>
     </div>
   );
 }

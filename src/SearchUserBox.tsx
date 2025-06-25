@@ -1,5 +1,6 @@
 import React from 'react';
 import { GitHubUser } from './services/auth';
+import { Input, Card, Avatar } from '@heroui/react';
 
 interface Props {
   query: string;
@@ -15,54 +16,28 @@ export default function SearchUserBox({
   onSelect,
 }: Props) {
   return (
-    <div style={{ position: 'relative', width: '100%', maxWidth: 300 }}>
-      <input
-        placeholder="Search GitHub users"
+    <div className="relative w-full max-w-xs">
+      <Input
+        placeholder="Search GitHub users by username"
         value={query}
         onChange={(e) => onQueryChange(e.target.value)}
-        style={{
-          width: '100%',
-          padding: 8,
-          borderRadius: 4,
-          border: '1px solid #ccc',
-        }}
+        className="w-full"
+        aria-label="Search GitHub users"
+        isClearable
       />
       {options.length > 0 && (
-        <div
-          style={{
-            position: 'absolute',
-            width: '100%',
-            border: '1px solid #eee',
-            borderRadius: 8,
-            background: '#fff',
-            marginTop: 4,
-            zIndex: 1,
-          }}
-        >
+        <Card className="absolute w-full mt-1 z-10 p-0">
           {options.map((u) => (
             <div
               key={u.login}
-              style={{
-                padding: 8,
-                display: 'flex',
-                alignItems: 'center',
-                cursor: 'pointer',
-                gap: 8,
-                borderBottom: '1px solid #f0f0f0',
-              }}
+              className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-default-100 border-b last:border-b-0 border-divider"
               onClick={() => onSelect(u)}
             >
-              <img
-                src={u.avatar_url}
-                alt="avatar"
-                width={20}
-                height={20}
-                style={{ borderRadius: '50%' }}
-              />
-              <span>{u.login}</span>
+              <Avatar src={u.avatar_url} alt={u.login} size="sm" />
+              <span className="font-mono text-sm text-foreground">{u.login}</span>
             </div>
           ))}
-        </div>
+        </Card>
       )}
     </div>
   );
