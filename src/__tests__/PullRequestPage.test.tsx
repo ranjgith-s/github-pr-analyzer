@@ -71,3 +71,72 @@ test('fetches data when no router state', async () => {
   expect(document.title).toBe('Fetched PR');
   expect(Octokit).toHaveBeenCalled();
 });
+
+test('shows loading state', () => {
+  // Simulate loading by rendering and not advancing timers or resolving fetch
+  render(
+    <MemoryRouter initialEntries={[{ pathname: '/pr/o/r/1', state: undefined }]}
+      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <AuthProvider>
+        <PullRequestPage />
+      </AuthProvider>
+    </MemoryRouter>
+  );
+  expect(screen.getByText(/Loading pull request details/)).toBeInTheDocument();
+});
+
+test('handles fetch error gracefully', async () => {
+  const mockOctokit = { graphql: jest.fn().mockRejectedValue(new Error('fail')) } as any;
+  (Octokit as unknown as jest.Mock).mockImplementation(() => mockOctokit);
+  function Wrapper() {
+    return (
+      <Routes>
+        <Route path="/pr/:owner/:repo/:number" element={<PullRequestPage />} />
+      </Routes>
+    );
+  }
+  render(
+    <MemoryRouter initialEntries={['/pr/o/r/1']} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <AuthProvider>
+        <Wrapper />
+      </AuthProvider>
+    </MemoryRouter>
+  );
+  // Wait for loading to disappear
+  await waitFor(() => expect(screen.queryByText(/Loading pull request details/)).not.toBeInTheDocument());
+  // Should not throw, and should render the card (even if empty)
+  expect(screen.getByRole('heading')).toBeInTheDocument();
+});
+
+test('handles timeline with missing fields', async () => {
+  const mockOctokit = { graphql: jest.fn().mockResolvedValue({
+    repository: {
+      pullRequest: {
+        title: 'Partial PR',
+        createdAt: '2020-01-01T00:00:00Z',
+        publishedAt: null,
+        closedAt: null,
+        mergedAt: null,
+        reviews: { nodes: [] },
+      },
+    },
+  }) } as any;
+  (Octokit as unknown as jest.Mock).mockImplementation(() => mockOctokit);
+  function Wrapper() {
+    return (
+      <Routes>
+        <Route path="/pr/:owner/:repo/:number" element={<PullRequestPage />} />
+      </Routes>
+    );
+  }
+  render(
+    <MemoryRouter initialEntries={['/pr/o/r/1']} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <AuthProvider>
+        <Wrapper />
+      </AuthProvider>
+    </MemoryRouter>
+  );
+  await waitFor(() => screen.getByRole('heading', { name: 'Partial PR' }));
+  expect(screen.getByText(/Created/)).toBeInTheDocument();
+  // Should not throw for missing fields
+});

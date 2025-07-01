@@ -180,3 +180,58 @@ test('pagination works and changes page', () => {
   expect(screen.getByText('PR 26')).toBeInTheDocument();
   expect(screen.queryByText('PR 1')).not.toBeInTheDocument();
 });
+
+test('search filter works', () => {
+  const items = [
+    { ...sample[0], title: 'Alpha', repo: 'octo/alpha', author: 'alice' },
+    { ...sample[0], title: 'Beta', repo: 'octo/beta', author: 'bob', id: '2' },
+  ];
+  jest.spyOn(metricsHook, 'usePullRequestMetrics').mockReturnValue({ items, loading: false });
+  render(
+    <AuthProvider>
+      <MemoryRouter>
+        <MetricsTable />
+      </MemoryRouter>
+    </AuthProvider>
+  );
+  fireEvent.change(screen.getByPlaceholderText(/search/i), { target: { value: 'beta' } });
+  expect(screen.getByText('Beta')).toBeInTheDocument();
+  expect(screen.queryByText('Alpha')).not.toBeInTheDocument();
+});
+
+test('formatDuration handles edge cases', () => {
+  const { formatDuration } = require('../MetricsTable');
+  expect(formatDuration()).toBe('N/A');
+  expect(formatDuration('2020-01-02', '2020-01-01')).toBe('N/A');
+  expect(formatDuration('2020-01-01', '2020-01-01')).toBe('0h');
+  expect(formatDuration('2020-01-01', '2020-01-02')).toBe('1d 0h'); // Updated expectation
+  expect(formatDuration('2020-01-01', '2020-01-03')).toBe('2d 0h');
+});
+
+test('handles PRs with no reviewers', () => {
+  const items = [{ ...sample[0], reviewers: [] }];
+  jest.spyOn(metricsHook, 'usePullRequestMetrics').mockReturnValue({ items, loading: false });
+  render(
+    <AuthProvider>
+      <MemoryRouter>
+        <MetricsTable />
+      </MemoryRouter>
+    </AuthProvider>
+  );
+  expect(screen.getByText('Test PR')).toBeInTheDocument();
+});
+
+test('handles PRs with missing title', () => {
+  const items = [{ ...sample[0], title: '' }];
+  jest.spyOn(metricsHook, 'usePullRequestMetrics').mockReturnValue({ items, loading: false });
+  render(
+    <AuthProvider>
+      <MemoryRouter>
+        <MetricsTable />
+      </MemoryRouter>
+    </AuthProvider>
+  );
+  // Find all links in the table and check that at least one has empty textContent
+  const links = screen.getAllByRole('link');
+  expect(links.some(link => link.textContent === '')).toBe(true);
+});

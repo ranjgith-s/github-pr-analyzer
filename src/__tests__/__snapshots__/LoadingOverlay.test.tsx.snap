@@ -1,0 +1,22 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LoadingOverlay matches snapshot 1`] = `
+<div
+  class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm"
+  data-testid="spinner"
+  style="min-height: 100vh;"
+>
+  <div
+    class="flex flex-col items-center gap-4 p-8 shadow-xl border border-divider bg-content1/90 mock-card"
+  >
+    <span>
+      Loading...
+    </span>
+    <p
+      class="text-base font-mono animate-pulse text-foreground/80 text-center min-w-[200px] min-h-[24px]"
+    >
+      Loading...
+    </p>
+  </div>
+</div>
+`;

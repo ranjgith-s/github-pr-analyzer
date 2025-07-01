@@ -270,7 +270,7 @@ export default function MetricsTable() {
             <>
               <DropdownItem key="">All</DropdownItem>
               {repos.map((r) => (
-                <DropdownItem key={r}>{r}</DropdownItem>
+                <DropdownItem key={r || 'all-repos'}>{r}</DropdownItem>
               ))}
             </>
           </DropdownMenu>
@@ -288,14 +288,14 @@ export default function MetricsTable() {
             <>
               <DropdownItem key="">All</DropdownItem>
               {authors.map((a) => (
-                <DropdownItem key={a}>{a}</DropdownItem>
+                <DropdownItem key={a || 'all-authors'}>{a}</DropdownItem>
               ))}
             </>
           </DropdownMenu>
         </Dropdown>
         <Dropdown>
           <DropdownTrigger>
-            <Button isIconOnly variant="light" aria-label="Choose columns">
+            <Button variant="light" aria-label="Choose columns">
               <Settings2Icon size={18} />
             </Button>
           </DropdownTrigger>
@@ -339,7 +339,6 @@ export default function MetricsTable() {
             total={Math.ceil(filteredItems.length / pageSize)}
             page={pageIndex}
             onChange={setPageIndex}
-            showControls
             size="sm"
             className="mt-4"
           />
@@ -353,7 +352,7 @@ export default function MetricsTable() {
         </TableHeader>
         <TableBody items={paginatedItems} emptyContent={<span>No pull requests found.</span>}>
           {(row: PRItem) => (
-            <TableRow key={row.id}>
+            <TableRow key={row.id || row.title || row.repo}>
               {allColumns.filter(col => visibleColumns.includes(col.id)).map(col => (
                 <TableCell key={col.id}>
                   {col.cell
