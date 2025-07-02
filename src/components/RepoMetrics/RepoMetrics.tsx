@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useAuth } from './AuthContext';
-import { useRepoInsights } from './hooks/useRepoInsights';
-import LoadingOverlay from './LoadingOverlay';
+import { useAuth } from '../../contexts/AuthContext/AuthContext';
+import { useRepoInsights } from '../../hooks/useRepoInsights';
+import LoadingOverlay from '../LoadingOverlay/LoadingOverlay';
 import { Card } from '@heroui/react';
-import { useDocumentTitle } from './hooks/useDocumentTitle';
-import { useMetaDescription } from './hooks/useMetaDescription';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
+import { useMetaDescription } from '../../hooks/useMetaDescription';
 
 export default function RepoMetrics() {
   const { token } = useAuth();

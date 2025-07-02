@@ -1,7 +1,7 @@
 import React from 'react';
-import MetricsTable from './MetricsTable';
-import { useDocumentTitle } from './hooks/useDocumentTitle';
-import { useMetaDescription } from './hooks/useMetaDescription';
+import MetricsTable from '../../components/MetricsTable/MetricsTable';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
+import { useMetaDescription } from '../../hooks/useMetaDescription';
 
 export default function MetricsPage() {
   useDocumentTitle('Pull request insights');

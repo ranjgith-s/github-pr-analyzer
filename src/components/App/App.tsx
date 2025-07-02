@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import Login from './Login';
-import MetricsPage from './MetricsPage';
-import Home from './Home';
-import Header from './Header';
-import PullRequestPage from './PullRequest';
-import DeveloperMetricsPage from './DeveloperMetricsPage';
-import RepoInsightsPage from './RepoInsightsPage';
-import DeveloperProfilePage from './DeveloperProfilePage';
-import { useAuth } from './AuthContext';
-import { getDeveloperProfile } from './services/github';
-import RepoMetrics from './RepoMetrics';
+import Login from '../Login/Login';
+import MetricsPage from '../../pages/Metrics/MetricsPage';
+import Home from '../../pages/Home/Home';
+import Header from '../Header/Header';
+import PullRequestPage from '../PullRequest/PullRequest';
+import DeveloperMetricsPage from '../../pages/DeveloperMetrics/DeveloperMetricsPage';
+import RepoInsightsPage from '../../pages/RepoInsights/RepoInsightsPage';
+import DeveloperProfilePage from '../../pages/DeveloperProfile/DeveloperProfilePage';
+import { useAuth } from '../../contexts/AuthContext/AuthContext';
+import { getDeveloperProfile } from '../../utils/services/github';
+import RepoMetrics from '../RepoMetrics/RepoMetrics';
 
 export default function App() {
   const { token } = useAuth();

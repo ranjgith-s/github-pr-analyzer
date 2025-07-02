@@ -1,5 +1,5 @@
 import { renderHook } from '@testing-library/react';
-import { useMetaDescription } from '../hooks/useMetaDescription';
+import { useMetaDescription } from '../useMetaDescription';
 
 describe('useMetaDescription', () => {
   let meta: HTMLMetaElement;

@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { usePullRequestMetrics } from './hooks/usePullRequestMetrics';
-import { PRItem } from './types';
-import { useAuth } from './AuthContext';
-import LoadingOverlay from './LoadingOverlay';
+import { usePullRequestMetrics } from '../../hooks/usePullRequestMetrics';
+import { PRItem } from '../../types';
+import { useAuth } from '../../contexts/AuthContext/AuthContext';
+import LoadingOverlay from '../LoadingOverlay/LoadingOverlay';
 import { Table, TableHeader, TableBody, TableColumn, TableRow, TableCell, Button, Select, SelectItem, Pagination, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Input } from '@heroui/react';
 import { Settings2Icon } from 'lucide-react';
 

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from './AuthContext';
-import { useDocumentTitle } from './hooks/useDocumentTitle';
-import { useMetaDescription } from './hooks/useMetaDescription';
-import SearchRepoBox from './SearchRepoBox';
+import { useAuth } from '../../contexts/AuthContext/AuthContext';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
+import { useMetaDescription } from '../../hooks/useMetaDescription';
+import SearchRepoBox from '../../components/SearchRepoBox/SearchRepoBox';
 
 export default function RepoInsightsPage() {
   const { token } = useAuth();

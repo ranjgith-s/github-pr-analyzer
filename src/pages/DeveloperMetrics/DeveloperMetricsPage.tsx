@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from './AuthContext';
-import { searchUsers } from './services/github';
-import { useDebounce } from './hooks/useDebounce';
-import { useDocumentTitle } from './hooks/useDocumentTitle';
-import { useMetaDescription } from './hooks/useMetaDescription';
-import { GitHubUser } from './services/auth';
-import SearchUserBox from './SearchUserBox';
+import { useAuth } from '../../contexts/AuthContext/AuthContext';
+import { searchUsers } from '../../utils/services/github';
+import { useDebounce } from '../../hooks/useDebounce';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
+import { useMetaDescription } from '../../hooks/useMetaDescription';
+import { GitHubUser } from '../../utils/services/auth';
+import SearchUserBox from '../../components/SearchUserBox/SearchUserBox';
 
 export default function DeveloperMetricsPage() {
   const { token } = useAuth();

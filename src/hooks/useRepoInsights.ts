@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { fetchRepoInsights, RepoInsights } from '../services/github';
+import { fetchRepoInsights, RepoInsights } from '../utils/services/github';
 
 export function useRepoInsights(
   token: string,
@@ -17,7 +17,7 @@ export function useRepoInsights(
       setLoading(true);
       setError(null);
       try {
-        const res = await fetchRepoInsights(token, owner, repo);
+        const res = await fetchRepoInsights(token, owner!, repo!);
         if (!cancel) setData(res);
       } catch {
         if (!cancel) setError('Failed to load data');

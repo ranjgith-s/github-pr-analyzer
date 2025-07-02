@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Octokit } from '@octokit/rest';
 import { ArrowLeftStartOnRectangleIcon } from '@heroicons/react/24/solid';
 import { Link as RouterLink } from 'react-router-dom';
-import { useAuth } from './AuthContext';
+import { useAuth } from '../../contexts/AuthContext/AuthContext';
 import { Avatar, Breadcrumbs, BreadcrumbItem, Button } from '@heroui/react';
 import { ChevronUpIcon } from 'lucide-react';
 

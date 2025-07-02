@@ -1,6 +1,6 @@
 import React from 'react';
 import { Switch } from '@heroui/react';
-import { useThemeMode } from './ThemeModeContext';
+import { useThemeMode } from '../../contexts/ThemeModeContext/ThemeModeContext';
 
 const ColorModeToggle: React.FC = () => {
   const { colorMode, toggleColorMode } = useThemeMode();

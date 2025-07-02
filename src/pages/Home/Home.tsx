@@ -1,6 +1,6 @@
 import React from 'react';
-import { useDocumentTitle } from './hooks/useDocumentTitle';
-import { useMetaDescription } from './hooks/useMetaDescription';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
+import { useMetaDescription } from '../../hooks/useMetaDescription';
 import {
   FolderIcon,
   UserGroupIcon,

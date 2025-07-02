@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Octokit } from '@octokit/rest';
 import { useParams, useLocation, Link as RouterLink } from 'react-router-dom';
-import { useAuth } from './AuthContext';
-import { useDocumentTitle } from './hooks/useDocumentTitle';
-import { useMetaDescription } from './hooks/useMetaDescription';
+import { useAuth } from '../../contexts/AuthContext/AuthContext';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
+import { useMetaDescription } from '../../hooks/useMetaDescription';
 import { Card, Button, Breadcrumbs, BreadcrumbItem } from '@heroui/react';
 
 interface TimelineEntry {

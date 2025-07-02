@@ -4,10 +4,10 @@ import { Card, CardHeader, CardBody, CardFooter } from '@heroui/react';
 import { Button } from '@heroui/react';
 import { Input } from '@heroui/react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from './AuthContext';
-import { validateToken } from './services/auth';
-import { useDocumentTitle } from './hooks/useDocumentTitle';
-import { useMetaDescription } from './hooks/useMetaDescription';
+import { useAuth } from '../../contexts/AuthContext/AuthContext';
+import { validateToken } from '../../utils/services/auth';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
+import { useMetaDescription } from '../../hooks/useMetaDescription';
 
 export default function Login() {
   const { login } = useAuth();

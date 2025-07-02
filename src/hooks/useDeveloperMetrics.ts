@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { fetchDeveloperMetrics, DeveloperMetrics } from '../services/github';
+import { fetchDeveloperMetrics, DeveloperMetrics } from '../utils/services/github';
 
 export function useDeveloperMetrics(token: string, login: string | null) {
   const [data, setData] = useState<DeveloperMetrics | null>(null);
@@ -11,7 +11,7 @@ export function useDeveloperMetrics(token: string, login: string | null) {
     async function load() {
       setLoading(true);
       try {
-        const metrics = await fetchDeveloperMetrics(token, login);
+        const metrics = await fetchDeveloperMetrics(token, login!);
         if (!cancel) setData(metrics);
       } catch (err) {
         if (!cancel) console.error(err);
