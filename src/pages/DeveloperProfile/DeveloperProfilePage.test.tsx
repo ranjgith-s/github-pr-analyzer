@@ -1,20 +1,14 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import DeveloperProfilePage from '../DeveloperProfilePage';
-import * as AuthContext from '../AuthContext';
-import * as useDeveloperMetricsHook from '../hooks/useDeveloperMetrics';
-import * as useDocumentTitleHook from '../hooks/useDocumentTitle';
-import * as useMetaDescriptionHook from '../hooks/useMetaDescription';
+import DeveloperProfilePage from './DeveloperProfilePage';
+import * as AuthContext from '../../contexts/AuthContext/AuthContext';
+import * as useDeveloperMetricsHook from '../../hooks/useDeveloperMetrics';
+import * as useDocumentTitleHook from '../../hooks/useDocumentTitle';
+import * as useMetaDescriptionHook from '../../hooks/useMetaDescription';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 
-jest.mock('../LoadingOverlay', () => (props: any) => <div data-testid="loading-overlay">{props.show && 'Loading...'}</div>);
-jest.mock('@heroui/react', () => ({ Card: (props: any) => <div data-testid="card">{props.children}</div> }));
-jest.mock('recharts', () => ({
-  RadarChart: (props: any) => <div data-testid="radar-chart">{props.children}</div>,
-  Radar: () => <div data-testid="radar" />, 
-  PolarAngleAxis: () => <div data-testid="polar-angle-axis" />,
-}));
-jest.mock('../DeveloperMetricCard', () => (props: any) => <div data-testid="metric-card">{props.name}</div>);
+jest.mock('../../components/LoadingOverlay/LoadingOverlay', () => (props: any) => <div data-testid="loading-overlay">{props.show && 'Loading...'}</div>);
+jest.mock('../../components/DeveloperMetricCard/DeveloperMetricCard', () => (props: any) => <div data-testid="metric-card">{props.name}</div>);
 
 describe('DeveloperProfilePage', () => {
   beforeEach(() => {
@@ -86,7 +80,7 @@ describe('DeveloperProfilePage', () => {
     expect(screen.getByText('Following: 5')).toBeInTheDocument();
     expect(screen.getByText('View on GitHub')).toHaveAttribute('href', 'url');
     expect(screen.getByTestId('radar-chart')).toBeInTheDocument();
-    expect(screen.getAllByTestId('card').length).toBeGreaterThan(1);
+    expect(screen.getAllByTestId('metric-card').length).toBeGreaterThan(1);
   });
 
   it('renders nothing but overlay when loading and no data', () => {
@@ -94,6 +88,6 @@ describe('DeveloperProfilePage', () => {
     const { container } = renderWithRouter();
     expect(screen.getByTestId('loading-overlay')).toBeInTheDocument();
     // Only overlay should be visible
-    expect(container.querySelectorAll('[data-testid="card"]').length).toBe(0);
+    expect(container.querySelectorAll('[data-testid="metric-card"]').length).toBe(0);
   });
 });

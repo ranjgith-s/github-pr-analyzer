@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import SearchRepoBox from '../SearchRepoBox';
+import SearchRepoBox from './SearchRepoBox';
 
 describe('SearchRepoBox', () => {
   const options = [

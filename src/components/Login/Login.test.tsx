@@ -1,13 +1,13 @@
 import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import Login from '../Login';
-import { AuthProvider, useAuth } from '../AuthContext';
-import { ThemeModeProvider } from '../ThemeModeContext';
+import Login from './Login';
+import { AuthProvider, useAuth } from '../../contexts/AuthContext/AuthContext';
+import { ThemeModeProvider } from '../../contexts/ThemeModeContext/ThemeModeContext';
 import { MemoryRouter } from 'react-router-dom';
-import * as authService from '../services/auth';
+import * as authService from '../../utils/services/auth';
 
-jest.mock('../services/auth');
+jest.mock('../../utils/services/auth');
 
 test('login submits provided token', async () => {
   (authService.validateToken as jest.Mock).mockResolvedValue({

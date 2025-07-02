@@ -1,8 +1,8 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
-import PullRequestPage from '../PullRequest';
-import { AuthProvider } from '../AuthContext';
+import PullRequestPage from './PullRequest';
+import { AuthProvider } from '../../contexts/AuthContext/AuthContext';
 import { Octokit } from '@octokit/rest';
 
 const timeline = [

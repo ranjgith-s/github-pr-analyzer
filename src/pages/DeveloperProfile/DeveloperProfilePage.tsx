@@ -148,7 +148,12 @@ export default function DeveloperProfilePage() {
 							</div>
 						</Card>
 						<Card className="p-6 animate-fadeInUp flex items-center justify-center">
-							<RadarChart width={500} height={400} data={chartData}>
+							<RadarChart
+								width={500}
+								height={400}
+								data={chartData}
+								data-testid="radar-chart"
+							>
 								<PolarAngleAxis
 									dataKey="metric"
 									tick={{ fontFamily: 'monospace', fontSize: 10 }}

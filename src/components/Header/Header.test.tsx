@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import Header from '../Header';
-import { AuthProvider } from '../AuthContext';
-import { ThemeModeProvider } from '../ThemeModeContext';
+import Header from './Header';
+import { AuthProvider } from '../../contexts/AuthContext/AuthContext';
+import { ThemeModeProvider } from '../../contexts/ThemeModeContext/ThemeModeContext';
 import { MemoryRouter } from 'react-router-dom';
 import { Octokit } from '@octokit/rest';
-import * as AuthContextModule from '../AuthContext';
+import * as AuthContextModule from '../../contexts/AuthContext/AuthContext';
 
 jest.mock('@octokit/rest', () => ({
   Octokit: jest.fn().mockImplementation(() => ({

@@ -1,6 +1,6 @@
 import React from 'react';
 import { renderHook, act } from '@testing-library/react';
-import { AuthProvider, useAuth } from '../AuthContext';
+import { AuthProvider, useAuth } from './AuthContext';
 import { MemoryRouter } from 'react-router-dom';
 
 beforeEach(() => {

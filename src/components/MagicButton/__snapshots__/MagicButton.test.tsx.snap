@@ -5,3 +5,4 @@ exports[`MagicButton matches snapshot 1`] = `
   Snapshot
 </button>
 `;
+

@@ -1,4 +1,4 @@
-import { formatDuration } from '../MetricsTable';
+import { formatDuration } from '../../components/MetricsTable/MetricsTable';
 
 test('returns N/A when start or end is missing', () => {
   expect(formatDuration(undefined, '2020-01-01')).toBe('N/A');

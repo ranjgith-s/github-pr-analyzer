@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, act } from '@testing-library/react';
-import LoadingOverlay from '../LoadingOverlay';
+import LoadingOverlay from './LoadingOverlay';
 
 jest.useFakeTimers();
 

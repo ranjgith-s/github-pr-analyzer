@@ -6,14 +6,12 @@ import {
   waitFor,
   act,
 } from '@testing-library/react';
-import RepoInsightsPage from '../RepoInsightsPage';
-import { AuthProvider } from '../AuthContext';
-import { ThemeModeProvider } from '../ThemeModeContext';
-import * as githubService from '../services/github';
+import RepoInsightsPage from './RepoInsightsPage';
+import { AuthProvider } from '../../contexts/AuthContext/AuthContext';
+import { ThemeModeProvider } from '../../contexts/ThemeModeContext/ThemeModeContext';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
-import RepoMetrics from '../RepoMetrics';
 
-jest.mock('../services/github');
+jest.mock('../../utils/services/github');
 
 describe('RepoInsightsPage', () => {
   beforeEach(() => {

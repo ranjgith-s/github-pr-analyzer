@@ -2,14 +2,14 @@ import React, { useEffect } from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
-import DeveloperMetricsPage from '../DeveloperMetricsPage';
-import { AuthProvider, useAuth } from '../AuthContext';
-import { ThemeModeProvider } from '../ThemeModeContext';
-import * as metricsHook from '../hooks/useDeveloperMetrics';
-import * as github from '../services/github';
+import DeveloperMetricsPage from './DeveloperMetricsPage';
+import { AuthProvider, useAuth } from '../../contexts/AuthContext/AuthContext';
+import { ThemeModeProvider } from '../../contexts/ThemeModeContext/ThemeModeContext';
+import * as metricsHook from '../../hooks/useDeveloperMetrics';
+import * as github from '../../utils/services/github';
 
-jest.mock('../services/github', () => ({
-  ...jest.requireActual('../services/github'),
+jest.mock('../../utils/services/github', () => ({
+  ...jest.requireActual('../../utils/services/github'),
   getDeveloperProfile: jest.fn(() => Promise.resolve({
     login: 'octocat',
     name: 'Octo Cat',
@@ -22,10 +22,10 @@ jest.mock('../services/github', () => ({
     following: 0,
     public_repos: 0,
   })),
-  searchUsers: jest.fn(), // <-- Add this line to mock searchUsers
+  searchUsers: jest.fn(),
 }));
 
-jest.mock('../hooks/useDeveloperMetrics');
+jest.mock('../../hooks/useDeveloperMetrics');
 
 function Wrapper() {
   const auth = useAuth();

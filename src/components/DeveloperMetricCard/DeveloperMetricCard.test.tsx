@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import DeveloperMetricCard from '../DeveloperMetricCard';
+import DeveloperMetricCard from './DeveloperMetricCard';
 
 test('renders metric info and value', () => {
   render(

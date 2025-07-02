@@ -1,8 +1,8 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { ThemeModeProvider } from '../ThemeModeContext';
-import ColorModeToggle from '../ColorModeToggle';
+import { ThemeModeProvider } from '../../contexts/ThemeModeContext/ThemeModeContext';
+import ColorModeToggle from './ColorModeToggle';
 
 beforeEach(() => {
   localStorage.clear();

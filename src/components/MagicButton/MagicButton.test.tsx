@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import MagicButton from '../MagicButton';
+import MagicButton from './MagicButton';
 
 describe('MagicButton', () => {
   it('renders children', () => {

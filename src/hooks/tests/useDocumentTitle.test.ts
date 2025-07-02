@@ -1,5 +1,5 @@
 import { renderHook } from '@testing-library/react';
-import { useDocumentTitle } from '../hooks/useDocumentTitle';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 
 describe('useDocumentTitle', () => {
   it('sets and restores document.title', () => {

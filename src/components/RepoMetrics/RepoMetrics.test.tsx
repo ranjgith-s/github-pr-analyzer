@@ -1,13 +1,13 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import RepoMetrics from '../RepoMetrics';
-import * as AuthContext from '../AuthContext';
-import * as useRepoInsightsHook from '../hooks/useRepoInsights';
-import * as useDocumentTitleHook from '../hooks/useDocumentTitle';
-import * as useMetaDescriptionHook from '../hooks/useMetaDescription';
+import RepoMetrics from './RepoMetrics';
+import * as AuthContext from '../../contexts/AuthContext/AuthContext';
+import * as useRepoInsightsHook from '../../hooks/useRepoInsights';
+import * as useDocumentTitleHook from '../../hooks/useDocumentTitle';
+import * as useMetaDescriptionHook from '../../hooks/useMetaDescription';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 
-jest.mock('../LoadingOverlay', () => (props: any) => <div data-testid="loading-overlay">{props.show && 'Loading...'}</div>);
+jest.mock('../../components/LoadingOverlay/LoadingOverlay', () => (props: any) => <div data-testid="loading-overlay">{props.show && 'Loading...'}</div>);
 jest.mock('@heroui/react', () => ({ Card: (props: any) => <div data-testid="card">{props.children}</div> }));
 
 describe('RepoMetrics', () => {

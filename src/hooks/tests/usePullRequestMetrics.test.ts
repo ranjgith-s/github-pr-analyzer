@@ -1,7 +1,7 @@
 import { renderHook, waitFor } from '@testing-library/react';
-import { usePullRequestMetrics } from '../hooks/usePullRequestMetrics';
-import * as github from '../services/github';
-import { PRItem } from '../types';
+import { usePullRequestMetrics } from '../../hooks/usePullRequestMetrics';
+import * as github from '../../utils/services/github';
+import { PRItem } from 'src/types';
 
 const sample: PRItem[] = [
   {

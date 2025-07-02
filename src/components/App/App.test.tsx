@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import App from '../App';
-import { AuthProvider } from '../AuthContext';
-import { ThemeModeProvider } from '../ThemeModeContext';
-import * as metricsHook from '../hooks/usePullRequestMetrics';
+import App from './App';
+import { AuthProvider } from '../../contexts/AuthContext/AuthContext';
+import { ThemeModeProvider } from '../../contexts/ThemeModeContext/ThemeModeContext';
+import * as metricsHook from '../../hooks/usePullRequestMetrics';
 
-jest.mock('../hooks/usePullRequestMetrics');
+jest.mock('../../hooks/usePullRequestMetrics');
 
 const mockedHook = metricsHook as jest.Mocked<typeof metricsHook>;
 
@@ -36,7 +36,7 @@ test('shows login when not authenticated', () => {
 });
 
 function LoggedIn() {
-  const auth = require('../AuthContext').useAuth();
+  const auth = require('../../contexts/AuthContext/AuthContext').useAuth();
   useEffect(() => {
     auth.login('token');
   }, [auth]);
@@ -61,7 +61,7 @@ test('shows home card when authenticated', async () => {
 
 test('shows breadcrumb on insights page', async () => {
   function Wrapper() {
-    const auth = require('../AuthContext').useAuth();
+    const auth = require('../../contexts/AuthContext/AuthContext').useAuth();
     useEffect(() => {
       auth.login('token');
     }, [auth]);

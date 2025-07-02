@@ -1,10 +1,10 @@
 import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { MemoryRouter, useNavigate } from 'react-router-dom';
-import MetricsTable from '../MetricsTable';
-import { AuthProvider } from '../AuthContext';
-import * as metricsHook from '../hooks/usePullRequestMetrics';
-import { PRItem } from '../types';
+import MetricsTable from './MetricsTable';
+import { AuthProvider } from '../../contexts/AuthContext/AuthContext';
+import * as metricsHook from '../../hooks/usePullRequestMetrics';
+import { PRItem } from '../../types';
 
 jest.mock('react-router-dom', () => {
   const actual = jest.requireActual('react-router-dom');
@@ -200,7 +200,7 @@ test('search filter works', () => {
 });
 
 test('formatDuration handles edge cases', () => {
-  const { formatDuration } = require('../MetricsTable');
+  const { formatDuration } = require('./MetricsTable');
   expect(formatDuration()).toBe('N/A');
   expect(formatDuration('2020-01-02', '2020-01-01')).toBe('N/A');
   expect(formatDuration('2020-01-01', '2020-01-01')).toBe('0h');

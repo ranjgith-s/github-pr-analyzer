@@ -1,8 +1,8 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import SearchUserBox from '../SearchUserBox';
-import { GitHubUser } from '../services/auth';
+import SearchUserBox from './SearchUserBox';
+import { GitHubUser } from '../../utils/services/auth';
 
 const sample: GitHubUser[] = [{ login: 'octo', avatar_url: 'x' }];
 

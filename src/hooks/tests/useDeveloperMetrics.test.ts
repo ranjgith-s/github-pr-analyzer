@@ -1,6 +1,6 @@
 import { renderHook, waitFor } from '@testing-library/react';
-import { useDeveloperMetrics } from '../hooks/useDeveloperMetrics';
-import * as github from '../services/github';
+import { useDeveloperMetrics } from '../../hooks/useDeveloperMetrics';
+import * as github from '../../utils/services/github';
 
 const sample = {
   login: 'dev',

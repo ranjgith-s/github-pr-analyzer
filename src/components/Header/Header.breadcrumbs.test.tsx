@@ -1,8 +1,8 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import Header from '../Header';
-import { AuthProvider } from '../AuthContext';
-import { ThemeModeProvider } from '../ThemeModeContext';
+import Header from './Header';
+import { AuthProvider } from '../../contexts/AuthContext/AuthContext';
+import { ThemeModeProvider } from '../../contexts/ThemeModeContext/ThemeModeContext';
 import { MemoryRouter } from 'react-router-dom';
 import { Octokit } from '@octokit/rest';
 
@@ -23,7 +23,7 @@ describe('Header breadcrumbs', () => {
 
   test('renders multiple breadcrumbs and highlights the last', async () => {
     function Wrapper() {
-      const auth = require('../AuthContext').useAuth();
+      const auth = require('../../contexts/AuthContext/AuthContext').useAuth();
       React.useEffect(() => {
         auth.login('token');
       }, [auth]);

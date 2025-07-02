@@ -1,29 +1,29 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import App from '../App';
-import { AuthProvider } from '../AuthContext';
-import { ThemeModeProvider } from '../ThemeModeContext';
+import App from './App';
+import { AuthProvider } from '../../contexts/AuthContext/AuthContext';
+import { ThemeModeProvider } from '../../contexts/ThemeModeContext/ThemeModeContext';
 
-jest.mock('../services/github', () => ({
-  ...jest.requireActual('../services/github'),
+jest.mock('../../utils/services/github', () => ({
+  ...jest.requireActual('../../utils/services/github'),
   getDeveloperProfile: jest.fn(() => Promise.resolve({
     login: 'octocat',
     name: 'Octo Cat',
-    avatar_url: 'img',
-    html_url: '',
-    bio: '',
-    company: '',
-    location: '',
-    followers: 0,
-    following: 0,
-    public_repos: 0,
+    avatar_url: 'avatar',
+    bio: 'bio',
+    company: 'company',
+    location: 'location',
+    public_repos: 3,
+    followers: 10,
+    following: 5,
+    html_url: 'url',
   })),
 }));
 
 describe('App breadcrumbs integration', () => {
   function LoggedIn() {
-    const auth = require('../AuthContext').useAuth();
+    const auth = require('../../contexts/AuthContext/AuthContext').useAuth();
     React.useEffect(() => {
       auth.login('token');
     }, [auth]);
