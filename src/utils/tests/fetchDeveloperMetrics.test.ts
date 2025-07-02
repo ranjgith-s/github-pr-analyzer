@@ -1,5 +1,6 @@
 import { fetchDeveloperMetrics } from '../services/github';
 import { Octokit } from '@octokit/rest';
+import { userCache } from '../services/github';
 
 jest.mock('@octokit/rest');
 
@@ -16,6 +17,10 @@ describe('fetchDeveloperMetrics', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (Octokit as any).mockImplementation(() => mockInstance);
+    // Clear userCache between tests
+    if (userCache) {
+      userCache.clear();
+    }
   });
 
   it('returns developer metrics with correct calculations', async () => {
