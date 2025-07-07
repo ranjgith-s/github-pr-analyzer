@@ -1,22 +1,10 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import Header from './Header';
 import { AuthProvider } from '../../contexts/AuthContext/AuthContext';
 import { ThemeModeProvider } from '../../contexts/ThemeModeContext/ThemeModeContext';
 import { MemoryRouter } from 'react-router-dom';
-import { Octokit } from '@octokit/rest';
-
-jest.mock('@octokit/rest', () => ({
-  Octokit: jest.fn().mockImplementation(() => ({
-    rest: {
-      users: {
-        getAuthenticated: jest
-          .fn()
-          .mockResolvedValue({ data: { login: 'octocat', avatar_url: 'img' } }),
-      },
-    },
-  })),
-}));
+import { useAuth } from '../../contexts/AuthContext/AuthContext';
 
 describe('Header breadcrumbs', () => {
   beforeEach(() => {
@@ -25,7 +13,7 @@ describe('Header breadcrumbs', () => {
 
   test('renders multiple breadcrumbs and highlights the last', async () => {
     function Wrapper() {
-      const auth = require('../../contexts/AuthContext/AuthContext').useAuth();
+      const auth = useAuth();
       React.useEffect(() => {
         auth.login('token');
       }, [auth]);

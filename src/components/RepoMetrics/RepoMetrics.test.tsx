@@ -9,6 +9,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 
 jest.mock(
   '../../components/LoadingOverlay/LoadingOverlay',
+  // eslint-disable-next-line react/display-name
   () => (props: any) => (
     <div data-testid="loading-overlay">{props.show && 'Loading...'}</div>
   )

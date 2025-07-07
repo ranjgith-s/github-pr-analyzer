@@ -9,14 +9,27 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 
 jest.mock(
   '../../components/LoadingOverlay/LoadingOverlay',
+  // eslint-disable-next-line react/display-name
   () => (props: any) => (
     <div data-testid="loading-overlay">{props.show && 'Loading...'}</div>
   )
 );
 jest.mock(
   '../../components/DeveloperMetricCard/DeveloperMetricCard',
+  // eslint-disable-next-line react/display-name
   () => (props: any) => <div data-testid="metric-card">{props.name}</div>
 );
+
+// Add display name to anonymous components
+const MockLoadingOverlay = (props: any) => (
+  <div data-testid="loading-overlay">{props.show && 'Loading...'}</div>
+);
+MockLoadingOverlay.displayName = 'MockLoadingOverlay';
+
+const MockDeveloperMetricCard = (props: any) => (
+  <div data-testid="metric-card">{props.name}</div>
+);
+MockDeveloperMetricCard.displayName = 'MockDeveloperMetricCard';
 
 describe('DeveloperProfilePage', () => {
   beforeEach(() => {

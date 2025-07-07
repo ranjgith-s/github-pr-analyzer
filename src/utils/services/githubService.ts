@@ -40,7 +40,7 @@ export async function fetchPullRequestMetrics(
     const queries = batch
       .map((item, idx) => {
         const [owner, repo] = item.repository_url.split('/').slice(-2);
-        return `pr${idx}: repository(owner: \"${owner}\", name: \"${repo}\") { pullRequest(number: ${item.number}) { id title author { login } createdAt publishedAt closedAt mergedAt isDraft additions deletions comments { totalCount } reviews(first:100) { nodes { author { login } state submittedAt } } } }`;
+        return `pr${idx}: repository(owner: "${owner}", name: "${repo}") { pullRequest(number: ${item.number}) { id title author { login } createdAt publishedAt closedAt mergedAt isDraft additions deletions comments { totalCount } reviews(first:100) { nodes { author { login } state submittedAt } } } }`;
       })
       .join(' ');
     const query = `query { ${queries} }`;
@@ -119,7 +119,7 @@ export async function fetchDeveloperMetrics(token: string, login: string) {
     const queries = batch
       .map((item, idx) => {
         const [owner, repo] = item.repository_url.split('/').slice(-2);
-        return `pr${idx}: repository(owner: \"${owner}\", name: \"${repo}\") { pullRequest(number: ${item.number}) { mergedAt createdAt additions deletions comments { totalCount } reviews(first:100) { nodes { state } } closingIssuesReferences(first:1) { totalCount } } }`;
+        return `pr${idx}: repository(owner: "${owner}", name: "${repo}") { pullRequest(number: ${item.number}) { mergedAt createdAt additions deletions comments { totalCount } reviews(first:100) { nodes { state } } closingIssuesReferences(first:1) { totalCount } } }`;
       })
       .join(' ');
     const query = `query { ${queries} }`;

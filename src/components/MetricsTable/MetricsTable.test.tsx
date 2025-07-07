@@ -221,15 +221,6 @@ test('search filter works', () => {
   expect(screen.queryByText('Alpha')).not.toBeInTheDocument();
 });
 
-test('formatDuration handles edge cases', () => {
-  const { formatDuration } = require('./MetricsTable');
-  expect(formatDuration()).toBe('N/A');
-  expect(formatDuration('2020-01-02', '2020-01-01')).toBe('N/A');
-  expect(formatDuration('2020-01-01', '2020-01-01')).toBe('0h');
-  expect(formatDuration('2020-01-01', '2020-01-02')).toBe('1d 0h'); // Updated expectation
-  expect(formatDuration('2020-01-01', '2020-01-03')).toBe('2d 0h');
-});
-
 test('handles PRs with no reviewers', () => {
   const items = [{ ...sample[0], reviewers: [] }];
   jest

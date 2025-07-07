@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext/AuthContext';
 import { useRepoInsights } from '../../hooks/useRepoInsights';
@@ -16,13 +16,10 @@ export default function RepoMetrics() {
     repo || null
   );
 
-  useEffect(() => {
-    // Use hooks for setting title and meta
-    useDocumentTitle(`Repo Insights: ${owner}/${repo}`);
-    useMetaDescription(
-      `Insights and metrics for the repository ${owner}/${repo} including deployment frequency, lead time, and more.`
-    );
-  }, [owner, repo]);
+  useDocumentTitle(`Repo Insights: ${owner}/${repo}`);
+  useMetaDescription(
+    `Insights and metrics for the repository ${owner}/${repo} including deployment frequency, lead time, and more.`
+  );
 
   if (loading)
     return (

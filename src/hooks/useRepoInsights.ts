@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
-import {
-  fetchRepoInsights,
-} from '../utils/services/githubService';
+import { fetchRepoInsights } from '../utils/services/githubService';
 import { RepoInsights } from 'src/types';
 
 export function useRepoInsights(

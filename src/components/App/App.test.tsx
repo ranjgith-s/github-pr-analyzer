@@ -37,8 +37,10 @@ test('shows login when not authenticated', () => {
   expect(screen.getByText(/PR-ism/i)).toBeInTheDocument();
 });
 
+import { useAuth } from '../../contexts/AuthContext/AuthContext';
+
 function LoggedIn() {
-  const auth = require('../../contexts/AuthContext/AuthContext').useAuth();
+  const auth = useAuth();
   useEffect(() => {
     auth.login('token');
   }, [auth]);
@@ -71,7 +73,7 @@ test('shows home card when authenticated', async () => {
 
 test('shows breadcrumb on insights page', async () => {
   function Wrapper() {
-    const auth = require('../../contexts/AuthContext/AuthContext').useAuth();
+    const auth = useAuth();
     useEffect(() => {
       auth.login('token');
     }, [auth]);

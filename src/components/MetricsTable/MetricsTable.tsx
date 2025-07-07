@@ -12,8 +12,6 @@ import {
   TableRow,
   TableCell,
   Button,
-  Select,
-  SelectItem,
   Pagination,
   Dropdown,
   DropdownTrigger,

@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext/AuthContext';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 import { useMetaDescription } from '../../hooks/useMetaDescription';
 import SearchRepoBox from '../../components/SearchRepoBox/SearchRepoBox';
 
 export default function RepoInsightsPage() {
-  const { token } = useAuth();
   const [query, setQuery] = useState('');
   const [options, setOptions] = useState<
     { owner: string; repo: string; fullName: string }[]

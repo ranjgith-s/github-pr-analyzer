@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { RadarChart, Radar, PolarAngleAxis } from 'recharts';
 import { useAuth } from '../../contexts/AuthContext/AuthContext';
 import { useDeveloperMetrics } from '../../hooks/useDeveloperMetrics';
@@ -9,7 +9,6 @@ import LoadingOverlay from '../../components/LoadingOverlay/LoadingOverlay';
 import DeveloperMetricCard from '../../components/DeveloperMetricCard/DeveloperMetricCard';
 import { Card } from '@heroui/react';
 import { DeveloperMetrics } from 'src/types';
-
 
 const METRIC_INFO = [
   {
@@ -73,13 +72,6 @@ const METRIC_INFO = [
     details: 'Counts the issues you closed with pull requests.',
   },
 ];
-
-function formatName(name: string | null, login: string): string {
-  if (!name) return login;
-  const parts = name.split(' ');
-  if (parts.length === 1) return name;
-  return `${parts[0]} ${parts.slice(1).join(' ')}`;
-}
 
 export default function DeveloperProfilePage() {
   const { username } = useParams<{ username: string }>();

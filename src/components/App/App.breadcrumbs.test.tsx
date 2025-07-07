@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import App from './App';
 import { AuthProvider } from '../../contexts/AuthContext/AuthContext';
 import { ThemeModeProvider } from '../../contexts/ThemeModeContext/ThemeModeContext';
+import { useAuth } from '../../contexts/AuthContext/AuthContext';
 
 jest.mock('../../utils/services/githubService', () => ({
   ...jest.requireActual('../../utils/services/githubService'),
@@ -25,7 +26,7 @@ jest.mock('../../utils/services/githubService', () => ({
 
 describe('App breadcrumbs integration', () => {
   function LoggedIn() {
-    const auth = require('../../contexts/AuthContext/AuthContext').useAuth();
+    const auth = useAuth();
     React.useEffect(() => {
       auth.login('token');
     }, [auth]);

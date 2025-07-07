@@ -50,7 +50,9 @@ describe('github service', () => {
     Object.values(mockOctokit.rest).forEach((group: any) => {
       Object.values(group).forEach((fn: any) => fn.mockReset && fn.mockReset());
     });
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     mockOctokit.paginate.mockReset && mockOctokit.paginate.mockReset();
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     mockOctokit.graphql.mockReset && mockOctokit.graphql.mockReset();
   });
 

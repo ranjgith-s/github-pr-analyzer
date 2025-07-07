@@ -1,15 +1,9 @@
 import React from 'react';
-import {
-  render,
-  screen,
-  fireEvent,
-  waitFor,
-  act,
-} from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import RepoInsightsPage from './RepoInsightsPage';
 import { AuthProvider } from '../../contexts/AuthContext/AuthContext';
 import { ThemeModeProvider } from '../../contexts/ThemeModeContext/ThemeModeContext';
-import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
 
 jest.mock('../../utils/services/githubService');
 
