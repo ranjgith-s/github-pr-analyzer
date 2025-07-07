@@ -9,6 +9,7 @@
     "test": "jest --coverage --coverageReporters=text --coverageReporters=json-summary",
     "update-coverage": "node scripts/updateReadmeCoverage.js",
     "lint": "eslint -c .eslintrc.cjs \"src/**/*.{ts,tsx}\"",
+    "typecheck": "tsc --noEmit",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\""
   },
   "dependencies": {
