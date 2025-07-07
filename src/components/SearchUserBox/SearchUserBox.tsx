@@ -1,5 +1,5 @@
 import React from 'react';
-import { GitHubUser } from './services/auth';
+import { GitHubUser } from '../../utils/services/auth';
 import { Input, Card, Avatar } from '@heroui/react';
 
 interface Props {

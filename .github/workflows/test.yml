@@ -11,7 +11,8 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 20
-      - run: npm ci
+      - run: npm ci --legacy-peer-deps
+      - run: npm run typecheck
       - run: npm test
       - run: node scripts/updateReadmeCoverage.js
       - uses: actions/upload-artifact@v4
