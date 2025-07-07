@@ -86,14 +86,28 @@ export default function PullRequestPage() {
         <BreadcrumbItem isCurrent>{title}</BreadcrumbItem>
       </Breadcrumbs>
       <Card className="mb-6 p-4">
-        <h2 className="text-xl font-bold mb-2">{title}</h2>
+        <h2 className="text-xl font-bold mb-2 text-foreground">{title}</h2>
         <div className="mb-4">
-          {events &&
-            events.map((e, i) => (
-              <div key={i} className="mb-2">
-                <span className="font-semibold">{e.label}:</span> {e.date}
-              </div>
-            ))}
+          {events && (
+            <ol className="relative border-s border-divider pl-6">
+              {events.map((e, i) => (
+                <li key={i} className="mb-6 last:mb-0 flex items-start">
+                  <span
+                    className="flex-shrink-0 w-3 h-3 mt-1.5 rounded-full bg-primary border-2 border-content1 shadow"
+                    aria-hidden="true"
+                  ></span>
+                  <div className="ml-4">
+                    <span className="block font-semibold text-primary">
+                      {e.label}
+                    </span>
+                    <span className="block text-sm text-foreground/70">
+                      {e.date}
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          )}
         </div>
         <Button as="a" href="/insights" color="primary" variant="flat">
           Back to Insights

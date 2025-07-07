@@ -164,7 +164,17 @@ test('renders timeline and lead time', () => {
       </MemoryRouter>
     </AuthProvider>
   );
+  // Check for the new timeline bar segments with correct aria-labels and classes
   expect(screen.getByLabelText(/Draft:/)).toBeInTheDocument();
+  expect(
+    screen.getByLabelText(/Draft:/).querySelector('.bg-success')
+  ).toBeInTheDocument();
+  expect(
+    screen.getByLabelText(/Draft:/).querySelector('.bg-warning')
+  ).toBeInTheDocument();
+  expect(
+    screen.getByLabelText(/Draft:/).querySelector('.bg-primary')
+  ).toBeInTheDocument();
   expect(screen.getByText(/0h/i)).toBeInTheDocument();
 });
 

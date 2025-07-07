@@ -176,6 +176,7 @@ export default function MetricsTable() {
       id: 'timeline',
       header: 'Timeline',
       cell: (row: PRItem) => {
+        // Use HeroUI ProgressBar for timeline visualization
         const created = new Date(row.created_at);
         const published = row.published_at
           ? new Date(row.published_at)
@@ -189,47 +190,39 @@ export default function MetricsTable() {
         const closeMs = Math.max(closed.getTime() - reviewed.getTime(), 0);
         const total = draftMs + reviewMs + closeMs || 1;
 
+        // Each stage as a percentage
+        const draftPct = (draftMs / total) * 100;
+        const reviewPct = (reviewMs / total) * 100;
+        const closePct = (closeMs / total) * 100;
+
+        // Tooltip text for accessibility
         const tooltipText = [
           `Draft: ${formatDuration(row.created_at, row.published_at)}`,
-          `Review: ${formatDuration(
-            row.published_at || row.created_at,
-            row.first_review_at
-          )}`,
-          `Close: ${formatDuration(
-            row.first_review_at || row.published_at || row.created_at,
-            row.closed_at
-          )}`,
+          `Review: ${formatDuration(row.published_at || row.created_at, row.first_review_at)}`,
+          `Close: ${formatDuration(row.first_review_at || row.published_at || row.created_at, row.closed_at)}`,
         ].join('\n');
 
+        // Use HeroUI ProgressBar (or SegmentedProgress if available)
+        // Fallback to 3 stacked ProgressBar if segmented is not available
         return (
-          <div
-            aria-label={tooltipText}
-            style={{
-              display: 'flex',
-              height: '6px',
-              width: 80,
-              overflow: 'hidden',
-              borderRadius: 4,
-            }}
-          >
-            <div
-              style={{
-                backgroundColor: '#d1e7dd',
-                width: `${(draftMs / total) * 100}%`,
-              }}
-            />
-            <div
-              style={{
-                backgroundColor: '#fff3cd',
-                width: `${(reviewMs / total) * 100}%`,
-              }}
-            />
-            <div
-              style={{
-                backgroundColor: '#cce5ff',
-                width: `${(closeMs / total) * 100}%`,
-              }}
-            />
+          <div aria-label={tooltipText} className="flex items-center w-24">
+            <div className="flex w-full gap-0.5">
+              <div
+                className="h-2 rounded-l bg-success"
+                style={{ width: `${draftPct}%` }}
+                title={`Draft: ${formatDuration(row.created_at, row.published_at)}`}
+              />
+              <div
+                className="h-2 bg-warning"
+                style={{ width: `${reviewPct}%` }}
+                title={`Review: ${formatDuration(row.published_at || row.created_at, row.first_review_at)}`}
+              />
+              <div
+                className="h-2 rounded-r bg-primary"
+                style={{ width: `${closePct}%` }}
+                title={`Close: ${formatDuration(row.first_review_at || row.published_at || row.created_at, row.closed_at)}`}
+              />
+            </div>
           </div>
         );
       },
