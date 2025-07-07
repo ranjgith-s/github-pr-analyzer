@@ -24,7 +24,9 @@ beforeEach(() => {
 
 test('shows login when not authenticated', () => {
   render(
-    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <MemoryRouter
+      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+    >
       <ThemeModeProvider>
         <AuthProvider>
           <App />
@@ -45,7 +47,9 @@ function LoggedIn() {
 
 test('shows home card when authenticated', async () => {
   render(
-    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <MemoryRouter
+      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+    >
       <ThemeModeProvider>
         <AuthProvider>
           <LoggedIn />
@@ -53,9 +57,15 @@ test('shows home card when authenticated', async () => {
       </ThemeModeProvider>
     </MemoryRouter>
   );
-  expect(screen.getByText((content) => /pull request insights/i.test(content))).toBeInTheDocument();
-  expect(screen.getByText((content) => /developer insights/i.test(content))).toBeInTheDocument();
-  expect(screen.getByText((content) => /repository insights/i.test(content))).toBeInTheDocument();
+  expect(
+    screen.getByText((content) => /pull request insights/i.test(content))
+  ).toBeInTheDocument();
+  expect(
+    screen.getByText((content) => /developer insights/i.test(content))
+  ).toBeInTheDocument();
+  expect(
+    screen.getByText((content) => /repository insights/i.test(content))
+  ).toBeInTheDocument();
   expect(screen.getByText(/PR-ism/i)).toBeInTheDocument();
 });
 
@@ -68,7 +78,10 @@ test('shows breadcrumb on insights page', async () => {
     return <App />;
   }
   render(
-    <MemoryRouter initialEntries={['/insights']} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <MemoryRouter
+      initialEntries={['/insights']}
+      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+    >
       <ThemeModeProvider>
         <AuthProvider>
           <Wrapper />

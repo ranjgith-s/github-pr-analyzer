@@ -8,7 +8,9 @@ describe('Home', () => {
     const card = screen.getByText('Pull Request Insights').closest('[href]');
     expect(card).toBeInTheDocument();
     expect(card).toHaveAttribute('href', '/insights');
-    expect(screen.getByText(/See metrics for your pull requests/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/See metrics for your pull requests/i)
+    ).toBeInTheDocument();
   });
 
   it('renders Developer Insights card', () => {

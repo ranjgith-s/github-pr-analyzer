@@ -25,7 +25,8 @@ export const ThemeModeProvider: React.FC<{ children: React.ReactNode }> = ({
     localStorage.setItem('colorMode', colorMode);
   }, [colorMode]);
 
-  const toggleColorMode = () => setColorMode((m) => (m === 'day' ? 'night' : 'day'));
+  const toggleColorMode = () =>
+    setColorMode((m) => (m === 'day' ? 'night' : 'day'));
 
   return (
     <ThemeModeContext.Provider value={{ colorMode, toggleColorMode }}>

@@ -14,7 +14,12 @@ interface Props {
   onSelect: (option: RepoOption) => void;
 }
 
-export default function SearchRepoBox({ query, options, onQueryChange, onSelect }: Props) {
+export default function SearchRepoBox({
+  query,
+  options,
+  onQueryChange,
+  onSelect,
+}: Props) {
   return (
     <div className="relative w-full max-w-xl">
       <Input
@@ -33,7 +38,9 @@ export default function SearchRepoBox({ query, options, onQueryChange, onSelect 
               className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-default-100 border-b last:border-b-0 border-divider"
               onClick={() => onSelect(opt)}
             >
-              <span className="font-mono text-sm text-foreground">{opt.fullName}</span>
+              <span className="font-mono text-sm text-foreground">
+                {opt.fullName}
+              </span>
             </div>
           ))}
         </Card>

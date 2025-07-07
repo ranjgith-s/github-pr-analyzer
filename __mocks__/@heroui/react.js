@@ -27,7 +27,11 @@ function filterProps(props) {
 }
 
 function passthrough({ children, ...props }) {
-  return React.createElement('div', { ...filterProps(props), className: props.className }, children);
+  return React.createElement(
+    'div',
+    { ...filterProps(props), className: props.className },
+    children
+  );
 }
 
 function InputMock(props) {
@@ -39,7 +43,11 @@ function InputMock(props) {
 function ButtonMock({ children, onPress, onClick, ...props }) {
   // Map onPress to onClick for DOM, do not pass onPress to DOM
   const handler = onPress || onClick;
-  const domProps = { ...filterProps(props), onClick: handler, className: props.className };
+  const domProps = {
+    ...filterProps(props),
+    onClick: handler,
+    className: props.className,
+  };
   return React.createElement('button', domProps, children);
 }
 
@@ -49,7 +57,14 @@ function Spinner() {
 }
 
 function CardMock({ children, ...props }) {
-  return React.createElement('div', { ...filterProps(props), className: (props.className || '') + ' mock-card' }, children);
+  return React.createElement(
+    'div',
+    {
+      ...filterProps(props),
+      className: (props.className || '') + ' mock-card',
+    },
+    children
+  );
 }
 
 function SelectMock({ children, onSelectionChange, selectedKeys, ...props }) {
@@ -59,7 +74,8 @@ function SelectMock({ children, onSelectionChange, selectedKeys, ...props }) {
     {
       ...filterProps(props),
       value: selectedKeys && Array.isArray(selectedKeys) ? selectedKeys[0] : '',
-      onChange: (e) => onSelectionChange && onSelectionChange(new Set([e.target.value])),
+      onChange: (e) =>
+        onSelectionChange && onSelectionChange(new Set([e.target.value])),
       className: props.className,
     },
     React.Children.map(children, (child) => {
@@ -79,7 +95,13 @@ function SelectItemMock({ children, ...props }) {
   return React.createElement('option', filterProps(props), children);
 }
 
-function TableMock({ children, bottomContent, selectionMode, selectedKeys, onSelectionChange }) {
+function TableMock({
+  children,
+  bottomContent,
+  selectionMode,
+  selectedKeys,
+  onSelectionChange,
+}) {
   // Clone TableBody and inject selection props
   const enhancedChildren = React.Children.map(children, (child) => {
     if (child && child.type && child.type.name === 'TableBodyMock') {
@@ -100,12 +122,30 @@ function TableMock({ children, bottomContent, selectionMode, selectedKeys, onSel
 }
 function TableHeaderMock({ children }) {
   // Wrap columns in a <tr> inside <thead>
-  return React.createElement('thead', null, React.createElement('tr', null, children));
+  return React.createElement(
+    'thead',
+    null,
+    React.createElement('tr', null, children)
+  );
 }
-function TableBodyMock({ children, items, emptyContent, selectedKeys, onSelectionChange }) {
+function TableBodyMock({
+  children,
+  items,
+  emptyContent,
+  selectedKeys,
+  onSelectionChange,
+}) {
   // If no items, render emptyContent
   if (!items || items.length === 0) {
-    return React.createElement('tbody', null, React.createElement('tr', null, React.createElement('td', { colSpan: 100 }, emptyContent)));
+    return React.createElement(
+      'tbody',
+      null,
+      React.createElement(
+        'tr',
+        null,
+        React.createElement('td', { colSpan: 100 }, emptyContent)
+      )
+    );
   }
   // If children is a function, call for each item
   if (typeof children === 'function') {
@@ -114,21 +154,28 @@ function TableBodyMock({ children, items, emptyContent, selectedKeys, onSelectio
       null,
       items.map((item, idx) => {
         // Render a selection checkbox if selectedKeys/onSelectionChange are provided
-        const isSelected = selectedKeys && selectedKeys.has && selectedKeys.has(item.id);
-        const checkbox = selectedKeys && onSelectionChange
-          ? React.createElement('td', null,
-              React.createElement('input', {
-                type: 'checkbox',
-                role: 'checkbox',
-                checked: !!isSelected,
-                onChange: () => onSelectionChange(new Set([item.id])),
-              })
-            )
-          : null;
+        const isSelected =
+          selectedKeys && selectedKeys.has && selectedKeys.has(item.id);
+        const checkbox =
+          selectedKeys && onSelectionChange
+            ? React.createElement(
+                'td',
+                null,
+                React.createElement('input', {
+                  type: 'checkbox',
+                  role: 'checkbox',
+                  checked: !!isSelected,
+                  onChange: () => onSelectionChange(new Set([item.id])),
+                })
+              )
+            : null;
         const row = children(item, idx);
         // row is a <tr> element, so we need to clone and prepend the checkbox cell
         if (checkbox && React.isValidElement(row)) {
-          return React.cloneElement(row, {}, [checkbox, ...React.Children.toArray(row.props.children)]);
+          return React.cloneElement(row, {}, [
+            checkbox,
+            ...React.Children.toArray(row.props.children),
+          ]);
         }
         return row;
       })
@@ -143,7 +190,9 @@ function TableColumnMock({ children }) {
 function TableRowMock({ children, selectionMode, selected, onSelect, rowKey }) {
   // If selectionMode is set, render a checkbox
   const checkbox = selectionMode
-    ? React.createElement('td', null,
+    ? React.createElement(
+        'td',
+        null,
         React.createElement('input', {
           type: 'checkbox',
           role: 'checkbox',
@@ -164,7 +213,11 @@ function PaginationMock({ total, page, onChange, ...props }) {
   const pages = Array.from({ length: total }, (_, i) => i + 1);
   return React.createElement(
     'div',
-    { ...filterProps(props), 'data-testid': 'pagination', 'aria-label': 'Pagination' },
+    {
+      ...filterProps(props),
+      'data-testid': 'pagination',
+      'aria-label': 'Pagination',
+    },
     React.createElement('span', null, `Page ${page} of ${total}`),
     pages.map((p) =>
       React.createElement(
@@ -186,19 +239,44 @@ function DropdownMock({ children }) {
   return React.createElement('div', { 'data-testid': 'dropdown' }, children);
 }
 function DropdownTriggerMock({ children }) {
-  return React.createElement('div', { 'data-testid': 'dropdown-trigger' }, children);
+  return React.createElement(
+    'div',
+    { 'data-testid': 'dropdown-trigger' },
+    children
+  );
 }
 function DropdownMenuMock({ children }) {
-  return React.createElement('div', { 'data-testid': 'dropdown-menu' }, children);
+  return React.createElement(
+    'div',
+    { 'data-testid': 'dropdown-menu' },
+    children
+  );
 }
 function DropdownItemMock({ children, ...props }) {
-  return React.createElement('div', { 'data-testid': 'dropdown-item', ...props }, children);
+  return React.createElement(
+    'div',
+    { 'data-testid': 'dropdown-item', ...props },
+    children
+  );
 }
 function BadgeMock({ children, ...props }) {
-  return React.createElement('span', { ...filterProps(props), 'data-testid': 'badge' }, children);
+  return React.createElement(
+    'span',
+    { ...filterProps(props), 'data-testid': 'badge' },
+    children
+  );
 }
 function SwitchMock({ children, ...props }) {
-  return React.createElement('button', { ...filterProps(props), role: 'switch', 'aria-checked': props.isSelected ? 'true' : 'false', onClick: props.onChange }, children);
+  return React.createElement(
+    'button',
+    {
+      ...filterProps(props),
+      role: 'switch',
+      'aria-checked': props.isSelected ? 'true' : 'false',
+      onClick: props.onChange,
+    },
+    children
+  );
 }
 
 module.exports = {

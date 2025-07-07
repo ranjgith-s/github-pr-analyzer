@@ -38,12 +38,16 @@ describe('fetchDeveloperMetrics', () => {
       },
     });
     mockInstance.rest.search.issuesAndPullRequests
-      .mockResolvedValueOnce({ data: { items: [
-        {
-          repository_url: 'https://api.github.com/repos/o/r',
-          number: 1,
+      .mockResolvedValueOnce({
+        data: {
+          items: [
+            {
+              repository_url: 'https://api.github.com/repos/o/r',
+              number: 1,
+            },
+          ],
         },
-      ] } })
+      })
       .mockResolvedValueOnce({ data: { items: [] } });
     mockInstance.graphql.mockResolvedValue({
       repository: {
@@ -80,7 +84,16 @@ describe('fetchDeveloperMetrics', () => {
   it('handles no authored PRs gracefully', async () => {
     mockInstance.rest.users.getByUsername.mockResolvedValue({
       data: {
-        login: 'octocat', name: 'Octo Cat', avatar_url: 'avatar', html_url: 'url', bio: 'bio', company: 'company', location: 'location', followers: 10, following: 5, public_repos: 3,
+        login: 'octocat',
+        name: 'Octo Cat',
+        avatar_url: 'avatar',
+        html_url: 'url',
+        bio: 'bio',
+        company: 'company',
+        location: 'location',
+        followers: 10,
+        following: 5,
+        public_repos: 3,
       },
     });
     mockInstance.rest.search.issuesAndPullRequests
@@ -96,13 +109,26 @@ describe('fetchDeveloperMetrics', () => {
   it('handles PRs with no reviews or comments', async () => {
     mockInstance.rest.users.getByUsername.mockResolvedValue({
       data: {
-        login: 'octocat', name: 'Octo Cat', avatar_url: 'avatar', html_url: 'url', bio: 'bio', company: 'company', location: 'location', followers: 10, following: 5, public_repos: 3,
+        login: 'octocat',
+        name: 'Octo Cat',
+        avatar_url: 'avatar',
+        html_url: 'url',
+        bio: 'bio',
+        company: 'company',
+        location: 'location',
+        followers: 10,
+        following: 5,
+        public_repos: 3,
       },
     });
     mockInstance.rest.search.issuesAndPullRequests
-      .mockResolvedValueOnce({ data: { items: [
-        { repository_url: 'https://api.github.com/repos/o/r', number: 1 },
-      ] } })
+      .mockResolvedValueOnce({
+        data: {
+          items: [
+            { repository_url: 'https://api.github.com/repos/o/r', number: 1 },
+          ],
+        },
+      })
       .mockResolvedValueOnce({ data: { items: [] } });
     mockInstance.graphql.mockResolvedValue({
       repository: {
@@ -125,6 +151,8 @@ describe('fetchDeveloperMetrics', () => {
 
   it('handles API errors gracefully', async () => {
     mockInstance.rest.users.getByUsername.mockRejectedValue(new Error('fail'));
-    await expect(fetchDeveloperMetrics('tok', 'octocat')).rejects.toThrow('fail');
+    await expect(fetchDeveloperMetrics('tok', 'octocat')).rejects.toThrow(
+      'fail'
+    );
   });
 });

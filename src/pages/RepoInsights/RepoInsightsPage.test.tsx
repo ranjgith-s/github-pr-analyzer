@@ -11,7 +11,7 @@ import { AuthProvider } from '../../contexts/AuthContext/AuthContext';
 import { ThemeModeProvider } from '../../contexts/ThemeModeContext/ThemeModeContext';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 
-jest.mock('../../utils/services/github');
+jest.mock('../../utils/services/githubService');
 
 describe('RepoInsightsPage', () => {
   beforeEach(() => {
@@ -22,7 +22,10 @@ describe('RepoInsightsPage', () => {
   it('does not show dropdown for invalid input', async () => {
     await act(async () => {
       render(
-        <MemoryRouter initialEntries={['/repo']} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <MemoryRouter
+          initialEntries={['/repo']}
+          future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        >
           <ThemeModeProvider>
             <AuthProvider>
               <RepoInsightsPage />

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { fetchDeveloperMetrics, DeveloperMetrics } from '../utils/services/github';
+import { fetchDeveloperMetrics } from '../utils/services/githubService';
+import { DeveloperMetrics } from 'src/types';
 
 export function useDeveloperMetrics(token: string, login: string | null) {
   const [data, setData] = useState<DeveloperMetrics | null>(null);

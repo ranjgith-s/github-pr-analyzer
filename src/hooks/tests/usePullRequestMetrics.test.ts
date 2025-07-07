@@ -1,6 +1,6 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { usePullRequestMetrics } from '../../hooks/usePullRequestMetrics';
-import * as github from '../../utils/services/github';
+import * as githubService from '../../utils/services/githubService';
 import { PRItem } from 'src/types';
 
 const sample: PRItem[] = [
@@ -28,7 +28,7 @@ const sample: PRItem[] = [
   },
 ];
 
-jest.spyOn(github, 'fetchPullRequestMetrics').mockResolvedValue(sample);
+jest.spyOn(githubService, 'fetchPullRequestMetrics').mockResolvedValue(sample);
 
 test('loads items and updates loading state', async () => {
   const { result } = renderHook(() => usePullRequestMetrics('token'));

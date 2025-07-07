@@ -23,7 +23,11 @@ export function getEarliestCommitDate(commits: Commit[]): string | null {
   }, null);
 }
 
-export function getReviewStats(reviews: Review[]): { reviewerSet: Set<string>; firstReview: string | null; changesRequested: number } {
+export function getReviewStats(reviews: Review[]): {
+  reviewerSet: Set<string>;
+  firstReview: string | null;
+  changesRequested: number;
+} {
   const reviewerSet = new Set<string>();
   let firstReview: string | null = null;
   let changesRequested = 0;
@@ -37,8 +41,16 @@ export function getReviewStats(reviews: Review[]): { reviewerSet: Set<string>; f
   return { reviewerSet, firstReview, changesRequested };
 }
 
-export function toPRItem(pr: any, item: any, owner: string, repo: string, commits: Commit[]): PRItem {
-  const { reviewerSet, firstReview, changesRequested } = getReviewStats(pr.reviews.nodes as Review[]);
+export function toPRItem(
+  pr: any,
+  item: any,
+  owner: string,
+  repo: string,
+  commits: Commit[]
+): PRItem {
+  const { reviewerSet, firstReview, changesRequested } = getReviewStats(
+    pr.reviews.nodes as Review[]
+  );
   return {
     id: pr.id,
     owner,
@@ -51,10 +63,10 @@ export function toPRItem(pr: any, item: any, owner: string, repo: string, commit
     state: pr.isDraft
       ? 'draft'
       : pr.mergedAt
-      ? 'merged'
-      : pr.closedAt
-      ? 'closed'
-      : 'open',
+        ? 'merged'
+        : pr.closedAt
+          ? 'closed'
+          : 'open',
     created_at: pr.createdAt,
     published_at: pr.publishedAt,
     closed_at: pr.mergedAt || pr.closedAt,

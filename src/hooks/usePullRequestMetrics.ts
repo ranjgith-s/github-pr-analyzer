@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { fetchPullRequestMetrics } from '../utils/services/github';
+import { fetchPullRequestMetrics } from '../utils/services/githubService';
 import { PRItem } from '../types';
 
 export function usePullRequestMetrics(token: string) {

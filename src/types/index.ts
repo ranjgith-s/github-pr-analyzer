@@ -25,3 +25,43 @@ export interface PRItem {
   comment_count: number;
   timeline: TimelineEntry[];
 }
+
+export interface DeveloperMetrics {
+  login: string;
+  name: string | null;
+  avatar_url: string;
+  html_url: string;
+  bio: string | null;
+  company: string | null;
+  location: string | null;
+  followers: number;
+  following: number;
+  public_repos: number;
+  mergeSuccess: number;
+  mergeRate: number;
+  cycleEfficiency: number;
+  averageChanges: number;
+  sizeEfficiency: number;
+  medianSize: number;
+  leadTimeScore: number;
+  medianLeadTime: number;
+  reviewActivity: number;
+  reviewsCount: number;
+  feedbackScore: number;
+  averageComments: number;
+  issueResolution: number;
+  issuesClosed: number;
+}
+
+export interface RepoInsights {
+  deploymentFrequency: number;
+  leadTime: number;
+  changeFailureRate: number;
+  meanTimeToRestore: number;
+  openIssues: number;
+  openPullRequests: number;
+  averageMergeTime: number;
+  weeklyCommits: number[];
+  contributorCount: number;
+  communityHealthScore: number;
+}

@@ -16,7 +16,11 @@ describe('transformers', () => {
 
   it('getReviewStats returns correct stats', () => {
     const reviews = [
-      { author: { login: 'a' }, state: 'CHANGES_REQUESTED', submittedAt: '2020-01-01' },
+      {
+        author: { login: 'a' },
+        state: 'CHANGES_REQUESTED',
+        submittedAt: '2020-01-01',
+      },
       { author: { login: 'b' }, state: 'APPROVED', submittedAt: '2020-01-02' },
     ];
     const stats = transformers.getReviewStats(reviews);

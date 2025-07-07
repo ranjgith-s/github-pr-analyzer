@@ -1,8 +1,8 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { useRepoInsights } from '../../hooks/useRepoInsights';
-import * as githubService from '../../utils/services/github';
+import * as githubService from '../../utils/services/githubService';
 
-jest.mock('../../utils/services/github');
+jest.mock('../../utils/services/githubService');
 
 describe('useRepoInsights', () => {
   const token = 'tok';

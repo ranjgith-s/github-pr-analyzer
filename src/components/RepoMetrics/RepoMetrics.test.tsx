@@ -7,8 +7,15 @@ import * as useDocumentTitleHook from '../../hooks/useDocumentTitle';
 import * as useMetaDescriptionHook from '../../hooks/useMetaDescription';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 
-jest.mock('../../components/LoadingOverlay/LoadingOverlay', () => (props: any) => <div data-testid="loading-overlay">{props.show && 'Loading...'}</div>);
-jest.mock('@heroui/react', () => ({ Card: (props: any) => <div data-testid="card">{props.children}</div> }));
+jest.mock(
+  '../../components/LoadingOverlay/LoadingOverlay',
+  () => (props: any) => (
+    <div data-testid="loading-overlay">{props.show && 'Loading...'}</div>
+  )
+);
+jest.mock('@heroui/react', () => ({
+  Card: (props: any) => <div data-testid="card">{props.children}</div>,
+}));
 
 describe('RepoMetrics', () => {
   beforeEach(() => {
@@ -17,8 +24,12 @@ describe('RepoMetrics', () => {
       login: jest.fn(),
       logout: jest.fn(),
     });
-    jest.spyOn(useDocumentTitleHook, 'useDocumentTitle').mockImplementation(() => {});
-    jest.spyOn(useMetaDescriptionHook, 'useMetaDescription').mockImplementation(() => {});
+    jest
+      .spyOn(useDocumentTitleHook, 'useDocumentTitle')
+      .mockImplementation(() => {});
+    jest
+      .spyOn(useMetaDescriptionHook, 'useMetaDescription')
+      .mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -36,19 +47,29 @@ describe('RepoMetrics', () => {
   }
 
   it('shows loading overlay when loading', () => {
-    jest.spyOn(useRepoInsightsHook, 'useRepoInsights').mockReturnValue({ data: null, loading: true, error: null });
+    jest
+      .spyOn(useRepoInsightsHook, 'useRepoInsights')
+      .mockReturnValue({ data: null, loading: true, error: null });
     renderWithRouter();
-    expect(screen.getByTestId('loading-overlay')).toHaveTextContent('Loading...');
+    expect(screen.getByTestId('loading-overlay')).toHaveTextContent(
+      'Loading...'
+    );
   });
 
   it('shows error message when error', () => {
-    jest.spyOn(useRepoInsightsHook, 'useRepoInsights').mockReturnValue({ data: null, loading: false, error: 'Something went wrong' });
+    jest.spyOn(useRepoInsightsHook, 'useRepoInsights').mockReturnValue({
+      data: null,
+      loading: false,
+      error: 'Something went wrong',
+    });
     renderWithRouter();
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
   });
 
   it('returns null when no data and not loading or error', () => {
-    jest.spyOn(useRepoInsightsHook, 'useRepoInsights').mockReturnValue({ data: null, loading: false, error: null });
+    jest
+      .spyOn(useRepoInsightsHook, 'useRepoInsights')
+      .mockReturnValue({ data: null, loading: false, error: null });
     const { container } = renderWithRouter();
     expect(container).toBeEmptyDOMElement();
   });
@@ -62,11 +83,13 @@ describe('RepoMetrics', () => {
       openIssues: 10,
       openPullRequests: 4,
       averageMergeTime: 2.5,
-      weeklyCommits: [1,2,3,4,5],
+      weeklyCommits: [1, 2, 3, 4, 5],
       contributorCount: 7,
-      communityHealthScore: 8
+      communityHealthScore: 8,
     };
-    jest.spyOn(useRepoInsightsHook, 'useRepoInsights').mockReturnValue({ data, loading: false, error: null });
+    jest
+      .spyOn(useRepoInsightsHook, 'useRepoInsights')
+      .mockReturnValue({ data, loading: false, error: null });
     renderWithRouter();
     expect(screen.getByText('Deployment Frequency')).toBeInTheDocument();
     expect(screen.getByText('5 pushes')).toBeInTheDocument();

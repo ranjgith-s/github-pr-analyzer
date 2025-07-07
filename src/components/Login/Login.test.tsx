@@ -21,7 +21,9 @@ test('login submits provided token', async () => {
     return <Login />;
   }
   render(
-    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <MemoryRouter
+      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+    >
       <ThemeModeProvider>
         <AuthProvider>
           <Wrapper />
@@ -42,7 +44,9 @@ test('shows error when token is invalid', async () => {
   (authService.validateToken as jest.Mock).mockRejectedValue(new Error('bad'));
 
   render(
-    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <MemoryRouter
+      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+    >
       <ThemeModeProvider>
         <AuthProvider>
           <Login />

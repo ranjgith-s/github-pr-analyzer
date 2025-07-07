@@ -8,7 +8,9 @@ import SearchRepoBox from '../../components/SearchRepoBox/SearchRepoBox';
 export default function RepoInsightsPage() {
   const { token } = useAuth();
   const [query, setQuery] = useState('');
-  const [options, setOptions] = useState<{ owner: string; repo: string; fullName: string }[]>([]);
+  const [options, setOptions] = useState<
+    { owner: string; repo: string; fullName: string }[]
+  >([]);
   const navigate = useNavigate();
 
   useDocumentTitle('Repository insights');
@@ -34,7 +36,11 @@ export default function RepoInsightsPage() {
     }
   }, [query]);
 
-  const handleSelect = (opt: { owner: string; repo: string; fullName: string }) => {
+  const handleSelect = (opt: {
+    owner: string;
+    repo: string;
+    fullName: string;
+  }) => {
     setQuery(opt.fullName);
     setOptions([]);
     navigate(`/repo/${opt.owner}/${opt.repo}`);

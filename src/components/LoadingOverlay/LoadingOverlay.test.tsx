@@ -11,37 +11,41 @@ describe('LoadingOverlay', () => {
     render(<LoadingOverlay show={true} messages={messages} />);
     expect(screen.getByTestId('spinner')).toBeInTheDocument();
     const messageEls = screen.getAllByText(messages[0]);
-    expect(messageEls.some(el => el.tagName === 'P')).toBe(true);
+    expect(messageEls.some((el) => el.tagName === 'P')).toBe(true);
   });
 
   it('renders nothing when show is false', () => {
-    const { container } = render(<LoadingOverlay show={false} messages={messages} />);
+    const { container } = render(
+      <LoadingOverlay show={false} messages={messages} />
+    );
     expect(container.firstChild).toBeNull();
   });
 
   it('cycles through messages', async () => {
     render(<LoadingOverlay show={true} messages={messages} />);
     let messageEls = screen.getAllByText(messages[0]);
-    expect(messageEls.some(el => el.tagName === 'P')).toBe(true);
+    expect(messageEls.some((el) => el.tagName === 'P')).toBe(true);
     await act(async () => {
       jest.advanceTimersByTime(2000);
     });
     messageEls = await screen.findAllByText(messages[1]);
-    expect(messageEls.some(el => el.tagName === 'P')).toBe(true);
+    expect(messageEls.some((el) => el.tagName === 'P')).toBe(true);
     await act(async () => {
       jest.advanceTimersByTime(2000);
     });
     messageEls = await screen.findAllByText(messages[2]);
-    expect(messageEls.some(el => el.tagName === 'P')).toBe(true);
+    expect(messageEls.some((el) => el.tagName === 'P')).toBe(true);
     await act(async () => {
       jest.advanceTimersByTime(2000);
     });
     messageEls = await screen.findAllByText(messages[0]);
-    expect(messageEls.some(el => el.tagName === 'P')).toBe(true);
+    expect(messageEls.some((el) => el.tagName === 'P')).toBe(true);
   });
 
   it('matches snapshot', () => {
-    const { container } = render(<LoadingOverlay show={true} messages={messages} />);
+    const { container } = render(
+      <LoadingOverlay show={true} messages={messages} />
+    );
     expect(container.firstChild).toMatchSnapshot();
   });
 });

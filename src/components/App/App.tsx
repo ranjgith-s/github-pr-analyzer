@@ -9,7 +9,7 @@ import DeveloperMetricsPage from '../../pages/DeveloperMetrics/DeveloperMetricsP
 import RepoInsightsPage from '../../pages/RepoInsights/RepoInsightsPage';
 import DeveloperProfilePage from '../../pages/DeveloperProfile/DeveloperProfilePage';
 import { useAuth } from '../../contexts/AuthContext/AuthContext';
-import { getDeveloperProfile } from '../../utils/services/github';
+import { getDeveloperProfile } from '../../utils/services/githubService';
 import RepoMetrics from '../RepoMetrics/RepoMetrics';
 
 export default function App() {
@@ -53,7 +53,9 @@ export default function App() {
     const match = location.pathname.match(/^\/repo\/([^/]+)\/([^/]+)/);
     breadcrumbs = [
       { label: 'Repo insights', to: '/repo' },
-      match ? { label: match[2], to: location.pathname } : { label: '', to: location.pathname },
+      match
+        ? { label: match[2], to: location.pathname }
+        : { label: '', to: location.pathname },
     ];
   } else if (location.pathname.startsWith('/repo')) {
     breadcrumbs = [{ label: 'Repo insights', to: '/repo' }];
@@ -78,7 +80,10 @@ export default function App() {
             element={<PullRequestPage />}
           />
           <Route path="/developer" element={<DeveloperMetricsPage />} />
-          <Route path="/developer/:username" element={<DeveloperProfilePage />} />
+          <Route
+            path="/developer/:username"
+            element={<DeveloperProfilePage />}
+          />
           <Route path="/repo" element={<RepoInsightsPage />} />
           <Route path="/repo/:owner/:repo" element={<RepoMetrics />} />
         </Routes>

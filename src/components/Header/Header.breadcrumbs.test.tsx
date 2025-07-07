@@ -10,7 +10,9 @@ jest.mock('@octokit/rest', () => ({
   Octokit: jest.fn().mockImplementation(() => ({
     rest: {
       users: {
-        getAuthenticated: jest.fn().mockResolvedValue({ data: { login: 'octocat', avatar_url: 'img' } }),
+        getAuthenticated: jest
+          .fn()
+          .mockResolvedValue({ data: { login: 'octocat', avatar_url: 'img' } }),
       },
     },
   })),

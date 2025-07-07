@@ -4,7 +4,23 @@ import { usePullRequestMetrics } from '../../hooks/usePullRequestMetrics';
 import { PRItem } from '../../types';
 import { useAuth } from '../../contexts/AuthContext/AuthContext';
 import LoadingOverlay from '../LoadingOverlay/LoadingOverlay';
-import { Table, TableHeader, TableBody, TableColumn, TableRow, TableCell, Button, Select, SelectItem, Pagination, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Input } from '@heroui/react';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableColumn,
+  TableRow,
+  TableCell,
+  Button,
+  Select,
+  SelectItem,
+  Pagination,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+  Input,
+} from '@heroui/react';
 import { Settings2Icon } from 'lucide-react';
 
 export function formatDuration(start?: string | null, end?: string | null) {
@@ -47,7 +63,9 @@ export default function MetricsTable() {
       item.title.toLowerCase().includes(search.toLowerCase()) ||
       item.repo.toLowerCase().includes(search.toLowerCase()) ||
       item.author.toLowerCase().includes(search.toLowerCase()) ||
-      item.reviewers.some((r) => r.toLowerCase().includes(search.toLowerCase()));
+      item.reviewers.some((r) =>
+        r.toLowerCase().includes(search.toLowerCase())
+      );
     return (
       matchesSearch &&
       (!repoFilter || item.repo === repoFilter) &&
@@ -64,7 +82,8 @@ export default function MetricsTable() {
       if (tableContainerRef.current) {
         const containerRect = tableContainerRef.current.getBoundingClientRect();
         // Calculate available height from the bottom of filters to the bottom of the viewport
-        const availableHeight = window.innerHeight - containerRect.top - PAGINATION_HEIGHT - 24; // 24px margin
+        const availableHeight =
+          window.innerHeight - containerRect.top - PAGINATION_HEIGHT - 24; // 24px margin
         const rows = Math.max(1, Math.floor(availableHeight / ROW_HEIGHT));
         setPageSize(rows);
       }
@@ -232,7 +251,9 @@ export default function MetricsTable() {
   // --- Visible Columns State ---
   const allColumns = columns;
   const defaultVisibleColumns = allColumns.map((col) => col.id);
-  const [visibleColumns, setVisibleColumns] = useState<string[]>(defaultVisibleColumns);
+  const [visibleColumns, setVisibleColumns] = useState<string[]>(
+    defaultVisibleColumns
+  );
 
   const handleRepoFilterChange = (repo: string) => {
     setRepoFilter(repo);
@@ -259,13 +280,21 @@ export default function MetricsTable() {
         />
         <Dropdown>
           <DropdownTrigger>
-            <Button variant="flat" className="min-w-[160px]" aria-label="Repository">{repoFilter || 'Repository'}</Button>
+            <Button
+              variant="flat"
+              className="min-w-[160px]"
+              aria-label="Repository"
+            >
+              {repoFilter || 'Repository'}
+            </Button>
           </DropdownTrigger>
           <DropdownMenu
             aria-label="Select repository"
             selectionMode="single"
             selectedKeys={repoFilter ? [repoFilter] : []}
-            onSelectionChange={(keys) => handleRepoFilterChange(Array.from(keys)[0] as string)}
+            onSelectionChange={(keys) =>
+              handleRepoFilterChange(Array.from(keys)[0] as string)
+            }
           >
             <>
               <DropdownItem key="">All</DropdownItem>
@@ -277,13 +306,21 @@ export default function MetricsTable() {
         </Dropdown>
         <Dropdown>
           <DropdownTrigger>
-            <Button variant="flat" className="min-w-[160px]" aria-label="Author">{authorFilter || 'Author'}</Button>
+            <Button
+              variant="flat"
+              className="min-w-[160px]"
+              aria-label="Author"
+            >
+              {authorFilter || 'Author'}
+            </Button>
           </DropdownTrigger>
           <DropdownMenu
             aria-label="Select author"
             selectionMode="single"
             selectedKeys={authorFilter ? [authorFilter] : []}
-            onSelectionChange={(keys) => handleAuthorFilterChange(Array.from(keys)[0] as string)}
+            onSelectionChange={(keys) =>
+              handleAuthorFilterChange(Array.from(keys)[0] as string)
+            }
           >
             <>
               <DropdownItem key="">All</DropdownItem>
@@ -304,7 +341,9 @@ export default function MetricsTable() {
             closeOnSelect={false}
             selectionMode="multiple"
             selectedKeys={new Set(visibleColumns)}
-            onSelectionChange={(keys) => setVisibleColumns(Array.from(keys as Set<string>))}
+            onSelectionChange={(keys) =>
+              setVisibleColumns(Array.from(keys as Set<string>))
+            }
           >
             {allColumns.map((col) => (
               <DropdownItem key={col.id}>{col.header}</DropdownItem>
@@ -331,7 +370,9 @@ export default function MetricsTable() {
         aria-label="PR Metrics Table"
         selectionMode="multiple"
         selectedKeys={new Set(selectedIds)}
-        onSelectionChange={(keys) => setSelectedIds(Array.from(keys as Set<string>))}
+        onSelectionChange={(keys) =>
+          setSelectedIds(Array.from(keys as Set<string>))
+        }
         isStriped
         fullWidth
         bottomContent={
@@ -346,20 +387,29 @@ export default function MetricsTable() {
         bottomContentPlacement="inside"
       >
         <TableHeader>
-          {allColumns.filter(col => visibleColumns.includes(col.id)).map(col => (
-            <TableColumn key={col.id}>{col.header.toUpperCase()}</TableColumn>
-          ))}
+          {allColumns
+            .filter((col) => visibleColumns.includes(col.id))
+            .map((col) => (
+              <TableColumn key={col.id}>{col.header.toUpperCase()}</TableColumn>
+            ))}
         </TableHeader>
-        <TableBody items={paginatedItems} emptyContent={<span>No pull requests found.</span>}>
+        <TableBody
+          items={paginatedItems}
+          emptyContent={<span>No pull requests found.</span>}
+        >
           {(row: PRItem) => (
             <TableRow key={row.id || row.title || row.repo}>
-              {allColumns.filter(col => visibleColumns.includes(col.id)).map(col => (
-                <TableCell key={col.id}>
-                  {col.cell
-                    ? col.cell(row)
-                    : (col.accessorKey ? (row as any)[col.accessorKey] : null)}
-                </TableCell>
-              ))}
+              {allColumns
+                .filter((col) => visibleColumns.includes(col.id))
+                .map((col) => (
+                  <TableCell key={col.id}>
+                    {col.cell
+                      ? col.cell(row)
+                      : col.accessorKey
+                        ? (row as any)[col.accessorKey]
+                        : null}
+                  </TableCell>
+                ))}
             </TableRow>
           )}
         </TableBody>

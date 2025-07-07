@@ -3,10 +3,8 @@ import { Octokit } from '@octokit/rest';
 
 // Add this to clear the cache for testing
 const clearGithubServiceCache = () => {
-  // @ts-ignore
-  if (github.__getUserCache) github.__getUserCache().clear();
-  // @ts-ignore
-  if (github.__getRepoCache) github.__getRepoCache().clear();
+  if (githubService.userCache) githubService.userCache.clear();
+  if (githubService.repoCache) githubService.repoCache.clear();
 };
 
 jest.mock('@octokit/rest');
@@ -162,9 +160,9 @@ describe('github service', () => {
       },
     });
     mockOctokit.graphql.mockRejectedValue(new Error('fail'));
-    await expect(githubService.fetchPullRequestMetrics('token')).rejects.toThrow(
-      'fail'
-    );
+    await expect(
+      githubService.fetchPullRequestMetrics('token')
+    ).rejects.toThrow('fail');
   });
 
   // Add tests for user/repo cache
@@ -191,8 +189,12 @@ describe('github service', () => {
     };
     (Octokit as any).mockImplementation(() => mockOctokit);
     // First call populates cache
-    mockOctokit.rest.users.getAuthenticated.mockResolvedValue({ data: { login: 'me' } });
-    mockOctokit.rest.search.issuesAndPullRequests.mockResolvedValue({ data: { items: [] } });
+    mockOctokit.rest.users.getAuthenticated.mockResolvedValue({
+      data: { login: 'me' },
+    });
+    mockOctokit.rest.search.issuesAndPullRequests.mockResolvedValue({
+      data: { items: [] },
+    });
     await githubService.fetchPullRequestMetrics('token');
     // Second call should use cache (no new getAuthenticated call)
     await githubService.fetchPullRequestMetrics('token');
@@ -262,12 +264,41 @@ describe('github service', () => {
       graphql: jest.fn(),
     };
     (Octokit as any).mockImplementation(() => mockOctokit);
-    mockOctokit.rest.users.getAuthenticated.mockResolvedValue({ data: { login: 'me' } });
+    mockOctokit.rest.users.getAuthenticated.mockResolvedValue({
+      data: { login: 'me' },
+    });
     mockOctokit.rest.search.issuesAndPullRequests.mockResolvedValue({
-      data: { items: Array.from({ length: 25 }, (_, i) => ({ id: i, repository_url: 'https://api.github.com/repos/o/r', number: i, html_url: 'url' })) },
+      data: {
+        items: Array.from({ length: 25 }, (_, i) => ({
+          id: i,
+          repository_url: 'https://api.github.com/repos/o/r',
+          number: i,
+          html_url: 'url',
+        })),
+      },
     });
     mockOctokit.graphql.mockResolvedValue({
-      ...Object.fromEntries(Array.from({ length: 20 }, (_, i) => [`pr${i}`, { pullRequest: { id: `${i}`, title: 't', author: { login: 'me' }, createdAt: '', publishedAt: '', closedAt: '', mergedAt: '', isDraft: false, additions: 1, deletions: 1, comments: { totalCount: 0 }, reviews: { nodes: [] } } }])),
+      ...Object.fromEntries(
+        Array.from({ length: 20 }, (_, i) => [
+          `pr${i}`,
+          {
+            pullRequest: {
+              id: `${i}`,
+              title: 't',
+              author: { login: 'me' },
+              createdAt: '',
+              publishedAt: '',
+              closedAt: '',
+              mergedAt: '',
+              isDraft: false,
+              additions: 1,
+              deletions: 1,
+              comments: { totalCount: 0 },
+              reviews: { nodes: [] },
+            },
+          },
+        ])
+      ),
     });
     mockOctokit.paginate.mockResolvedValue([]);
     await githubService.fetchPullRequestMetrics('token');

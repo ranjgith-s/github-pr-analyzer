@@ -34,7 +34,9 @@ export default function SearchUserBox({
               onClick={() => onSelect(u)}
             >
               <Avatar src={u.avatar_url} alt={u.login} size="sm" />
-              <span className="font-mono text-sm text-foreground">{u.login}</span>
+              <span className="font-mono text-sm text-foreground">
+                {u.login}
+              </span>
             </div>
           ))}
         </Card>

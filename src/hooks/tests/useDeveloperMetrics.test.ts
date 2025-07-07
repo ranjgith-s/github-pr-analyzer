@@ -1,6 +1,6 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { useDeveloperMetrics } from '../../hooks/useDeveloperMetrics';
-import * as github from '../../utils/services/github';
+import * as githubService from '../../utils/services/githubService';
 
 const sample = {
   login: 'dev',
@@ -29,7 +29,9 @@ const sample = {
   issuesClosed: 1,
 };
 
-jest.spyOn(github, 'fetchDeveloperMetrics').mockResolvedValue(sample as any);
+jest
+  .spyOn(githubService, 'fetchDeveloperMetrics')
+  .mockResolvedValue(sample as any);
 
 test('loads developer metrics', async () => {
   const { result } = renderHook(() => useDeveloperMetrics('tok', 'dev'));

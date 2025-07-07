@@ -5,20 +5,22 @@ import App from './App';
 import { AuthProvider } from '../../contexts/AuthContext/AuthContext';
 import { ThemeModeProvider } from '../../contexts/ThemeModeContext/ThemeModeContext';
 
-jest.mock('../../utils/services/github', () => ({
-  ...jest.requireActual('../../utils/services/github'),
-  getDeveloperProfile: jest.fn(() => Promise.resolve({
-    login: 'octocat',
-    name: 'Octo Cat',
-    avatar_url: 'avatar',
-    bio: 'bio',
-    company: 'company',
-    location: 'location',
-    public_repos: 3,
-    followers: 10,
-    following: 5,
-    html_url: 'url',
-  })),
+jest.mock('../../utils/services/githubService', () => ({
+  ...jest.requireActual('../../utils/services/githubService'),
+  getDeveloperProfile: jest.fn(() =>
+    Promise.resolve({
+      login: 'octocat',
+      name: 'The Octocat',
+      avatar_url: 'https://github.com/images/error/octocat_happy.gif',
+      html_url: 'https://github.com/octocat',
+      bio: 'Test bio',
+      company: 'GitHub',
+      location: 'San Francisco',
+      followers: 100,
+      following: 0,
+      public_repos: 10,
+    })
+  ),
 }));
 
 describe('App breadcrumbs integration', () => {
@@ -40,7 +42,9 @@ describe('App breadcrumbs integration', () => {
         </ThemeModeProvider>
       </MemoryRouter>
     );
-    await waitFor(() => expect(screen.getByText('Developer Insights')).toBeInTheDocument());
-    expect(screen.getByText('Octo Cat')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByText('Developer Insights')).toBeInTheDocument()
+    );
+    expect(screen.getByText('The Octocat')).toBeInTheDocument();
   });
 });

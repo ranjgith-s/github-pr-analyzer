@@ -16,11 +16,13 @@ interface PRDetail {
   repo: string;
 }
 
-export async function fetchPullRequestMetrics(token: string): Promise<PRItem[]> {
+export async function fetchPullRequestMetrics(
+  token: string
+): Promise<PRItem[]> {
   const octokit = githubApi.getOctokit(token);
   let user = userCache.get(token);
   if (!user) {
-    user = await githubApi.getAuthenticatedUser(octokit) as { login: string };
+    user = (await githubApi.getAuthenticatedUser(octokit)) as { login: string };
     userCache.set(token, user);
   }
   if (!user) throw new Error('Authenticated user not found');
@@ -42,7 +44,9 @@ export async function fetchPullRequestMetrics(token: string): Promise<PRItem[]> 
       })
       .join(' ');
     const query = `query { ${queries} }`;
-    const prData = await githubApi.graphqlQuery<Record<string, { pullRequest: unknown }>>(octokit, query);
+    const prData = await githubApi.graphqlQuery<
+      Record<string, { pullRequest: unknown }>
+    >(octokit, query);
     for (let idx = 0; idx < batch.length; idx++) {
       const pr = prData[`pr${idx}`]?.pullRequest;
       if (pr) {
@@ -64,12 +68,16 @@ export async function fetchPullRequestMetrics(token: string): Promise<PRItem[]> 
         const cacheKey = `${owner}/${repo}/pr/${item.number}`;
         let commits = repoCache.get(cacheKey);
         if (!commits) {
-          commits = await githubApi.paginateApi<Commit[]>(octokit, octokit.rest.pulls.listCommits, {
-            owner,
-            repo,
-            pull_number: item.number,
-            per_page: 100,
-          });
+          commits = await githubApi.paginateApi<Commit[]>(
+            octokit,
+            octokit.rest.pulls.listCommits,
+            {
+              owner,
+              repo,
+              pull_number: item.number,
+              per_page: 100,
+            }
+          );
           repoCache.set(cacheKey, commits);
         }
         return transformers.toPRItem(pr, item, owner, repo, commits);
@@ -115,16 +123,21 @@ export async function fetchDeveloperMetrics(token: string, login: string) {
       })
       .join(' ');
     const query = `query { ${queries} }`;
-    const prData = await githubApi.graphqlQuery<Record<string, { pullRequest: any }>>(octokit, query);
+    const prData = await githubApi.graphqlQuery<
+      Record<string, { pullRequest: any }>
+    >(octokit, query);
     for (let idx = 0; idx < batch.length; idx++) {
       const pr = prData[`pr${idx}`]?.pullRequest;
       if (pr) {
         if (pr.mergedAt) {
           merged += 1;
-          const diff = new Date(pr.mergedAt).getTime() - new Date(pr.createdAt).getTime();
+          const diff =
+            new Date(pr.mergedAt).getTime() - new Date(pr.createdAt).getTime();
           leadTimes.push(diff / 36e5);
         }
-        const changeReq = pr.reviews.nodes.filter((n: any) => n.state === 'CHANGES_REQUESTED').length;
+        const changeReq = pr.reviews.nodes.filter(
+          (n: any) => n.state === 'CHANGES_REQUESTED'
+        ).length;
         changes.push(changeReq);
         sizes.push(pr.additions + pr.deletions);
         comments.push(pr.comments.totalCount);
@@ -182,7 +195,11 @@ export async function fetchDeveloperMetrics(token: string, login: string) {
   };
 }
 
-export async function fetchRepoInsights(token: string, owner: string, repo: string) {
+export async function fetchRepoInsights(
+  token: string,
+  owner: string,
+  repo: string
+) {
   const octokit = githubApi.getOctokit(token);
   const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
   const repoKey = `${owner}/${repo}`;
@@ -192,7 +209,15 @@ export async function fetchRepoInsights(token: string, owner: string, repo: stri
     if (repoData) repoCache.set(repoKey, repoData);
   }
   if (!repoData) throw new Error('Repo not found');
-  const [commits, prs, openPulls, workflowRuns, commitActivity, contributors, communityProfile] = await Promise.all([
+  const [
+    commits,
+    prs,
+    openPulls,
+    workflowRuns,
+    commitActivity,
+    contributors,
+    communityProfile,
+  ] = await Promise.all([
     githubApi.paginateApi<any[]>(octokit, octokit.rest.repos.listCommits, {
       owner,
       repo,
@@ -212,13 +237,17 @@ export async function fetchRepoInsights(token: string, owner: string, repo: stri
       state: 'open',
       per_page: 100,
     }),
-    githubApi.paginateApi<any[]>(octokit, octokit.rest.actions.listWorkflowRunsForRepo, {
-      owner,
-      repo,
-      branch: repoData.default_branch,
-      status: 'completed',
-      per_page: 100,
-    }),
+    githubApi.paginateApi<any[]>(
+      octokit,
+      octokit.rest.actions.listWorkflowRunsForRepo,
+      {
+        owner,
+        repo,
+        branch: repoData.default_branch,
+        status: 'completed',
+        per_page: 100,
+      }
+    ),
     githubApi.getCommitActivityStats(octokit, owner, repo),
     githubApi.paginateApi<any[]>(octokit, octokit.rest.repos.listContributors, {
       owner,
@@ -227,20 +256,36 @@ export async function fetchRepoInsights(token: string, owner: string, repo: stri
     }) || [],
     githubApi.getCommunityProfileMetrics(octokit, owner, repo),
   ]);
-  const recentMerged = prs.filter((p: any) => p.merged_at && p.merged_at >= since);
-  const leadTimes = recentMerged.map((p: any) => (new Date(p.merged_at).getTime() - new Date(p.created_at).getTime()) / 36e5);
-  const averageMergeTime = leadTimes.length > 0 ? leadTimes.reduce((a, b) => a + b, 0) / leadTimes.length : 0;
+  const recentMerged = prs.filter(
+    (p: any) => p.merged_at && p.merged_at >= since
+  );
+  const leadTimes = recentMerged.map(
+    (p: any) =>
+      (new Date(p.merged_at).getTime() - new Date(p.created_at).getTime()) /
+      36e5
+  );
+  const averageMergeTime =
+    leadTimes.length > 0
+      ? leadTimes.reduce((a, b) => a + b, 0) / leadTimes.length
+      : 0;
   const recentRuns = workflowRuns.filter((r: any) => r.created_at >= since);
   const failures = recentRuns.filter((r: any) => r.conclusion === 'failure');
   const successes = recentRuns.filter((r: any) => r.conclusion === 'success');
-  const changeFailureRate = recentRuns.length > 0 ? failures.length / recentRuns.length : 0;
+  const changeFailureRate =
+    recentRuns.length > 0 ? failures.length / recentRuns.length : 0;
   let meanTimeToRestore = 0;
   if (failures.length > 0) {
     const diffs: number[] = [];
     for (const fail of failures) {
-      const nextSuccess = successes.find((s: any) => new Date(s.created_at) > new Date(fail.created_at));
+      const nextSuccess = successes.find(
+        (s: any) => new Date(s.created_at) > new Date(fail.created_at)
+      );
       if (nextSuccess) {
-        diffs.push((new Date(nextSuccess.created_at).getTime() - new Date(fail.created_at).getTime()) / 36e5);
+        diffs.push(
+          (new Date(nextSuccess.created_at).getTime() -
+            new Date(fail.created_at).getTime()) /
+            36e5
+        );
       }
     }
     if (diffs.length > 0) {

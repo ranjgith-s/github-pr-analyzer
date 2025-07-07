@@ -46,7 +46,9 @@ jest
 test('renders filters and data', () => {
   render(
     <AuthProvider>
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      >
         <MetricsTable />
       </MemoryRouter>
     </AuthProvider>
@@ -62,7 +64,9 @@ test('renders empty state', () => {
     .mockReturnValue({ items: [], loading: false });
   render(
     <AuthProvider>
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      >
         <MetricsTable />
       </MemoryRouter>
     </AuthProvider>
@@ -77,7 +81,9 @@ test('shows spinner when loading', () => {
   });
   render(
     <AuthProvider>
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      >
         <MetricsTable />
       </MemoryRouter>
     </AuthProvider>
@@ -91,7 +97,9 @@ test('renders loading overlay', () => {
     .mockReturnValue({ items: [], loading: true });
   render(
     <AuthProvider>
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      >
         <MetricsTable />
       </MemoryRouter>
     </AuthProvider>
@@ -105,7 +113,9 @@ test('filters by repo and author', () => {
     .mockReturnValue({ items: sample, loading: false });
   render(
     <AuthProvider>
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      >
         <MetricsTable />
       </MemoryRouter>
     </AuthProvider>
@@ -129,7 +139,9 @@ test('selects and navigates to PR', () => {
   (useNavigate as jest.Mock).mockReturnValue(navigate);
   render(
     <AuthProvider>
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      >
         <MetricsTable />
       </MemoryRouter>
     </AuthProvider>
@@ -145,7 +157,9 @@ test('renders timeline and lead time', () => {
     .mockReturnValue({ items: sample, loading: false });
   render(
     <AuthProvider>
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      >
         <MetricsTable />
       </MemoryRouter>
     </AuthProvider>
@@ -161,7 +175,9 @@ test('pagination works and changes page', () => {
     number: i + 1,
     title: `PR ${i + 1}`,
   }));
-  jest.spyOn(metricsHook, 'usePullRequestMetrics').mockReturnValue({ items: manyItems, loading: false });
+  jest
+    .spyOn(metricsHook, 'usePullRequestMetrics')
+    .mockReturnValue({ items: manyItems, loading: false });
   render(
     <AuthProvider>
       <MemoryRouter>
@@ -173,7 +189,9 @@ test('pagination works and changes page', () => {
   expect(screen.getByText('PR 1')).toBeInTheDocument();
   expect(screen.queryByText('PR 26')).not.toBeInTheDocument();
   // Click page 2 in pagination
-  const page2Btn = screen.getByTestId('pagination').querySelectorAll('button')[1];
+  const page2Btn = screen
+    .getByTestId('pagination')
+    .querySelectorAll('button')[1];
   act(() => {
     page2Btn.click();
   });
@@ -186,7 +204,9 @@ test('search filter works', () => {
     { ...sample[0], title: 'Alpha', repo: 'octo/alpha', author: 'alice' },
     { ...sample[0], title: 'Beta', repo: 'octo/beta', author: 'bob', id: '2' },
   ];
-  jest.spyOn(metricsHook, 'usePullRequestMetrics').mockReturnValue({ items, loading: false });
+  jest
+    .spyOn(metricsHook, 'usePullRequestMetrics')
+    .mockReturnValue({ items, loading: false });
   render(
     <AuthProvider>
       <MemoryRouter>
@@ -194,7 +214,9 @@ test('search filter works', () => {
       </MemoryRouter>
     </AuthProvider>
   );
-  fireEvent.change(screen.getByPlaceholderText(/search/i), { target: { value: 'beta' } });
+  fireEvent.change(screen.getByPlaceholderText(/search/i), {
+    target: { value: 'beta' },
+  });
   expect(screen.getByText('Beta')).toBeInTheDocument();
   expect(screen.queryByText('Alpha')).not.toBeInTheDocument();
 });
@@ -210,7 +232,9 @@ test('formatDuration handles edge cases', () => {
 
 test('handles PRs with no reviewers', () => {
   const items = [{ ...sample[0], reviewers: [] }];
-  jest.spyOn(metricsHook, 'usePullRequestMetrics').mockReturnValue({ items, loading: false });
+  jest
+    .spyOn(metricsHook, 'usePullRequestMetrics')
+    .mockReturnValue({ items, loading: false });
   render(
     <AuthProvider>
       <MemoryRouter>
@@ -223,7 +247,9 @@ test('handles PRs with no reviewers', () => {
 
 test('handles PRs with missing title', () => {
   const items = [{ ...sample[0], title: '' }];
-  jest.spyOn(metricsHook, 'usePullRequestMetrics').mockReturnValue({ items, loading: false });
+  jest
+    .spyOn(metricsHook, 'usePullRequestMetrics')
+    .mockReturnValue({ items, loading: false });
   render(
     <AuthProvider>
       <MemoryRouter>
@@ -233,5 +259,5 @@ test('handles PRs with missing title', () => {
   );
   // Find all links in the table and check that at least one has empty textContent
   const links = screen.getAllByRole('link');
-  expect(links.some(link => link.textContent === '')).toBe(true);
+  expect(links.some((link) => link.textContent === '')).toBe(true);
 });

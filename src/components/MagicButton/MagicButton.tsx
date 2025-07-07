@@ -7,10 +7,7 @@ interface Props extends ButtonProps {
 
 export default function MagicButton({ children, className, ...props }: Props) {
   return (
-    <Button
-      {...props}
-      className={className}
-    >
+    <Button {...props} className={className}>
       {children}
     </Button>
   );

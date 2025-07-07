@@ -6,22 +6,24 @@ import DeveloperMetricsPage from './DeveloperMetricsPage';
 import { AuthProvider, useAuth } from '../../contexts/AuthContext/AuthContext';
 import { ThemeModeProvider } from '../../contexts/ThemeModeContext/ThemeModeContext';
 import * as metricsHook from '../../hooks/useDeveloperMetrics';
-import * as github from '../../utils/services/github';
+import * as githubService from '../../utils/services/githubService';
 
-jest.mock('../../utils/services/github', () => ({
-  ...jest.requireActual('../../utils/services/github'),
-  getDeveloperProfile: jest.fn(() => Promise.resolve({
-    login: 'octocat',
-    name: 'Octo Cat',
-    avatar_url: 'img',
-    html_url: '',
-    bio: '',
-    company: '',
-    location: '',
-    followers: 0,
-    following: 0,
-    public_repos: 0,
-  })),
+jest.mock('../../utils/services/githubService', () => ({
+  ...jest.requireActual('../../utils/services/githubService'),
+  getDeveloperProfile: jest.fn(() =>
+    Promise.resolve({
+      login: 'octocat',
+      name: 'Octo Cat',
+      avatar_url: 'img',
+      html_url: '',
+      bio: '',
+      company: '',
+      location: '',
+      followers: 0,
+      following: 0,
+      public_repos: 0,
+    })
+  ),
   searchUsers: jest.fn(),
 }));
 
@@ -41,7 +43,9 @@ test('renders page heading', () => {
     loading: false,
   });
   render(
-    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <MemoryRouter
+      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+    >
       <ThemeModeProvider>
         <AuthProvider>
           <Wrapper />
@@ -59,11 +63,13 @@ test('displays suggestions and handles selection', async () => {
     data: null,
     loading: false,
   });
-  (github.searchUsers as jest.Mock).mockResolvedValue([
+  (githubService.searchUsers as jest.Mock).mockResolvedValue([
     { login: 'octo', avatar_url: 'x' },
   ]);
   render(
-    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <MemoryRouter
+      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+    >
       <ThemeModeProvider>
         <AuthProvider>
           <Wrapper />
@@ -75,7 +81,7 @@ test('displays suggestions and handles selection', async () => {
   await act(async () => {
     await user.type(screen.getByPlaceholderText(/search github users/i), 'oct');
   });
-  await waitFor(() => expect(github.searchUsers).toHaveBeenCalled());
+  await waitFor(() => expect(githubService.searchUsers).toHaveBeenCalled());
   await waitFor(() => screen.getByText('octo'));
   await act(async () => {
     await user.click(screen.getByText('octo'));
@@ -88,10 +94,12 @@ test('logs error on search failure', async () => {
     data: null,
     loading: false,
   });
-  (github.searchUsers as jest.Mock).mockRejectedValue(new Error('fail'));
+  (githubService.searchUsers as jest.Mock).mockRejectedValue(new Error('fail'));
   const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
   render(
-    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <MemoryRouter
+      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+    >
       <ThemeModeProvider>
         <AuthProvider>
           <Wrapper />
@@ -101,7 +109,7 @@ test('logs error on search failure', async () => {
   );
   const user = userEvent.setup();
   await user.type(screen.getByPlaceholderText(/search github users/i), 'oct');
-  await waitFor(() => expect(github.searchUsers).toHaveBeenCalled());
+  await waitFor(() => expect(githubService.searchUsers).toHaveBeenCalled());
   await waitFor(() => expect(spy).toHaveBeenCalled());
   spy.mockRestore();
 });

@@ -4,15 +4,15 @@ import GlowingCard from './GlowingCard';
 
 describe('GlowingCard', () => {
   it('renders children correctly', () => {
-    render(
-      <GlowingCard>Test Content</GlowingCard>
-    );
+    render(<GlowingCard>Test Content</GlowingCard>);
     expect(screen.getByText('Test Content')).toBeInTheDocument();
   });
 
   it('applies custom className', () => {
     render(
-      <GlowingCard className="custom-class" data-testid="glow-card">Content</GlowingCard>
+      <GlowingCard className="custom-class" data-testid="glow-card">
+        Content
+      </GlowingCard>
     );
     const card = screen.getByTestId('glow-card');
     expect(card).toHaveClass('custom-class');

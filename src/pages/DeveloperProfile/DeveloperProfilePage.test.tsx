@@ -7,8 +7,16 @@ import * as useDocumentTitleHook from '../../hooks/useDocumentTitle';
 import * as useMetaDescriptionHook from '../../hooks/useMetaDescription';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 
-jest.mock('../../components/LoadingOverlay/LoadingOverlay', () => (props: any) => <div data-testid="loading-overlay">{props.show && 'Loading...'}</div>);
-jest.mock('../../components/DeveloperMetricCard/DeveloperMetricCard', () => (props: any) => <div data-testid="metric-card">{props.name}</div>);
+jest.mock(
+  '../../components/LoadingOverlay/LoadingOverlay',
+  () => (props: any) => (
+    <div data-testid="loading-overlay">{props.show && 'Loading...'}</div>
+  )
+);
+jest.mock(
+  '../../components/DeveloperMetricCard/DeveloperMetricCard',
+  () => (props: any) => <div data-testid="metric-card">{props.name}</div>
+);
 
 describe('DeveloperProfilePage', () => {
   beforeEach(() => {
@@ -17,8 +25,12 @@ describe('DeveloperProfilePage', () => {
       login: jest.fn(),
       logout: jest.fn(),
     });
-    jest.spyOn(useDocumentTitleHook, 'useDocumentTitle').mockImplementation(() => {});
-    jest.spyOn(useMetaDescriptionHook, 'useMetaDescription').mockImplementation(() => {});
+    jest
+      .spyOn(useDocumentTitleHook, 'useDocumentTitle')
+      .mockImplementation(() => {});
+    jest
+      .spyOn(useMetaDescriptionHook, 'useMetaDescription')
+      .mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -29,16 +41,23 @@ describe('DeveloperProfilePage', () => {
     return render(
       <MemoryRouter initialEntries={[`/developer/${username}`]}>
         <Routes>
-          <Route path="/developer/:username" element={<DeveloperProfilePage />} />
+          <Route
+            path="/developer/:username"
+            element={<DeveloperProfilePage />}
+          />
         </Routes>
       </MemoryRouter>
     );
   }
 
   it('shows loading overlay when loading', () => {
-    jest.spyOn(useDeveloperMetricsHook, 'useDeveloperMetrics').mockReturnValue({ data: null, loading: true });
+    jest
+      .spyOn(useDeveloperMetricsHook, 'useDeveloperMetrics')
+      .mockReturnValue({ data: null, loading: true });
     renderWithRouter();
-    expect(screen.getByTestId('loading-overlay')).toHaveTextContent('Loading...');
+    expect(screen.getByTestId('loading-overlay')).toHaveTextContent(
+      'Loading...'
+    );
   });
 
   it('renders profile and metrics when data is present', () => {
@@ -68,7 +87,9 @@ describe('DeveloperProfilePage', () => {
       issueResolution: 2,
       issuesClosed: 1,
     };
-    jest.spyOn(useDeveloperMetricsHook, 'useDeveloperMetrics').mockReturnValue({ data, loading: false });
+    jest
+      .spyOn(useDeveloperMetricsHook, 'useDeveloperMetrics')
+      .mockReturnValue({ data, loading: false });
     renderWithRouter();
     expect(screen.getByText('Octo Cat')).toBeInTheDocument();
     expect(screen.getByText('octocat')).toBeInTheDocument();
@@ -84,10 +105,14 @@ describe('DeveloperProfilePage', () => {
   });
 
   it('renders nothing but overlay when loading and no data', () => {
-    jest.spyOn(useDeveloperMetricsHook, 'useDeveloperMetrics').mockReturnValue({ data: null, loading: true });
+    jest
+      .spyOn(useDeveloperMetricsHook, 'useDeveloperMetrics')
+      .mockReturnValue({ data: null, loading: true });
     const { container } = renderWithRouter();
     expect(screen.getByTestId('loading-overlay')).toBeInTheDocument();
     // Only overlay should be visible
-    expect(container.querySelectorAll('[data-testid="metric-card"]').length).toBe(0);
+    expect(
+      container.querySelectorAll('[data-testid="metric-card"]').length
+    ).toBe(0);
   });
 });

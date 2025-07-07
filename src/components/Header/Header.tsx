@@ -48,15 +48,24 @@ export default function Header({ breadcrumbs }: HeaderProps) {
         >
           <BreadcrumbItem>
             <RouterLink to="/" className="flex items-center gap-1">
-              <ChevronUpIcon/>
+              <ChevronUpIcon />
               PR-ism
             </RouterLink>
           </BreadcrumbItem>
-          {breadcrumbs && breadcrumbs.map((bc, i) => (
-            <BreadcrumbItem key={i} color={i === breadcrumbs.length - 1 ? 'foreground' : undefined} isCurrent={i === breadcrumbs.length - 1}>
-              {bc.to ? <RouterLink to={bc.to}>{bc.label}</RouterLink> : bc.label}
-            </BreadcrumbItem>
-          ))}
+          {breadcrumbs &&
+            breadcrumbs.map((bc, i) => (
+              <BreadcrumbItem
+                key={i}
+                color={i === breadcrumbs.length - 1 ? 'foreground' : undefined}
+                isCurrent={i === breadcrumbs.length - 1}
+              >
+                {bc.to ? (
+                  <RouterLink to={bc.to}>{bc.label}</RouterLink>
+                ) : (
+                  bc.label
+                )}
+              </BreadcrumbItem>
+            ))}
         </Breadcrumbs>
       </div>
       {user && (
@@ -67,9 +76,7 @@ export default function Header({ breadcrumbs }: HeaderProps) {
             variant="bordered"
             color="primary"
             size="sm"
-            endContent={
-              <ArrowLeftStartOnRectangleIcon className="w-5 h-5" />
-            }
+            endContent={<ArrowLeftStartOnRectangleIcon className="w-5 h-5" />}
             onPress={logout}
           >
             Logout

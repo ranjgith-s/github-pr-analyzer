@@ -50,16 +50,16 @@ test('fetches data when no router state', async () => {
   function Wrapper() {
     return (
       <Routes>
-        <Route
-          path="/pr/:owner/:repo/:number"
-          element={<PullRequestPage />}
-        />
+        <Route path="/pr/:owner/:repo/:number" element={<PullRequestPage />} />
       </Routes>
     );
   }
 
   render(
-    <MemoryRouter initialEntries={['/pr/o/r/1']} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <MemoryRouter
+      initialEntries={['/pr/o/r/1']}
+      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+    >
       <AuthProvider>
         <Wrapper />
       </AuthProvider>
@@ -75,8 +75,10 @@ test('fetches data when no router state', async () => {
 test('shows loading state', () => {
   // Simulate loading by rendering and not advancing timers or resolving fetch
   render(
-    <MemoryRouter initialEntries={[{ pathname: '/pr/o/r/1', state: undefined }]}
-      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <MemoryRouter
+      initialEntries={[{ pathname: '/pr/o/r/1', state: undefined }]}
+      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+    >
       <AuthProvider>
         <PullRequestPage />
       </AuthProvider>
@@ -86,7 +88,9 @@ test('shows loading state', () => {
 });
 
 test('handles fetch error gracefully', async () => {
-  const mockOctokit = { graphql: jest.fn().mockRejectedValue(new Error('fail')) } as any;
+  const mockOctokit = {
+    graphql: jest.fn().mockRejectedValue(new Error('fail')),
+  } as any;
   (Octokit as unknown as jest.Mock).mockImplementation(() => mockOctokit);
   function Wrapper() {
     return (
@@ -96,31 +100,40 @@ test('handles fetch error gracefully', async () => {
     );
   }
   render(
-    <MemoryRouter initialEntries={['/pr/o/r/1']} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <MemoryRouter
+      initialEntries={['/pr/o/r/1']}
+      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+    >
       <AuthProvider>
         <Wrapper />
       </AuthProvider>
     </MemoryRouter>
   );
   // Wait for loading to disappear
-  await waitFor(() => expect(screen.queryByText(/Loading pull request details/)).not.toBeInTheDocument());
+  await waitFor(() =>
+    expect(
+      screen.queryByText(/Loading pull request details/)
+    ).not.toBeInTheDocument()
+  );
   // Should not throw, and should render the card (even if empty)
   expect(screen.getByRole('heading')).toBeInTheDocument();
 });
 
 test('handles timeline with missing fields', async () => {
-  const mockOctokit = { graphql: jest.fn().mockResolvedValue({
-    repository: {
-      pullRequest: {
-        title: 'Partial PR',
-        createdAt: '2020-01-01T00:00:00Z',
-        publishedAt: null,
-        closedAt: null,
-        mergedAt: null,
-        reviews: { nodes: [] },
+  const mockOctokit = {
+    graphql: jest.fn().mockResolvedValue({
+      repository: {
+        pullRequest: {
+          title: 'Partial PR',
+          createdAt: '2020-01-01T00:00:00Z',
+          publishedAt: null,
+          closedAt: null,
+          mergedAt: null,
+          reviews: { nodes: [] },
+        },
       },
-    },
-  }) } as any;
+    }),
+  } as any;
   (Octokit as unknown as jest.Mock).mockImplementation(() => mockOctokit);
   function Wrapper() {
     return (
@@ -130,7 +143,10 @@ test('handles timeline with missing fields', async () => {
     );
   }
   render(
-    <MemoryRouter initialEntries={['/pr/o/r/1']} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <MemoryRouter
+      initialEntries={['/pr/o/r/1']}
+      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+    >
       <AuthProvider>
         <Wrapper />
       </AuthProvider>

@@ -9,7 +9,13 @@ import * as AuthContextModule from '../../contexts/AuthContext/AuthContext';
 
 jest.mock('@octokit/rest', () => ({
   Octokit: jest.fn().mockImplementation(() => ({
-    rest: { users: { getAuthenticated: jest.fn().mockResolvedValue({ data: { login: 'octo', avatar_url: 'img' } }) } },
+    rest: {
+      users: {
+        getAuthenticated: jest
+          .fn()
+          .mockResolvedValue({ data: { login: 'octo', avatar_url: 'img' } }),
+      },
+    },
   })),
 }));
 

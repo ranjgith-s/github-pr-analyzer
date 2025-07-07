@@ -10,24 +10,43 @@ describe('SearchRepoBox', () => {
 
   it('renders input with placeholder', () => {
     render(
-      <SearchRepoBox query="" options={[]} onQueryChange={jest.fn()} onSelect={jest.fn()} />
+      <SearchRepoBox
+        query=""
+        options={[]}
+        onQueryChange={jest.fn()}
+        onSelect={jest.fn()}
+      />
     );
-    expect(screen.getByPlaceholderText(/Search GitHub repositories/i)).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText(/Search GitHub repositories/i)
+    ).toBeInTheDocument();
   });
 
   it('calls onQueryChange when typing', () => {
     const onQueryChange = jest.fn();
     render(
-      <SearchRepoBox query="" options={[]} onQueryChange={onQueryChange} onSelect={jest.fn()} />
+      <SearchRepoBox
+        query=""
+        options={[]}
+        onQueryChange={onQueryChange}
+        onSelect={jest.fn()}
+      />
     );
-    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'octocat' } });
+    fireEvent.change(screen.getByRole('textbox'), {
+      target: { value: 'octocat' },
+    });
     expect(onQueryChange).toHaveBeenCalledWith('octocat');
   });
 
   it('renders options and calls onSelect', () => {
     const onSelect = jest.fn();
     render(
-      <SearchRepoBox query="" options={options} onQueryChange={jest.fn()} onSelect={onSelect} />
+      <SearchRepoBox
+        query=""
+        options={options}
+        onQueryChange={jest.fn()}
+        onSelect={onSelect}
+      />
     );
     expect(screen.getByText('octocat/Hello-World')).toBeInTheDocument();
     fireEvent.click(screen.getByText('octocat/Hello-World'));
@@ -36,7 +55,12 @@ describe('SearchRepoBox', () => {
 
   it('matches snapshot', () => {
     const { container } = render(
-      <SearchRepoBox query="" options={options} onQueryChange={jest.fn()} onSelect={jest.fn()} />
+      <SearchRepoBox
+        query=""
+        options={options}
+        onQueryChange={jest.fn()}
+        onSelect={jest.fn()}
+      />
     );
     expect(container.firstChild).toMatchSnapshot();
   });
