@@ -1,4 +1,4 @@
-import * as github from './github';
+import * as githubService from './githubService';
 import { Octokit } from '@octokit/rest';
 
 // Add this to clear the cache for testing
@@ -63,7 +63,7 @@ describe('github service', () => {
     mockOctokit.rest.search.issuesAndPullRequests.mockResolvedValue({
       data: { items: [] },
     });
-    const result = await github.fetchPullRequestMetrics('token');
+    const result = await githubService.fetchPullRequestMetrics('token');
     expect(result).toEqual([]);
   });
 
@@ -71,7 +71,7 @@ describe('github service', () => {
     mockOctokit.rest.search.users.mockResolvedValue({
       data: { items: [{ login: 'a', avatar_url: 'u' }] },
     });
-    const result = await github.searchUsers('token', 'a');
+    const result = await githubService.searchUsers('token', 'a');
     expect(result).toEqual([{ login: 'a', avatar_url: 'u' }]);
   });
 
@@ -93,7 +93,7 @@ describe('github service', () => {
     mockOctokit.rest.search.issuesAndPullRequests.mockResolvedValue({
       data: { items: [] },
     });
-    const result = await github.fetchDeveloperMetrics('token', 'me');
+    const result = await githubService.fetchDeveloperMetrics('token', 'me');
     expect(result.login).toBe('me');
     expect(result.mergeRate).toBe(0);
   });
@@ -109,7 +109,7 @@ describe('github service', () => {
     mockOctokit.rest.repos.getCommunityProfileMetrics.mockResolvedValue({
       data: { health_percentage: 100 },
     });
-    const result = await github.fetchRepoInsights('token', 'o', 'r');
+    const result = await githubService.fetchRepoInsights('token', 'o', 'r');
     expect(result.deploymentFrequency).toBe(0);
     expect(result.communityHealthScore).toBe(100);
   });
@@ -138,7 +138,7 @@ describe('github service', () => {
     mockOctokit.rest.repos.getCommunityProfileMetrics.mockResolvedValue({
       data: { health_percentage: 80 },
     });
-    const result = await github.fetchRepoInsights('token', 'o', 'r');
+    const result = await githubService.fetchRepoInsights('token', 'o', 'r');
     expect(result.changeFailureRate).toBeGreaterThanOrEqual(0);
     expect(result.meanTimeToRestore).toBeGreaterThanOrEqual(0);
     expect(result.weeklyCommits.length).toBe(7);
@@ -162,7 +162,7 @@ describe('github service', () => {
       },
     });
     mockOctokit.graphql.mockRejectedValue(new Error('fail'));
-    await expect(github.fetchPullRequestMetrics('token')).rejects.toThrow(
+    await expect(githubService.fetchPullRequestMetrics('token')).rejects.toThrow(
       'fail'
     );
   });
@@ -193,9 +193,9 @@ describe('github service', () => {
     // First call populates cache
     mockOctokit.rest.users.getAuthenticated.mockResolvedValue({ data: { login: 'me' } });
     mockOctokit.rest.search.issuesAndPullRequests.mockResolvedValue({ data: { items: [] } });
-    await github.fetchPullRequestMetrics('token');
+    await githubService.fetchPullRequestMetrics('token');
     // Second call should use cache (no new getAuthenticated call)
-    await github.fetchPullRequestMetrics('token');
+    await githubService.fetchPullRequestMetrics('token');
     expect(mockOctokit.rest.users.getAuthenticated).toHaveBeenCalledTimes(1);
   });
 
@@ -243,7 +243,7 @@ describe('github service', () => {
       { commit: { author: { date: '2020-01-01T00:00:00Z' } } },
     ]);
 
-    const data = await github.fetchPullRequestMetrics('tok');
+    const data = await githubService.fetchPullRequestMetrics('tok');
     expect(Octokit).toHaveBeenCalledWith({ auth: 'tok' });
     expect(data).toHaveLength(1);
     expect(data[0].repo).toBe('o/r');
@@ -270,7 +270,7 @@ describe('github service', () => {
       ...Object.fromEntries(Array.from({ length: 20 }, (_, i) => [`pr${i}`, { pullRequest: { id: `${i}`, title: 't', author: { login: 'me' }, createdAt: '', publishedAt: '', closedAt: '', mergedAt: '', isDraft: false, additions: 1, deletions: 1, comments: { totalCount: 0 }, reviews: { nodes: [] } } }])),
     });
     mockOctokit.paginate.mockResolvedValue([]);
-    await github.fetchPullRequestMetrics('token');
+    await githubService.fetchPullRequestMetrics('token');
     expect(mockOctokit.graphql).toHaveBeenCalled();
   });
 });

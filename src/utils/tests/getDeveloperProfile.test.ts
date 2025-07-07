@@ -1,4 +1,4 @@
-import { getDeveloperProfile } from '../services/github';
+import { getDeveloperProfile } from '../services/githubService';
 
 jest.mock('@octokit/rest', () => ({
   Octokit: jest.fn().mockImplementation(() => ({

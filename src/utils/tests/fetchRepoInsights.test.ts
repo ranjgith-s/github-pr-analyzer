@@ -1,4 +1,4 @@
-import { fetchRepoInsights } from '../services/github';
+import { fetchRepoInsights } from '../services/githubService';
 import { Octokit } from '@octokit/rest';
 
 jest.mock('@octokit/rest');

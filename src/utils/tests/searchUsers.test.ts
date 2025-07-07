@@ -1,4 +1,4 @@
-import { searchUsers } from '../services/github';
+import { searchUsers } from '../services/githubService';
 import { Octokit } from '@octokit/rest';
 
 const mockInstance: any = { rest: { search: { users: jest.fn() } } };

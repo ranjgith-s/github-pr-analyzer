@@ -1,6 +1,5 @@
-import { fetchDeveloperMetrics } from '../services/github';
+import { fetchDeveloperMetrics, userCache } from '../services/githubService';
 import { Octokit } from '@octokit/rest';
-import { userCache } from '../services/github';
 
 jest.mock('@octokit/rest');
 
