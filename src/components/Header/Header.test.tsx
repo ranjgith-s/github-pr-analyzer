@@ -4,26 +4,21 @@ import Header from './Header';
 import { AuthProvider } from '../../contexts/AuthContext/AuthContext';
 import { ThemeModeProvider } from '../../contexts/ThemeModeContext/ThemeModeContext';
 import { MemoryRouter } from 'react-router-dom';
-import { Octokit } from '@octokit/rest';
 import * as AuthContextModule from '../../contexts/AuthContext/AuthContext';
+import * as githubService from '../../utils/services/githubService';
 
-jest.mock('@octokit/rest', () => ({
-  Octokit: jest.fn().mockImplementation(() => ({
-    rest: {
-      users: {
-        getAuthenticated: jest
-          .fn()
-          .mockResolvedValue({ data: { login: 'octo', avatar_url: 'img' } }),
-      },
-    },
-  })),
-}));
+jest.mock('../../utils/services/githubService');
+
+const mockUser = { login: 'octo', avatar_url: 'img' };
 
 afterEach(() => {
   jest.restoreAllMocks();
 });
 
 test('fetches and displays user info', async () => {
+  (githubService.getAuthenticatedUserProfile as jest.Mock).mockResolvedValue(
+    mockUser
+  );
   function Wrapper() {
     const auth = AuthContextModule.useAuth();
     useEffect(() => {
@@ -47,6 +42,8 @@ test('fetches and displays user info', async () => {
   );
 
   await waitFor(() => expect(screen.getByText('octo')).toBeInTheDocument());
-  expect(Octokit).toHaveBeenCalledWith({ auth: 'token' });
+  expect(githubService.getAuthenticatedUserProfile).toHaveBeenCalledWith(
+    'token'
+  );
   expect(screen.getByText('Pull request insights')).toBeInTheDocument();
 });

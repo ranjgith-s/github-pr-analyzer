@@ -306,4 +306,73 @@ describe('github service', () => {
     await githubService.fetchPullRequestMetrics('token');
     expect(mockOctokit.graphql).toHaveBeenCalled();
   });
+
+  it('getDeveloperProfile returns user profile', async () => {
+    const mockUser = {
+      login: 'dev',
+      name: 'Dev Name',
+      avatar_url: 'avatar',
+      html_url: 'url',
+      bio: 'bio',
+      company: 'company',
+      location: 'location',
+      followers: 10,
+      following: 5,
+      public_repos: 7,
+    };
+    mockOctokit.rest.users.getByUsername.mockResolvedValue({ data: mockUser });
+    const result = await githubService.getDeveloperProfile('token', 'dev');
+    expect(result).toEqual(mockUser);
+  });
+
+  it('getAuthenticatedUserProfile returns cached user if present', async () => {
+    githubService.userCache.set('token', { login: 'cached' });
+    const result = await githubService.getAuthenticatedUserProfile('token');
+    expect(result).toEqual({ login: 'cached' });
+  });
+
+  it('getAuthenticatedUserProfile fetches and caches user if not present', async () => {
+    githubService.userCache.clear();
+    mockOctokit.rest.users.getAuthenticated.mockResolvedValue({
+      data: { login: 'me' },
+    });
+    const result = await githubService.getAuthenticatedUserProfile('token');
+    expect(result.login).toBe('me');
+    // Should be cached now
+    expect(githubService.userCache.get('token').login).toBe('me');
+  });
+
+  it('fetchPullRequestDetails throws if params missing', async () => {
+    await expect(
+      githubService.fetchPullRequestDetails('token')
+    ).rejects.toThrow('Missing PR params');
+  });
+
+  it('fetchPullRequestDetails returns cached PR if present', async () => {
+    githubService.repoCache.set('o/r/pr/1', { title: 'cachedPR' });
+    const result = await githubService.fetchPullRequestDetails(
+      'token',
+      'o',
+      'r',
+      '1'
+    );
+    expect(result).toEqual({ title: 'cachedPR' });
+  });
+
+  it('fetchPullRequestDetails fetches and caches PR if not present', async () => {
+    githubService.repoCache.clear();
+    mockOctokit.graphql.mockResolvedValue({
+      repository: {
+        pullRequest: { title: 'fetchedPR' },
+      },
+    });
+    const result = await githubService.fetchPullRequestDetails(
+      'token',
+      'o',
+      'r',
+      '2'
+    );
+    expect(result.title).toBe('fetchedPR');
+    expect(githubService.repoCache.get('o/r/pr/2').title).toBe('fetchedPR');
+  });
 });

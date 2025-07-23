@@ -330,4 +330,46 @@ export async function getDeveloperProfile(token: string, login: string) {
   };
 }
 
+export async function getAuthenticatedUserProfile(token: string) {
+  let user = userCache.get(token);
+  if (!user) {
+    const octokit = githubApi.getOctokit(token);
+    user = await githubApi.getAuthenticatedUser(octokit);
+    if (user) userCache.set(token, user);
+  }
+  return user;
+}
+
+export async function fetchPullRequestDetails(
+  token: string,
+  owner?: string,
+  repo?: string,
+  number?: string
+) {
+  if (!owner || !repo || !number) throw new Error('Missing PR params');
+  const cacheKey = `${owner}/${repo}/pr/${number}`;
+  let pr = repoCache.get(cacheKey);
+  if (!pr) {
+    const octokit = githubApi.getOctokit(token);
+    const { repository } = await octokit.graphql<any>(
+      `query($owner:String!,$repo:String!,$number:Int!){
+        repository(owner:$owner,name:$repo){
+          pullRequest(number:$number){
+            title
+            createdAt
+            publishedAt
+            closedAt
+            mergedAt
+            reviews(first:100){ nodes{ submittedAt } }
+          }
+        }
+      }`,
+      { owner, repo, number: Number(number) }
+    );
+    pr = repository.pullRequest;
+    if (pr) repoCache.set(cacheKey, pr);
+  }
+  return pr;
+}
+
 export { userCache, repoCache }; // For testing

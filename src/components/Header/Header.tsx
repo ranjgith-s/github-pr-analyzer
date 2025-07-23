@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Octokit } from '@octokit/rest';
 import { ArrowLeftStartOnRectangleIcon } from '@heroicons/react/24/solid';
 import { Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext/AuthContext';
 import { Avatar, Breadcrumbs, BreadcrumbItem, Button } from '@heroui/react';
 import { ChevronUpIcon } from 'lucide-react';
+import { getAuthenticatedUserProfile } from '../../utils/services/githubService';
 
 interface GitHubUser {
   login: string;
@@ -26,10 +26,10 @@ export default function Header({ breadcrumbs }: HeaderProps) {
 
   useEffect(() => {
     async function fetchUser() {
-      const octokit = new Octokit({ auth: token });
+      if (!token) return;
       try {
-        const { data } = await octokit.rest.users.getAuthenticated();
-        setUser(data);
+        const userData = await getAuthenticatedUserProfile(token);
+        setUser(userData);
       } catch (err) {
         console.error(err);
       }

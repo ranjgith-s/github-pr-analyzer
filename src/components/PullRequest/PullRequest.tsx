@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Octokit } from '@octokit/rest';
 import { useParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext/AuthContext';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 import { useMetaDescription } from '../../hooks/useMetaDescription';
 import { Card, Button, Breadcrumbs, BreadcrumbItem } from '@heroui/react';
+import { fetchPullRequestDetails } from '../../utils/services/githubService';
 
 interface TimelineEntry {
   label: string;
@@ -29,24 +29,9 @@ export default function PullRequestPage() {
         setLoading(false);
         return;
       }
-      const octokit = new Octokit({ auth: token });
+      if (!token || !owner || !repo || !number) return;
       try {
-        const { repository } = await octokit.graphql<any>(
-          `query($owner:String!,$repo:String!,$number:Int!){
-            repository(owner:$owner,name:$repo){
-              pullRequest(number:$number){
-                title
-                createdAt
-                publishedAt
-                closedAt
-                mergedAt
-                reviews(first:100){ nodes{ submittedAt } }
-              }
-            }
-          }`,
-          { owner, repo, number: Number(number) }
-        );
-        const pr = repository.pullRequest;
+        const pr = await fetchPullRequestDetails(token, owner, repo, number);
         setTitle(pr.title);
         const firstReview = pr.reviews.nodes.reduce(
           (acc: string | null, rv: { submittedAt: string }) => {
