@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { usePullRequestMetrics } from '../../hooks/usePullRequestMetrics';
 import { PRItem } from '../../types';
 import { useAuth } from '../../contexts/AuthContext/AuthContext';
+import { QueryParams } from '../../utils/queryUtils';
 import LoadingOverlay from '../LoadingOverlay/LoadingOverlay';
 import {
   Table,
@@ -31,9 +32,27 @@ export function formatDuration(start?: string | null, end?: string | null) {
   return days > 0 ? `${days}d ${hours}h` : `${hours}h`;
 }
 
-export default function MetricsTable() {
+interface MetricsTableProps {
+  query: string;
+  queryParams: QueryParams;
+}
+
+export default function MetricsTable({
+  query,
+  queryParams,
+}: MetricsTableProps) {
   const { token } = useAuth();
-  const { items, loading } = usePullRequestMetrics(token!);
+  const { items, loading, error } = usePullRequestMetrics(token!, {
+    query,
+    page: queryParams.page,
+    sort: queryParams.sort as 'updated' | 'created' | 'popularity',
+    perPage: queryParams.per_page,
+  });
+
+  // Log error for now, in the future we can show it in the UI
+  if (error) {
+    console.error('Failed to load pull request metrics:', error);
+  }
   const [search, setSearch] = useState('');
   const [repoFilter, setRepoFilter] = useState<string>('');
   const [authorFilter, setAuthorFilter] = useState<string>('');

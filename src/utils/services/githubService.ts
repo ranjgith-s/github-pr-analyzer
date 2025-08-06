@@ -16,8 +16,24 @@ interface PRDetail {
   repo: string;
 }
 
+interface FetchPullRequestMetricsOptions {
+  page?: number;
+  sort?: 'updated' | 'created' | 'popularity';
+  per_page?: number;
+}
+
+// Overloaded function signatures
+export async function fetchPullRequestMetrics(token: string): Promise<PRItem[]>;
 export async function fetchPullRequestMetrics(
-  token: string
+  token: string,
+  query: string,
+  options?: FetchPullRequestMetricsOptions
+): Promise<PRItem[]>;
+
+export async function fetchPullRequestMetrics(
+  token: string,
+  query?: string,
+  options?: FetchPullRequestMetricsOptions
 ): Promise<PRItem[]> {
   const octokit = githubApi.getOctokit(token);
   let user = userCache.get(token);
@@ -26,6 +42,18 @@ export async function fetchPullRequestMetrics(
     userCache.set(token, user);
   }
   if (!user) throw new Error('Authenticated user not found');
+
+  // Use provided query or generate default query
+  const effectiveQuery =
+    query || `is:pr author:${user.login} OR is:pr reviewed-by:${user.login}`;
+
+  // For now, we'll use the existing logic but in the future this should use the effectiveQuery
+  // This maintains backward compatibility while setting up for dynamic queries
+  // TODO: In chunk 2, we'll implement proper query and options support
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _unusedEffectiveQuery = effectiveQuery;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _unusedOptions = options;
   const [authored, reviewed] = await Promise.all([
     githubApi.searchPRs(octokit, `is:pr author:${user.login}`),
     githubApi.searchPRs(octokit, `is:pr reviewed-by:${user.login}`),
