@@ -49,9 +49,7 @@ describe('MetricsPage URL Parameter Integration', () => {
   it('should use default query when no URL parameters', () => {
     const { getByTestId } = renderWithProviders(['/insights']);
 
-    expect(getByTestId('query')).toHaveTextContent(
-      'is:pr author:testuser OR is:pr reviewed-by:testuser'
-    );
+    expect(getByTestId('query')).toHaveTextContent('is:pr involves:testuser');
 
     expect(getByTestId('query-params')).toHaveTextContent(
       JSON.stringify({
