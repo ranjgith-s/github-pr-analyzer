@@ -34,7 +34,7 @@ export function formatDuration(start?: string | null, end?: string | null) {
 
 interface MetricsTableProps {
   query: string;
-  queryParams: QueryParams;
+  queryParams?: QueryParams;
 }
 
 export default function MetricsTable({
@@ -44,9 +44,9 @@ export default function MetricsTable({
   const { token } = useAuth();
   const { items, loading, error } = usePullRequestMetrics(token!, {
     query,
-    page: queryParams.page,
-    sort: queryParams.sort as 'updated' | 'created' | 'popularity',
-    perPage: queryParams.per_page,
+    page: queryParams?.page,
+    sort: queryParams?.sort as 'updated' | 'created' | 'popularity',
+    perPage: queryParams?.per_page,
   });
 
   // Log error for now, in the future we can show it in the UI

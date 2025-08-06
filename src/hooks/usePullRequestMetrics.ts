@@ -3,7 +3,7 @@ import { fetchPullRequestMetrics } from '../utils/services/githubService';
 import { PRItem } from '../types';
 
 interface UsePullRequestMetricsOptions {
-  query: string;
+  query?: string;
   page?: number;
   sort?: 'updated' | 'created' | 'popularity';
   perPage?: number;
@@ -11,7 +11,7 @@ interface UsePullRequestMetricsOptions {
 
 export function usePullRequestMetrics(
   token: string,
-  options: UsePullRequestMetricsOptions
+  options?: UsePullRequestMetricsOptions
 ) {
   const [items, setItems] = useState<PRItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -24,11 +24,15 @@ export function usePullRequestMetrics(
         setLoading(true);
         setError(null);
 
-        const data = await fetchPullRequestMetrics(token, options.query, {
-          page: options.page,
-          sort: options.sort,
-          per_page: options.perPage,
-        });
+        const data = await fetchPullRequestMetrics(
+          token,
+          options?.query || '',
+          {
+            page: options?.page,
+            sort: options?.sort,
+            per_page: options?.perPage,
+          }
+        );
 
         if (isMounted) setItems(data);
       } catch (err) {
@@ -41,14 +45,14 @@ export function usePullRequestMetrics(
       }
     }
 
-    if (token && options.query) {
+    if (token && options?.query) {
       load();
     }
 
     return () => {
       isMounted = false;
     };
-  }, [token, options.query, options.page, options.sort, options.perPage]);
+  }, [token, options?.query, options?.page, options?.sort, options?.perPage]);
 
   return { items, loading, error };
 }

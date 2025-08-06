@@ -31,7 +31,9 @@ const sample: PRItem[] = [
 jest.spyOn(githubService, 'fetchPullRequestMetrics').mockResolvedValue(sample);
 
 test('loads items and updates loading state', async () => {
-  const { result } = renderHook(() => usePullRequestMetrics('token'));
+  const { result } = renderHook(() =>
+    usePullRequestMetrics('token', { query: 'test' })
+  );
   expect(result.current.loading).toBe(true);
   await waitFor(() => expect(result.current.loading).toBe(false));
   expect(result.current.items).toEqual(sample);
