@@ -1,5 +1,15 @@
 import * as githubService from './githubService';
 import { Octokit } from '@octokit/rest';
+import * as githubApi from './githubApi';
+import * as cache from '../../services/cache';
+import * as queryValidator from '../../services/queryValidator';
+import * as errorHandler from '../../services/errorHandler';
+
+// Mock external dependencies
+jest.mock('./githubApi');
+jest.mock('../../services/cache');
+jest.mock('../../services/queryValidator');
+jest.mock('../../services/errorHandler');
 
 // Add this to clear the cache for testing
 const clearGithubServiceCache = () => {
@@ -46,6 +56,42 @@ describe('github service', () => {
     clearGithubServiceCache();
     // Always use the shared mockOctokit for all tests
     (Octokit as any).mockImplementation(() => mockOctokit);
+
+    // Mock github API functions
+    (githubApi.getOctokit as jest.Mock).mockReturnValue(mockOctokit);
+    (githubApi.getAuthenticatedUser as jest.Mock).mockResolvedValue({
+      login: 'me',
+    });
+    (githubApi.searchPRsWithOptions as jest.Mock).mockResolvedValue({
+      total_count: 0,
+      incomplete_results: false,
+      items: [],
+    });
+    (githubApi.graphqlQuery as jest.Mock).mockResolvedValue({});
+    (githubApi.paginateApi as jest.Mock).mockResolvedValue([]);
+    (githubApi.searchUsersApi as jest.Mock).mockResolvedValue([]);
+    (githubApi.getUserByUsername as jest.Mock).mockResolvedValue(null);
+    (githubApi.searchPRs as jest.Mock).mockResolvedValue([]);
+    (githubApi.getRepo as jest.Mock).mockResolvedValue(null);
+    (githubApi.getCommitActivityStats as jest.Mock).mockResolvedValue([]);
+    (githubApi.getCommunityProfileMetrics as jest.Mock).mockResolvedValue({});
+
+    // Mock cache functions
+    (cache.getFromCache as jest.Mock).mockResolvedValue(null);
+    (cache.setCache as jest.Mock).mockResolvedValue(undefined);
+
+    // Mock query validator
+    (queryValidator.validateAndSanitizeQuery as jest.Mock).mockImplementation(
+      (query: string) => query
+    );
+
+    // Mock error handler
+    (
+      errorHandler.handleOctokitError as unknown as jest.Mock
+    ).mockImplementation((error: any) => {
+      throw error;
+    });
+
     // Reset all mockOctokit methods
     Object.values(mockOctokit.rest).forEach((group: any) => {
       Object.values(group).forEach((fn: any) => fn.mockReset && fn.mockReset());
@@ -68,57 +114,54 @@ describe('github service', () => {
   });
 
   it('searchUsers returns mapped users', async () => {
-    mockOctokit.rest.search.users.mockResolvedValue({
-      data: { items: [{ login: 'a', avatar_url: 'u' }] },
-    });
+    (githubApi.searchUsersApi as jest.Mock).mockResolvedValue([
+      { login: 'a', avatar_url: 'u' },
+    ]);
     const result = await githubService.searchUsers('token', 'a');
     expect(result).toEqual([{ login: 'a', avatar_url: 'u' }]);
   });
 
   it('fetchDeveloperMetrics handles no authored PRs', async () => {
-    mockOctokit.rest.users.getByUsername.mockResolvedValue({
-      data: {
-        login: 'me',
-        name: 'n',
-        avatar_url: 'a',
-        html_url: 'h',
-        bio: 'b',
-        company: 'c',
-        location: 'l',
-        followers: 1,
-        following: 2,
-        public_repos: 3,
-      },
-    });
-    mockOctokit.rest.search.issuesAndPullRequests.mockResolvedValue({
-      data: { items: [] },
-    });
+    const mockUser = {
+      login: 'me',
+      name: 'n',
+      avatar_url: 'a',
+      html_url: 'h',
+      bio: 'b',
+      company: 'c',
+      location: 'l',
+      followers: 1,
+      following: 2,
+      public_repos: 3,
+    };
+    (githubApi.getUserByUsername as jest.Mock).mockResolvedValue(mockUser);
+    (githubApi.searchPRs as jest.Mock).mockResolvedValue([]);
+
     const result = await githubService.fetchDeveloperMetrics('token', 'me');
     expect(result.login).toBe('me');
     expect(result.mergeRate).toBe(0);
   });
 
   it('fetchRepoInsights handles empty data', async () => {
-    mockOctokit.rest.repos.get.mockResolvedValue({
-      data: { default_branch: 'main', open_issues_count: 0 },
+    const mockRepo = { default_branch: 'main', open_issues_count: 0 };
+    (githubApi.getRepo as jest.Mock).mockResolvedValue(mockRepo);
+    (githubApi.paginateApi as jest.Mock).mockResolvedValue([]);
+    (githubApi.getCommitActivityStats as jest.Mock).mockResolvedValue([]);
+    (githubApi.getCommunityProfileMetrics as jest.Mock).mockResolvedValue({
+      health_percentage: 100,
     });
-    mockOctokit.paginate.mockResolvedValue([]);
-    mockOctokit.rest.repos.getCommitActivityStats.mockResolvedValue({
-      data: [],
-    });
-    mockOctokit.rest.repos.getCommunityProfileMetrics.mockResolvedValue({
-      data: { health_percentage: 100 },
-    });
+
     const result = await githubService.fetchRepoInsights('token', 'o', 'r');
     expect(result.deploymentFrequency).toBe(0);
     expect(result.communityHealthScore).toBe(100);
   });
 
   it('fetchRepoInsights calculates changeFailureRate and meanTimeToRestore', async () => {
-    mockOctokit.rest.repos.get.mockResolvedValue({
-      data: { default_branch: 'main', open_issues_count: 10 },
-    });
-    mockOctokit.paginate
+    const mockRepo = { default_branch: 'main', open_issues_count: 10 };
+    (githubApi.getRepo as jest.Mock).mockResolvedValue(mockRepo);
+
+    // Set up multiple calls to paginateApi
+    (githubApi.paginateApi as jest.Mock)
       .mockResolvedValueOnce([]) // commits
       .mockResolvedValueOnce([
         {
@@ -131,13 +174,16 @@ describe('github service', () => {
         { created_at: '2024-01-01T00:00:00Z', conclusion: 'failure' },
         { created_at: '2024-01-01T01:00:00Z', conclusion: 'success' },
       ]) // workflow runs
-      .mockResolvedValueOnce([]); // contributors (should be an array)
-    mockOctokit.rest.repos.getCommitActivityStats.mockResolvedValue({
-      data: [{ days: [1, 2, 3, 4, 5, 6, 7] }],
+      .mockResolvedValueOnce([]); // contributors
+
+    (githubApi.getCommitActivityStats as jest.Mock).mockResolvedValue([
+      { days: [1, 2, 3, 4, 5, 6, 7] },
+    ]);
+
+    (githubApi.getCommunityProfileMetrics as jest.Mock).mockResolvedValue({
+      health_percentage: 80,
     });
-    mockOctokit.rest.repos.getCommunityProfileMetrics.mockResolvedValue({
-      data: { health_percentage: 80 },
-    });
+
     const result = await githubService.fetchRepoInsights('token', 'o', 'r');
     expect(result.changeFailureRate).toBeGreaterThanOrEqual(0);
     expect(result.meanTimeToRestore).toBeGreaterThanOrEqual(0);
@@ -146,86 +192,78 @@ describe('github service', () => {
   });
 
   it('fetchPullRequestMetrics handles errors in graphql', async () => {
-    mockOctokit.rest.users.getAuthenticated.mockResolvedValue({
-      data: { login: 'me' },
+    // Set up successful initial API calls
+    (githubApi.getAuthenticatedUser as jest.Mock).mockResolvedValue({
+      login: 'me',
     });
-    mockOctokit.rest.search.issuesAndPullRequests.mockResolvedValue({
-      data: {
-        items: [
-          {
-            id: 1,
-            repository_url: 'https://api.github.com/repos/o/r',
-            number: 1,
-            html_url: 'url',
-          },
-        ],
-      },
+    (githubApi.searchPRsWithOptions as jest.Mock).mockResolvedValue({
+      total_count: 1,
+      incomplete_results: false,
+      items: [
+        {
+          id: 1,
+          repository_url: 'https://api.github.com/repos/o/r',
+          number: 1,
+          html_url: 'url',
+        },
+      ],
     });
-    mockOctokit.graphql.mockRejectedValue(new Error('fail'));
+
+    // Make GraphQL query fail
+    const errorMessage = 'fail';
+    (githubApi.graphqlQuery as jest.Mock).mockRejectedValue(
+      new Error(errorMessage)
+    );
+
+    // Expect the error to be thrown and handled
     await expect(
       githubService.fetchPullRequestMetrics('token')
-    ).rejects.toThrow('fail');
+    ).rejects.toThrow(errorMessage);
   });
 
   // Add tests for user/repo cache
   it('should cache user and repo data', async () => {
     clearGithubServiceCache();
-    // Use the same mockOctokit instance for both calls
-    const mockOctokit: any = {
-      rest: {
-        users: { getAuthenticated: jest.fn(), getByUsername: jest.fn() },
-        search: { issuesAndPullRequests: jest.fn(), users: jest.fn() },
-        repos: {
-          get: jest.fn(),
-          getCommitActivityStats: jest.fn(),
-          getCommunityProfileMetrics: jest.fn(),
-          listCommits: jest.fn(),
-          listContributors: jest.fn(),
-          list: jest.fn(),
-        },
-        pulls: { list: jest.fn(), listCommits: jest.fn() },
-        actions: { listWorkflowRunsForRepo: jest.fn() },
-      },
-      paginate: jest.fn(),
-      graphql: jest.fn(),
-    };
-    (Octokit as any).mockImplementation(() => mockOctokit);
+
+    // Setup mocks for the new API structure
+    (githubApi.getAuthenticatedUser as jest.Mock).mockResolvedValue({
+      login: 'me',
+    });
+    (githubApi.searchPRsWithOptions as jest.Mock).mockResolvedValue({
+      items: [],
+    });
+
     // First call populates cache
-    mockOctokit.rest.users.getAuthenticated.mockResolvedValue({
-      data: { login: 'me' },
-    });
-    mockOctokit.rest.search.issuesAndPullRequests.mockResolvedValue({
-      data: { items: [] },
-    });
     await githubService.fetchPullRequestMetrics('token');
-    // Second call should use cache (no new getAuthenticated call)
+
+    // Second call should use cache (no new getAuthenticatedUser call)
     await githubService.fetchPullRequestMetrics('token');
-    expect(mockOctokit.rest.users.getAuthenticated).toHaveBeenCalledTimes(1);
+
+    // Should only call getAuthenticatedUser once due to caching
+    expect(githubApi.getAuthenticatedUser).toHaveBeenCalledTimes(1);
   });
 
   // Merged from src/utils/tests/github.test.ts
   test('fetchPullRequestMetrics transforms api data', async () => {
-    // Clear cache and reset mocks to avoid leakage from previous tests
-    clearGithubServiceCache();
-    mockOctokit.rest.users.getAuthenticated.mockReset();
-    mockOctokit.rest.search.issuesAndPullRequests.mockReset();
-    mockOctokit.graphql.mockReset();
-    mockOctokit.paginate.mockReset();
-
-    mockOctokit.rest.users.getAuthenticated.mockResolvedValue({
-      data: { login: 'me' },
+    // Set up the API mocks for the new implementation
+    (githubApi.getAuthenticatedUser as jest.Mock).mockResolvedValue({
+      login: 'me',
     });
+
     const searchItem = {
       id: 1,
       repository_url: 'https://api.github.com/repos/o/r',
       number: 1,
       html_url: 'url',
     };
-    // Always return a single PR for both authored and reviewed calls
-    mockOctokit.rest.search.issuesAndPullRequests.mockImplementation(() =>
-      Promise.resolve({ data: { items: [searchItem] } })
-    );
-    mockOctokit.graphql.mockResolvedValue({
+
+    (githubApi.searchPRsWithOptions as jest.Mock).mockResolvedValue({
+      total_count: 1,
+      incomplete_results: false,
+      items: [searchItem],
+    });
+
+    (githubApi.graphqlQuery as jest.Mock).mockResolvedValue({
       pr0: {
         pullRequest: {
           id: 'gid',
@@ -243,12 +281,12 @@ describe('github service', () => {
         },
       },
     });
-    mockOctokit.paginate.mockResolvedValue([
+
+    (githubApi.paginateApi as jest.Mock).mockResolvedValue([
       { commit: { author: { date: '2020-01-01T00:00:00Z' } } },
     ]);
 
     const data = await githubService.fetchPullRequestMetrics('tok');
-    expect(Octokit).toHaveBeenCalledWith({ auth: 'tok' });
     expect(data).toHaveLength(1);
     expect(data[0].repo).toBe('o/r');
   });
@@ -256,30 +294,25 @@ describe('github service', () => {
   // Move the batching/concurrency test to the end for isolation
   // Add tests for batching and concurrency
   it('should batch PR details and limit concurrency', async () => {
-    const mockOctokit: any = {
-      rest: {
-        users: { getAuthenticated: jest.fn() },
-        search: { issuesAndPullRequests: jest.fn() },
-        pulls: { listCommits: jest.fn() },
-      },
-      paginate: jest.fn(),
-      graphql: jest.fn(),
-    };
-    (Octokit as any).mockImplementation(() => mockOctokit);
-    mockOctokit.rest.users.getAuthenticated.mockResolvedValue({
-      data: { login: 'me' },
+    // Set up the API mocks for the new implementation
+    (githubApi.getAuthenticatedUser as jest.Mock).mockResolvedValue({
+      login: 'me',
     });
-    mockOctokit.rest.search.issuesAndPullRequests.mockResolvedValue({
-      data: {
-        items: Array.from({ length: 25 }, (_, i) => ({
-          id: i,
-          repository_url: 'https://api.github.com/repos/o/r',
-          number: i,
-          html_url: 'url',
-        })),
-      },
+
+    const items = Array.from({ length: 25 }, (_, i) => ({
+      id: i,
+      repository_url: 'https://api.github.com/repos/o/r',
+      number: i,
+      html_url: 'url',
+    }));
+
+    (githubApi.searchPRsWithOptions as jest.Mock).mockResolvedValue({
+      total_count: items.length,
+      incomplete_results: false,
+      items,
     });
-    mockOctokit.graphql.mockResolvedValue({
+
+    (githubApi.graphqlQuery as jest.Mock).mockResolvedValue({
       ...Object.fromEntries(
         Array.from({ length: 20 }, (_, i) => [
           `pr${i}`,
@@ -288,9 +321,9 @@ describe('github service', () => {
               id: `${i}`,
               title: 't',
               author: { login: 'me' },
-              createdAt: '',
-              publishedAt: '',
-              closedAt: '',
+              createdAt: '2020-01-01T00:00:00Z',
+              publishedAt: '2020-01-01T01:00:00Z',
+              closedAt: '2020-01-02T00:00:00Z',
               mergedAt: '',
               isDraft: false,
               additions: 1,
@@ -302,9 +335,11 @@ describe('github service', () => {
         ])
       ),
     });
-    mockOctokit.paginate.mockResolvedValue([]);
+
+    (githubApi.paginateApi as jest.Mock).mockResolvedValue([]);
+
     await githubService.fetchPullRequestMetrics('token');
-    expect(mockOctokit.graphql).toHaveBeenCalled();
+    expect(githubApi.graphqlQuery).toHaveBeenCalled();
   });
 
   it('getDeveloperProfile returns user profile', async () => {
@@ -320,7 +355,7 @@ describe('github service', () => {
       following: 5,
       public_repos: 7,
     };
-    mockOctokit.rest.users.getByUsername.mockResolvedValue({ data: mockUser });
+    (githubApi.getUserByUsername as jest.Mock).mockResolvedValue(mockUser);
     const result = await githubService.getDeveloperProfile('token', 'dev');
     expect(result).toEqual(mockUser);
   });

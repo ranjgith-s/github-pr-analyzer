@@ -5,7 +5,7 @@ import { PRItem } from '../types';
 interface UsePullRequestMetricsOptions {
   query?: string;
   page?: number;
-  sort?: 'updated' | 'created' | 'popularity';
+  sort?: 'updated' | 'created' | 'comments';
   perPage?: number;
 }
 
@@ -24,7 +24,7 @@ export function usePullRequestMetrics(
         setLoading(true);
         setError(null);
 
-        const data = await fetchPullRequestMetrics(
+        const result = await fetchPullRequestMetrics(
           token,
           options?.query || '',
           {
@@ -34,7 +34,14 @@ export function usePullRequestMetrics(
           }
         );
 
-        if (isMounted) setItems(data);
+        if (isMounted) {
+          // Handle both legacy array format and new PRSearchResult format
+          if (Array.isArray(result)) {
+            setItems(result);
+          } else {
+            setItems(result.items);
+          }
+        }
       } catch (err) {
         if (isMounted) {
           console.error(err);

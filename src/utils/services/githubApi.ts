@@ -1,8 +1,15 @@
 // githubApi.ts
 import { Octokit } from '@octokit/rest';
 
+// Initialize Octokit instance with enhanced configuration
+function createOctokitInstance(token: string): Octokit {
+  return new Octokit({
+    auth: token,
+  });
+}
+
 export function getOctokit(token: string): Octokit {
-  return new Octokit({ auth: token });
+  return createOctokitInstance(token);
 }
 
 export async function getAuthenticatedUser(octokit: Octokit): Promise<any> {
@@ -27,6 +34,28 @@ export async function searchPRs(
       per_page: perPage,
     })
   ).data.items;
+}
+
+// Enhanced search with pagination and sorting options
+export async function searchPRsWithOptions(
+  octokit: Octokit,
+  query: string,
+  options: {
+    page?: number;
+    per_page?: number;
+    sort?: 'updated' | 'created' | 'comments';
+    order?: 'asc' | 'desc';
+  } = {}
+): Promise<{ total_count: number; incomplete_results: boolean; items: any[] }> {
+  const response = await octokit.rest.search.issuesAndPullRequests({
+    q: query,
+    sort: options.sort,
+    order: options.order,
+    per_page: options.per_page || 20,
+    page: options.page || 1,
+  });
+
+  return response.data;
 }
 
 export async function searchUsersApi(

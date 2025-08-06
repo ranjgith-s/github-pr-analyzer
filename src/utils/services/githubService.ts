@@ -4,6 +4,10 @@ import * as githubApi from './githubApi';
 import * as transformers from './transformers';
 import { PRItem } from 'src/types';
 import type { Commit } from './transformers';
+import { validateAndSanitizeQuery } from '../../services/queryValidator';
+import { handleOctokitError } from '../../services/errorHandler';
+import { getFromCache, setCache } from '../../services/cache';
+import { User } from '../queryUtils';
 
 // Caches
 const userCache = new InMemoryCache<any>();
@@ -18,51 +22,143 @@ interface PRDetail {
 
 interface FetchPullRequestMetricsOptions {
   page?: number;
-  sort?: 'updated' | 'created' | 'popularity';
+  sort?: 'updated' | 'created' | 'comments';
   per_page?: number;
 }
 
-// Overloaded function signatures
+// New interface definitions for enhanced API
+export interface SearchOptions {
+  page?: number;
+  per_page?: number;
+  sort?: 'updated' | 'created' | 'comments';
+  order?: 'asc' | 'desc';
+}
+
+export interface PRSearchResult {
+  total_count: number;
+  incomplete_results: boolean;
+  items: PRItem[];
+}
+
+export interface SearchError {
+  message: string;
+  documentation_url?: string;
+  errors?: Array<{
+    message: string;
+    field?: string;
+    code?: string;
+  }>;
+}
+
+// Overloaded function signatures for backward compatibility and new functionality
 export async function fetchPullRequestMetrics(token: string): Promise<PRItem[]>;
 export async function fetchPullRequestMetrics(
   token: string,
-  query: string,
-  options?: FetchPullRequestMetricsOptions
+  user: User
 ): Promise<PRItem[]>;
-
 export async function fetchPullRequestMetrics(
   token: string,
-  query?: string,
-  options?: FetchPullRequestMetricsOptions
-): Promise<PRItem[]> {
-  const octokit = githubApi.getOctokit(token);
-  let user = userCache.get(token);
-  if (!user) {
-    user = (await githubApi.getAuthenticatedUser(octokit)) as { login: string };
-    userCache.set(token, user);
+  query: string,
+  options?: SearchOptions
+): Promise<PRSearchResult>;
+
+// Implementation with overload resolution
+export async function fetchPullRequestMetrics(
+  token: string,
+  userOrQuery?: User | string,
+  options?: SearchOptions | FetchPullRequestMetricsOptions
+): Promise<PRItem[] | PRSearchResult> {
+  // Handle backward compatibility - no arguments (default user behavior)
+  if (!userOrQuery) {
+    const octokit = githubApi.getOctokit(token);
+    let user = userCache.get(token);
+    if (!user) {
+      user = (await githubApi.getAuthenticatedUser(octokit)) as {
+        login: string;
+      };
+      userCache.set(token, user);
+    }
+    if (!user) throw new Error('Authenticated user not found');
+
+    const defaultQuery = `is:pr author:${user.login} OR is:pr reviewed-by:${user.login}`;
+    const result = await fetchPullRequestsByQuery(token, defaultQuery, {});
+    return result.items; // Return legacy format
   }
-  if (!user) throw new Error('Authenticated user not found');
 
-  // Use provided query or generate default query
-  const effectiveQuery =
-    query || `is:pr author:${user.login} OR is:pr reviewed-by:${user.login}`;
+  // Handle backward compatibility - User object passed
+  if (typeof userOrQuery === 'object' && userOrQuery?.login) {
+    const user = userOrQuery as User;
+    const defaultQuery = `is:pr author:${user.login} OR is:pr reviewed-by:${user.login}`;
+    const result = await fetchPullRequestsByQuery(
+      token,
+      defaultQuery,
+      (options as SearchOptions) || {}
+    );
+    return result.items; // Return legacy format
+  }
 
-  // For now, we'll use the existing logic but in the future this should use the effectiveQuery
-  // This maintains backward compatibility while setting up for dynamic queries
-  // TODO: In chunk 2, we'll implement proper query and options support
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _unusedEffectiveQuery = effectiveQuery;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _unusedOptions = options;
-  const [authored, reviewed] = await Promise.all([
-    githubApi.searchPRs(octokit, `is:pr author:${user.login}`),
-    githubApi.searchPRs(octokit, `is:pr reviewed-by:${user.login}`),
-  ]);
-  const allItems = new Map<number, any>();
-  [...authored, ...reviewed].forEach((item) => allItems.set(item.id, item));
-  const items = Array.from(allItems.values());
+  // Handle new dynamic query format
+  const query = userOrQuery as string;
+  return await fetchPullRequestsByQuery(
+    token,
+    query,
+    (options as SearchOptions) || {}
+  );
+}
+
+// Core query execution function
+async function fetchPullRequestsByQuery(
+  token: string,
+  query: string,
+  options: SearchOptions = {}
+): Promise<PRSearchResult> {
+  const validatedQuery = validateAndSanitizeQuery(query);
+  const searchParams = { q: validatedQuery, ...options };
+
+  // Check cache first
+  const cacheKey = `pr-search:${JSON.stringify(searchParams)}`;
+  const cached = await getFromCache<PRSearchResult>(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
+  try {
+    const octokit = githubApi.getOctokit(token);
+
+    // Use enhanced search method with options
+    const response = await githubApi.searchPRsWithOptions(
+      octokit,
+      validatedQuery,
+      {
+        sort: options.sort,
+        order: options.order,
+        per_page: options.per_page || 20,
+        page: options.page || 1,
+      }
+    );
+
+    const result = await transformSearchResponse(response, token);
+
+    // Cache successful results for 5 minutes
+    await setCache(cacheKey, result, 300);
+
+    return result;
+  } catch (error) {
+    throw handleOctokitError(error);
+  }
+}
+
+// Transform search response to our format
+async function transformSearchResponse(
+  response: { total_count: number; incomplete_results: boolean; items: any[] },
+  token: string
+): Promise<PRSearchResult> {
+  const octokit = githubApi.getOctokit(token);
+  const items = response.items;
   const batchSize = 20;
   const prDetails: PRDetail[] = [];
+
+  // Process items in batches using GraphQL for efficiency
   for (let i = 0; i < items.length; i += batchSize) {
     const batch = items.slice(i, i + batchSize);
     const queries = batch
@@ -75,6 +171,7 @@ export async function fetchPullRequestMetrics(
     const prData = await githubApi.graphqlQuery<
       Record<string, { pullRequest: unknown }>
     >(octokit, query);
+
     for (let idx = 0; idx < batch.length; idx++) {
       const pr = prData[`pr${idx}`]?.pullRequest;
       if (pr) {
@@ -87,6 +184,8 @@ export async function fetchPullRequestMetrics(
       }
     }
   }
+
+  // Transform to PRItems with limited concurrency
   const limit = 5;
   const results: PRItem[] = [];
   for (let i = 0; i < prDetails.length; i += limit) {
@@ -113,7 +212,12 @@ export async function fetchPullRequestMetrics(
     );
     results.push(...chunkResults);
   }
-  return results;
+
+  return {
+    total_count: response.total_count,
+    incomplete_results: response.incomplete_results,
+    items: results,
+  };
 }
 
 export async function searchUsers(token: string, query: string) {
