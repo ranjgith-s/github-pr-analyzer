@@ -52,8 +52,8 @@ function ButtonMock({ children, onPress, onClick, ...props }) {
 }
 
 function Spinner() {
-  // Only return a simple span for test, not a div with data-testid
-  return React.createElement('span', null, 'Loading...');
+  // Return a span with progressbar role for tests
+  return React.createElement('span', { role: 'progressbar' }, 'Loading...');
 }
 
 function CardMock({ children, ...props }) {
@@ -279,6 +279,19 @@ function SwitchMock({ children, ...props }) {
   );
 }
 
+function LinkMock({ children, href, isExternal, ...props }) {
+  return React.createElement(
+    'a',
+    {
+      ...filterProps(props),
+      href,
+      target: isExternal ? '_blank' : undefined,
+      rel: isExternal ? 'noopener noreferrer' : undefined,
+    },
+    children
+  );
+}
+
 module.exports = {
   __esModule: true,
   Card: CardMock,
@@ -306,4 +319,5 @@ module.exports = {
   DropdownItem: DropdownItemMock,
   Badge: BadgeMock,
   Switch: SwitchMock,
+  Link: LinkMock,
 };

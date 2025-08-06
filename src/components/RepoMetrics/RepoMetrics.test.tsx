@@ -24,6 +24,7 @@ describe('RepoMetrics', () => {
       token: 'test-token',
       login: jest.fn(),
       logout: jest.fn(),
+      user: null,
     });
     jest
       .spyOn(useDocumentTitleHook, 'useDocumentTitle')

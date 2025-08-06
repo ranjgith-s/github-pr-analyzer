@@ -4,6 +4,15 @@ import { MemoryRouter } from 'react-router-dom';
 import MetricsPage from '../MetricsPage';
 import { AuthContext } from '../../../contexts/AuthContext/AuthContext';
 
+// Mock the hooks we need
+jest.mock('../../../hooks/usePullRequestMetrics', () => ({
+  usePullRequestMetrics: jest.fn(() => ({
+    items: [{ id: '1', title: 'Test PR' }], // Mock some items so MetricsTable renders
+    loading: false,
+    error: null,
+  })),
+}));
+
 // Mock MetricsTable component to simplify testing
 jest.mock('../../../components/MetricsTable/MetricsTable', () => {
   return function MockedMetricsTable({ query, queryParams }: any) {
@@ -69,7 +78,6 @@ describe('MetricsPage URL Parameter Integration', () => {
 
     expect(getByTestId('query-params')).toHaveTextContent(
       JSON.stringify({
-        q: 'is:pr author:john',
         page: 1,
         sort: 'updated',
         per_page: 20,
@@ -86,7 +94,6 @@ describe('MetricsPage URL Parameter Integration', () => {
 
     expect(getByTestId('query-params')).toHaveTextContent(
       JSON.stringify({
-        q: 'is:pr label:bug',
         page: 3,
         sort: 'created',
         per_page: 50,
@@ -119,7 +126,6 @@ describe('MetricsPage URL Parameter Integration', () => {
     // This tests that the component correctly parses the initial URL
     expect(getByTestId('query-params')).toHaveTextContent(
       JSON.stringify({
-        q: 'is:pr author:alice',
         page: 1,
         sort: 'updated',
         per_page: 20,

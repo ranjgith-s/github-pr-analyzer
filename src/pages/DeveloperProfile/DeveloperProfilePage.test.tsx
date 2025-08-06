@@ -37,6 +37,10 @@ describe('DeveloperProfilePage', () => {
       token: 'test-token',
       login: jest.fn(),
       logout: jest.fn(),
+      user: {
+        login: 'octocat',
+        avatar_url: 'avatar_url',
+      },
     });
     jest
       .spyOn(useDocumentTitleHook, 'useDocumentTitle')

@@ -10,7 +10,7 @@ interface UsePullRequestMetricsOptions {
 }
 
 export function usePullRequestMetrics(
-  token: string,
+  token: string | null,
   options?: UsePullRequestMetricsOptions
 ) {
   const [items, setItems] = useState<PRItem[]>([]);
@@ -25,7 +25,7 @@ export function usePullRequestMetrics(
         setError(null);
 
         const result = await fetchPullRequestMetrics(
-          token,
+          token!,
           options?.query || '',
           {
             page: options?.page,
@@ -54,6 +54,9 @@ export function usePullRequestMetrics(
 
     if (token && options?.query) {
       load();
+    } else {
+      // When conditions are not met, set loading to false
+      setLoading(false);
     }
 
     return () => {

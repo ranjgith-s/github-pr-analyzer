@@ -19,6 +19,7 @@ beforeEach(() => {
   mockedHook.usePullRequestMetrics.mockReturnValue({
     items: [],
     loading: false,
+    error: null,
   });
 });
 

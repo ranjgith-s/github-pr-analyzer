@@ -45,7 +45,7 @@ export default function MetricsTable({
   const { items, loading, error } = usePullRequestMetrics(token!, {
     query,
     page: queryParams?.page,
-    sort: queryParams?.sort as 'updated' | 'created' | 'popularity',
+    sort: queryParams?.sort as 'updated' | 'created' | 'comments',
     perPage: queryParams?.per_page,
   });
 

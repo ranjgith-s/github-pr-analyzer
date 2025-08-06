@@ -39,9 +39,11 @@ const sample: PRItem[] = [
   },
 ];
 
-jest
-  .spyOn(metricsHook, 'usePullRequestMetrics')
-  .mockReturnValue({ items: sample, loading: false });
+jest.spyOn(metricsHook, 'usePullRequestMetrics').mockReturnValue({
+  items: sample,
+  loading: false,
+  error: null,
+});
 
 test('renders filters and data', () => {
   render(
@@ -49,7 +51,7 @@ test('renders filters and data', () => {
       <MemoryRouter
         future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
       >
-        <MetricsTable />
+        <MetricsTable query={''} />
       </MemoryRouter>
     </AuthProvider>
   );
@@ -59,15 +61,17 @@ test('renders filters and data', () => {
 });
 
 test('renders empty state', () => {
-  jest
-    .spyOn(metricsHook, 'usePullRequestMetrics')
-    .mockReturnValue({ items: [], loading: false });
+  jest.spyOn(metricsHook, 'usePullRequestMetrics').mockReturnValue({
+    items: [],
+    loading: false,
+    error: null,
+  });
   render(
     <AuthProvider>
       <MemoryRouter
         future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
       >
-        <MetricsTable />
+        <MetricsTable query={''} />
       </MemoryRouter>
     </AuthProvider>
   );
@@ -84,7 +88,7 @@ test('shows spinner when loading', () => {
       <MemoryRouter
         future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
       >
-        <MetricsTable />
+        <MetricsTable query={''} />
       </MemoryRouter>
     </AuthProvider>
   );
@@ -92,15 +96,17 @@ test('shows spinner when loading', () => {
 });
 
 test('renders loading overlay', () => {
-  jest
-    .spyOn(metricsHook, 'usePullRequestMetrics')
-    .mockReturnValue({ items: [], loading: true });
+  jest.spyOn(metricsHook, 'usePullRequestMetrics').mockReturnValue({
+    items: [],
+    loading: true,
+    error: null,
+  });
   render(
     <AuthProvider>
       <MemoryRouter
         future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
       >
-        <MetricsTable />
+        <MetricsTable query={''} />
       </MemoryRouter>
     </AuthProvider>
   );
@@ -108,15 +114,17 @@ test('renders loading overlay', () => {
 });
 
 test('filters by repo and author', () => {
-  jest
-    .spyOn(metricsHook, 'usePullRequestMetrics')
-    .mockReturnValue({ items: sample, loading: false });
+  jest.spyOn(metricsHook, 'usePullRequestMetrics').mockReturnValue({
+    items: sample,
+    loading: false,
+    error: null,
+  });
   render(
     <AuthProvider>
       <MemoryRouter
         future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
       >
-        <MetricsTable />
+        <MetricsTable query={''} />
       </MemoryRouter>
     </AuthProvider>
   );
@@ -133,16 +141,18 @@ test('filters by repo and author', () => {
 
 test('selects and navigates to PR', () => {
   const navigate = jest.fn();
-  jest
-    .spyOn(metricsHook, 'usePullRequestMetrics')
-    .mockReturnValue({ items: sample, loading: false });
+  jest.spyOn(metricsHook, 'usePullRequestMetrics').mockReturnValue({
+    items: sample,
+    loading: false,
+    error: null,
+  });
   (useNavigate as jest.Mock).mockReturnValue(navigate);
   render(
     <AuthProvider>
       <MemoryRouter
         future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
       >
-        <MetricsTable />
+        <MetricsTable query={''} />
       </MemoryRouter>
     </AuthProvider>
   );
@@ -152,15 +162,17 @@ test('selects and navigates to PR', () => {
 });
 
 test('renders timeline and lead time', () => {
-  jest
-    .spyOn(metricsHook, 'usePullRequestMetrics')
-    .mockReturnValue({ items: sample, loading: false });
+  jest.spyOn(metricsHook, 'usePullRequestMetrics').mockReturnValue({
+    items: sample,
+    loading: false,
+    error: null,
+  });
   render(
     <AuthProvider>
       <MemoryRouter
         future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
       >
-        <MetricsTable />
+        <MetricsTable query={''} />
       </MemoryRouter>
     </AuthProvider>
   );
@@ -185,13 +197,15 @@ test('pagination works and changes page', () => {
     number: i + 1,
     title: `PR ${i + 1}`,
   }));
-  jest
-    .spyOn(metricsHook, 'usePullRequestMetrics')
-    .mockReturnValue({ items: manyItems, loading: false });
+  jest.spyOn(metricsHook, 'usePullRequestMetrics').mockReturnValue({
+    items: manyItems,
+    loading: false,
+    error: null,
+  });
   render(
     <AuthProvider>
       <MemoryRouter>
-        <MetricsTable />
+        <MetricsTable query={''} />
       </MemoryRouter>
     </AuthProvider>
   );
@@ -214,13 +228,15 @@ test('search filter works', () => {
     { ...sample[0], title: 'Alpha', repo: 'octo/alpha', author: 'alice' },
     { ...sample[0], title: 'Beta', repo: 'octo/beta', author: 'bob', id: '2' },
   ];
-  jest
-    .spyOn(metricsHook, 'usePullRequestMetrics')
-    .mockReturnValue({ items, loading: false });
+  jest.spyOn(metricsHook, 'usePullRequestMetrics').mockReturnValue({
+    items,
+    loading: false,
+    error: null,
+  });
   render(
     <AuthProvider>
       <MemoryRouter>
-        <MetricsTable />
+        <MetricsTable query={''} />
       </MemoryRouter>
     </AuthProvider>
   );
@@ -233,13 +249,15 @@ test('search filter works', () => {
 
 test('handles PRs with no reviewers', () => {
   const items = [{ ...sample[0], reviewers: [] }];
-  jest
-    .spyOn(metricsHook, 'usePullRequestMetrics')
-    .mockReturnValue({ items, loading: false });
+  jest.spyOn(metricsHook, 'usePullRequestMetrics').mockReturnValue({
+    items,
+    loading: false,
+    error: null,
+  });
   render(
     <AuthProvider>
       <MemoryRouter>
-        <MetricsTable />
+        <MetricsTable query={''} />
       </MemoryRouter>
     </AuthProvider>
   );
@@ -248,13 +266,15 @@ test('handles PRs with no reviewers', () => {
 
 test('handles PRs with missing title', () => {
   const items = [{ ...sample[0], title: '' }];
-  jest
-    .spyOn(metricsHook, 'usePullRequestMetrics')
-    .mockReturnValue({ items, loading: false });
+  jest.spyOn(metricsHook, 'usePullRequestMetrics').mockReturnValue({
+    items,
+    loading: false,
+    error: null,
+  });
   render(
     <AuthProvider>
       <MemoryRouter>
-        <MetricsTable />
+        <MetricsTable query={''} />
       </MemoryRouter>
     </AuthProvider>
   );
