@@ -10,7 +10,36 @@ export interface User {
 }
 
 export function getDefaultQuery(user: User): string {
-  return `is:pr author:${user.login} OR is:pr reviewed-by:${user.login}`;
+  return `is:pr involves:${user.login}`;
+}
+
+/**
+ * Gets a query for PRs where the user is specifically the author
+ */
+export function getAuthorQuery(user: User): string {
+  return `is:pr author:${user.login}`;
+}
+
+/**
+ * Gets a query for PRs where the user is specifically a reviewer
+ */
+export function getReviewerQuery(user: User): string {
+  return `is:pr reviewed-by:${user.login}`;
+}
+
+/**
+ * Gets a query for PRs where the user is either author OR reviewer
+ * Uses proper grouping syntax for complex boolean operations
+ */
+export function getAuthorOrReviewerQuery(user: User): string {
+  return `is:pr (author:${user.login} OR reviewed-by:${user.login})`;
+}
+
+/**
+ * Gets a query for PRs where the user was requested for review
+ */
+export function getReviewRequestedQuery(user: User): string {
+  return `is:pr review-requested:${user.login}`;
 }
 
 export function parseQueryParams(searchParams: URLSearchParams): QueryParams {

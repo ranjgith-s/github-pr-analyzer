@@ -4,7 +4,7 @@ describe('Query Validator', () => {
   describe('validateQuery', () => {
     it('should validate a simple query', () => {
       const result = validateQuery('is:pr author:john');
-      
+
       expect(result.isValid).toBe(true);
       expect(result.sanitized).toBe('is:pr author:john');
       expect(result.errors).toHaveLength(0);
@@ -12,7 +12,7 @@ describe('Query Validator', () => {
 
     it('should add is:pr qualifier if missing', () => {
       const result = validateQuery('author:john');
-      
+
       expect(result.isValid).toBe(true);
       expect(result.sanitized).toBe('is:pr author:john');
       expect(result.warnings).toContain('Added "is:pr" qualifier');
@@ -20,14 +20,14 @@ describe('Query Validator', () => {
 
     it('should detect unmatched quotes', () => {
       const result = validateQuery('is:pr title:"unclosed quote');
-      
+
       expect(result.isValid).toBe(false);
       expect(result.errors).toContain('Unmatched quote in query');
     });
 
     it('should reject empty queries', () => {
       const result = validateQuery('');
-      
+
       expect(result.isValid).toBe(false);
       expect(result.errors).toContain('Query cannot be empty');
     });
@@ -35,7 +35,7 @@ describe('Query Validator', () => {
     it('should reject overly long queries', () => {
       const longQuery = 'is:pr ' + 'a'.repeat(300);
       const result = validateQuery(longQuery);
-      
+
       expect(result.isValid).toBe(false);
       expect(result.errors).toContain('Query too long (max 256 characters)');
     });
@@ -44,8 +44,20 @@ describe('Query Validator', () => {
   describe('validateAndSanitizeQuery', () => {
     it('should return sanitized query for valid input', () => {
       const result = validateAndSanitizeQuery('author:john');
-      
+
       expect(result).toBe('is:pr author:john');
+    });
+
+    it('should handle OR queries correctly', () => {
+      const result = validateAndSanitizeQuery(
+        '(author:john OR reviewed-by:john)'
+      );
+      expect(result).toBe('is:pr (author:john OR reviewed-by:john)');
+    });
+
+    it('should handle involves qualifier', () => {
+      const result = validateAndSanitizeQuery('involves:john');
+      expect(result).toBe('is:pr involves:john');
     });
 
     it('should throw error for invalid input', () => {

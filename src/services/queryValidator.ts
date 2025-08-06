@@ -61,10 +61,28 @@ function validateGitHubSearchSyntax(query: string): string[] {
     errors.push('Unmatched quote in query');
   }
 
-  // Check for invalid operators
+  // Check for unmatched parentheses
+  const openParens = (query.match(/\(/g) || []).length;
+  const closeParens = (query.match(/\)/g) || []).length;
+  if (openParens !== closeParens) {
+    errors.push('Unmatched parentheses in query');
+  }
+
+  // Check for invalid operators (but allow OR and AND)
   const invalidOperators = query.match(/[&|!]{2,}/g);
   if (invalidOperators) {
     errors.push('Invalid operator syntax');
+  }
+
+  // Validate OR operator usage (should be uppercase and properly spaced)
+  const orOperators = query.match(/\s+or\s+/gi);
+  if (orOperators) {
+    const incorrectOr = orOperators.some(
+      (op) => op.trim().toUpperCase() !== 'OR'
+    );
+    if (incorrectOr) {
+      errors.push('OR operator should be uppercase');
+    }
   }
 
   return errors;

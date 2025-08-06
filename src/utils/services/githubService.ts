@@ -80,7 +80,7 @@ export async function fetchPullRequestMetrics(
     }
     if (!user) throw new Error('Authenticated user not found');
 
-    const defaultQuery = `is:pr author:${user.login} OR is:pr reviewed-by:${user.login}`;
+    const defaultQuery = `is:pr involves:${user.login}`;
     const result = await fetchPullRequestsByQuery(token, defaultQuery, {});
     return result.items; // Return legacy format
   }
@@ -88,7 +88,7 @@ export async function fetchPullRequestMetrics(
   // Handle backward compatibility - User object passed
   if (typeof userOrQuery === 'object' && userOrQuery?.login) {
     const user = userOrQuery as User;
-    const defaultQuery = `is:pr author:${user.login} OR is:pr reviewed-by:${user.login}`;
+    const defaultQuery = `is:pr involves:${user.login}`;
     const result = await fetchPullRequestsByQuery(
       token,
       defaultQuery,

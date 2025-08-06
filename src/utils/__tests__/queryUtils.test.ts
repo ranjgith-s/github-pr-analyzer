@@ -1,5 +1,9 @@
 import {
   getDefaultQuery,
+  getAuthorQuery,
+  getReviewerQuery,
+  getAuthorOrReviewerQuery,
+  getReviewRequestedQuery,
   parseQueryParams,
   buildQueryString,
   QueryParams,
@@ -8,18 +12,48 @@ import {
 
 describe('queryUtils', () => {
   describe('getDefaultQuery', () => {
-    it('should generate correct default query for user', () => {
+    it('should generate correct default query for user using involves qualifier', () => {
       const user: User = { login: 'testuser' };
       const query = getDefaultQuery(user);
-      expect(query).toBe('is:pr author:testuser OR is:pr reviewed-by:testuser');
+      expect(query).toBe('is:pr involves:testuser');
     });
 
     it('should handle user login with special characters', () => {
       const user: User = { login: 'test-user.name' };
       const query = getDefaultQuery(user);
-      expect(query).toBe(
-        'is:pr author:test-user.name OR is:pr reviewed-by:test-user.name'
-      );
+      expect(query).toBe('is:pr involves:test-user.name');
+    });
+  });
+
+  describe('getAuthorQuery', () => {
+    it('should generate author-specific query', () => {
+      const user: User = { login: 'testuser' };
+      const query = getAuthorQuery(user);
+      expect(query).toBe('is:pr author:testuser');
+    });
+  });
+
+  describe('getReviewerQuery', () => {
+    it('should generate reviewer-specific query', () => {
+      const user: User = { login: 'testuser' };
+      const query = getReviewerQuery(user);
+      expect(query).toBe('is:pr reviewed-by:testuser');
+    });
+  });
+
+  describe('getAuthorOrReviewerQuery', () => {
+    it('should generate properly grouped OR query', () => {
+      const user: User = { login: 'testuser' };
+      const query = getAuthorOrReviewerQuery(user);
+      expect(query).toBe('is:pr (author:testuser OR reviewed-by:testuser)');
+    });
+  });
+
+  describe('getReviewRequestedQuery', () => {
+    it('should generate review-requested query', () => {
+      const user: User = { login: 'testuser' };
+      const query = getReviewRequestedQuery(user);
+      expect(query).toBe('is:pr review-requested:testuser');
     });
   });
 
