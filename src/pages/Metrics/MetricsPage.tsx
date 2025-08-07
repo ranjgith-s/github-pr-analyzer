@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { QueryDisplay } from '../../components/QueryDisplay/QueryDisplay';
 import { useQueryContext } from '../../hooks/useQueryContext';
 import { usePullRequestMetrics } from '../../hooks/usePullRequestMetrics';
@@ -22,6 +22,15 @@ export default function MetricsPage() {
     perPage: queryContext.params.per_page,
   });
 
+  const handleQueryChange = useCallback((newQuery: string) => {
+    // The QueryDisplay component handles URL updates
+    // This callback can be used for analytics or side effects
+    console.log('Query changed:', newQuery);
+
+    // Note: The usePullRequestMetrics hook will automatically refetch
+    // when the query changes via URL parameters
+  }, []);
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
@@ -36,6 +45,8 @@ export default function MetricsPage() {
         resultCount={loading ? undefined : items?.length}
         isLoading={loading}
         error={error}
+        onQueryChange={handleQueryChange}
+        editable={true}
       />
 
       {loading && (

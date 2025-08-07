@@ -1,9 +1,13 @@
+/* eslint-disable react/prop-types */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const React = require('react');
 
 // List of custom props to filter out for DOM elements
 const CUSTOM_PROPS = [
   'isCurrent',
   'endContent',
+  'startContent',
   'onPress',
   'variant',
   'color',
@@ -13,7 +17,13 @@ const CUSTOM_PROPS = [
   'alt',
   'className',
   'children',
-  'isClearable', // <-- add this to filter out isClearable
+  'isClearable',
+  'isDisabled',
+  'shadow',
+  'isExternal',
+  'minRows',
+  'maxRows',
+  'classNames',
 ];
 
 function filterProps(props) {
@@ -35,17 +45,23 @@ function passthrough({ children, ...props }) {
 }
 
 function InputMock(props) {
-  // Remove isClearable from props
   const { isClearable, ...rest } = props;
   return React.createElement('input', filterProps(rest));
 }
 
-function ButtonMock({ children, onPress, onClick, ...props }) {
+function TextareaMock(props) {
+  // Remove custom props and create textarea element
+  const { minRows, maxRows, classNames, ...rest } = props;
+  return React.createElement('textarea', filterProps(rest));
+}
+
+function ButtonMock({ children, onPress, onClick, isDisabled, ...props }) {
   // Map onPress to onClick for DOM, do not pass onPress to DOM
   const handler = onPress || onClick;
   const domProps = {
     ...filterProps(props),
     onClick: handler,
+    disabled: isDisabled,
     className: props.className,
   };
   return React.createElement('button', domProps, children);
@@ -292,6 +308,225 @@ function LinkMock({ children, href, isExternal, ...props }) {
   );
 }
 
+function ChipMock({ children, onClose, ...props }) {
+  return React.createElement(
+    'span',
+    {
+      ...filterProps(props),
+      'data-testid': 'chip',
+      onClick: onClose,
+    },
+    children,
+    onClose &&
+      React.createElement(
+        'button',
+        {
+          onClick: onClose,
+          'aria-label': 'Remove',
+          style: { marginLeft: '4px' },
+        },
+        '×'
+      )
+  );
+}
+
+function AutocompleteMock({ children, onSelectionChange, ...props }) {
+  return React.createElement(
+    'div',
+    {
+      ...filterProps(props),
+      'data-testid': 'autocomplete',
+    },
+    React.createElement('input', {
+      placeholder: props.placeholder,
+      onChange: (e) => onSelectionChange && onSelectionChange(e.target.value),
+    }),
+    children
+  );
+}
+
+function AutocompleteItemMock({ children, ...props }) {
+  return React.createElement(
+    'div',
+    {
+      ...filterProps(props),
+      'data-testid': 'autocomplete-item',
+    },
+    children
+  );
+}
+
+function DatePickerMock({ label, value, onChange, ...props }) {
+  return React.createElement(
+    'div',
+    {
+      ...filterProps(props),
+      'data-testid': 'date-picker',
+    },
+    label && React.createElement('label', null, label),
+    React.createElement('input', {
+      type: 'date',
+      value: value ? value.toISOString().split('T')[0] : '',
+      onChange: (e) =>
+        onChange && onChange(e.target.value ? new Date(e.target.value) : null),
+    })
+  );
+}
+
+function DividerMock(props) {
+  return React.createElement('hr', filterProps(props));
+}
+
+function ModalMock({ children, isOpen, ...props }) {
+  if (!isOpen) return null;
+  return React.createElement(
+    'div',
+    {
+      ...filterProps(props),
+      'data-testid': 'modal',
+      style: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(0,0,0,0.5)',
+        zIndex: 1000,
+      },
+    },
+    children
+  );
+}
+
+function ModalContentMock({ children, ...props }) {
+  return React.createElement(
+    'div',
+    {
+      ...filterProps(props),
+      'data-testid': 'modal-content',
+      style: {
+        background: 'white',
+        margin: '50px auto',
+        padding: '20px',
+        width: '80%',
+        maxWidth: '500px',
+      },
+    },
+    children
+  );
+}
+
+function ModalHeaderMock({ children, ...props }) {
+  return React.createElement(
+    'div',
+    {
+      ...filterProps(props),
+      'data-testid': 'modal-header',
+    },
+    children
+  );
+}
+
+function ModalBodyMock({ children, ...props }) {
+  return React.createElement(
+    'div',
+    {
+      ...filterProps(props),
+      'data-testid': 'modal-body',
+    },
+    children
+  );
+}
+
+function ModalFooterMock({ children, ...props }) {
+  return React.createElement(
+    'div',
+    {
+      ...filterProps(props),
+      'data-testid': 'modal-footer',
+    },
+    children
+  );
+}
+
+function SnippetMock({ children, ...props }) {
+  return React.createElement(
+    'code',
+    {
+      ...filterProps(props),
+      'data-testid': 'snippet',
+    },
+    children
+  );
+}
+
+function ButtonGroupMock({ children, ...props }) {
+  return React.createElement(
+    'div',
+    {
+      ...filterProps(props),
+      'data-testid': 'button-group',
+      style: { display: 'flex', gap: '4px' },
+    },
+    children
+  );
+}
+
+function PopoverMock({ children, ...props }) {
+  return React.createElement(
+    'div',
+    {
+      ...filterProps(props),
+      'data-testid': 'popover',
+    },
+    children
+  );
+}
+
+function PopoverTriggerMock({ children, ...props }) {
+  return React.createElement(
+    'div',
+    {
+      ...filterProps(props),
+      'data-testid': 'popover-trigger',
+    },
+    children
+  );
+}
+
+function PopoverContentMock({ children, ...props }) {
+  return React.createElement(
+    'div',
+    {
+      ...filterProps(props),
+      'data-testid': 'popover-content',
+    },
+    children
+  );
+}
+
+function ScrollShadowMock({ children, ...props }) {
+  return React.createElement(
+    'div',
+    {
+      ...filterProps(props),
+      'data-testid': 'scroll-shadow',
+    },
+    children
+  );
+}
+
+function KbdMock({ children, ...props }) {
+  return React.createElement(
+    'kbd',
+    {
+      ...filterProps(props),
+      'data-testid': 'kbd',
+    },
+    children
+  );
+}
+
 module.exports = {
   __esModule: true,
   Card: CardMock,
@@ -320,4 +555,22 @@ module.exports = {
   Badge: BadgeMock,
   Switch: SwitchMock,
   Link: LinkMock,
+  Textarea: TextareaMock,
+  Chip: ChipMock,
+  Autocomplete: AutocompleteMock,
+  AutocompleteItem: AutocompleteItemMock,
+  DatePicker: DatePickerMock,
+  Divider: DividerMock,
+  Modal: ModalMock,
+  ModalContent: ModalContentMock,
+  ModalHeader: ModalHeaderMock,
+  ModalBody: ModalBodyMock,
+  ModalFooter: ModalFooterMock,
+  Snippet: SnippetMock,
+  ButtonGroup: ButtonGroupMock,
+  Popover: PopoverMock,
+  PopoverTrigger: PopoverTriggerMock,
+  PopoverContent: PopoverContentMock,
+  ScrollShadow: ScrollShadowMock,
+  Kbd: KbdMock,
 };
