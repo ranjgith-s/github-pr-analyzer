@@ -2,10 +2,15 @@ import React from 'react';
 import { render, screen, act, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryDisplay } from '../QueryDisplay';
+import { AuthProvider } from '../../../contexts/AuthContext/AuthContext';
 import * as queryValidator from '../../../services/queryValidator';
 
 const renderWithRouter = (component: React.ReactElement) => {
-  return render(<BrowserRouter>{component}</BrowserRouter>);
+  return render(
+    <BrowserRouter>
+      <AuthProvider>{component}</AuthProvider>
+    </BrowserRouter>
+  );
 };
 
 describe('QueryDisplay', () => {

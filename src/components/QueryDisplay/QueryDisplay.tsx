@@ -8,6 +8,8 @@ import {
   Textarea,
   Spinner,
   Link,
+  Switch,
+  Divider,
 } from '@heroui/react';
 import {
   MagnifyingGlassIcon,
@@ -18,6 +20,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { validateQuery } from '../../services/queryValidator';
 import { getDefaultQuery } from '../../utils/queryUtils';
+import { VisualFilterBuilder } from './VisualFilterBuilder';
+import { useFilterSuggestions } from '../../hooks/useFilterSuggestions';
 
 export interface QueryDisplayProps {
   query: string;
@@ -40,11 +44,13 @@ export function QueryDisplay({
 }: QueryDisplayProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(query);
+  const [editMode, setEditMode] = useState<'visual' | 'advanced'>('visual');
   const [validationResult, setValidationResult] = useState(
     validateQuery(query)
   );
   const [, setSearchParams] = useSearchParams();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const suggestions = useFilterSuggestions();
 
   // Update edit value when query prop changes
   useEffect(() => {
@@ -152,7 +158,25 @@ export function QueryDisplay({
           </div>
 
           {editable && !isLoading && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
+              {isEditing && (
+                <>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-default-500">Visual</span>
+                    <Switch
+                      size="sm"
+                      color="primary"
+                      isSelected={editMode === 'advanced'}
+                      onValueChange={(checked) =>
+                        setEditMode(checked ? 'advanced' : 'visual')
+                      }
+                    />
+                    <span className="text-xs text-default-500">Advanced</span>
+                  </div>
+                  <Divider orientation="vertical" className="h-6" />
+                </>
+              )}
+
               {isEditing ? (
                 <>
                   <Button
@@ -193,49 +217,60 @@ export function QueryDisplay({
 
       <CardBody className="pt-0">
         {isEditing ? (
-          <div className="space-y-3">
-            <Textarea
-              ref={textareaRef}
-              value={editValue}
-              onChange={(e) => setEditValue(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Enter GitHub search query..."
-              minRows={2}
-              maxRows={6}
-              classNames={{
-                input: 'font-mono text-sm',
-                inputWrapper: validationResult.isValid
-                  ? 'border-success'
-                  : 'border-danger',
-              }}
-              aria-label="Edit search query"
-            />
+          <div className="space-y-4">
+            {editMode === 'visual' ? (
+              <VisualFilterBuilder
+                query={editValue}
+                onQueryChange={setEditValue}
+                isLoading={isLoading}
+                suggestions={suggestions}
+              />
+            ) : (
+              <div className="space-y-3">
+                <Textarea
+                  ref={textareaRef}
+                  value={editValue}
+                  onChange={(e) => setEditValue(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Enter GitHub search query..."
+                  minRows={2}
+                  maxRows={6}
+                  classNames={{
+                    input: 'font-mono text-sm',
+                    inputWrapper: validationResult.isValid
+                      ? 'border-success'
+                      : 'border-danger',
+                  }}
+                  aria-label="Edit search query"
+                />
 
-            {/* Validation feedback */}
-            {validationResult.errors.length > 0 && (
-              <div className="space-y-1">
-                {validationResult.errors.map((errorMsg, index) => (
-                  <p key={index} className="text-xs text-danger">
-                    {errorMsg}
-                  </p>
-                ))}
+                {/* Validation feedback */}
+                {validationResult.errors.length > 0 && (
+                  <div className="space-y-1">
+                    {validationResult.errors.map((errorMsg, index) => (
+                      <p key={index} className="text-xs text-danger">
+                        {errorMsg}
+                      </p>
+                    ))}
+                  </div>
+                )}
+
+                {validationResult.warnings.length > 0 && (
+                  <div className="space-y-1">
+                    {validationResult.warnings.map((warning, index) => (
+                      <p key={index} className="text-xs text-warning">
+                        {warning}
+                      </p>
+                    ))}
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between text-xs text-default-500">
+                  <span>Press Cmd+Enter to apply, Escape to cancel</span>
+                  <span>{editValue.length}/256</span>
+                </div>
               </div>
             )}
-
-            {validationResult.warnings.length > 0 && (
-              <div className="space-y-1">
-                {validationResult.warnings.map((warning, index) => (
-                  <p key={index} className="text-xs text-warning">
-                    {warning}
-                  </p>
-                ))}
-              </div>
-            )}
-
-            <div className="flex items-center justify-between text-xs text-default-500">
-              <span>Press Cmd+Enter to apply, Escape to cancel</span>
-              <span>{editValue.length}/256</span>
-            </div>
           </div>
         ) : (
           <div className="bg-default-100 rounded-lg p-3">

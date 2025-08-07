@@ -29,7 +29,12 @@ const CUSTOM_PROPS = [
 function filterProps(props) {
   const domProps = { ...props };
   CUSTOM_PROPS.forEach((key) => {
-    if (key in domProps && key !== 'className' && key !== 'children') {
+    if (
+      key in domProps &&
+      key !== 'className' &&
+      key !== 'children' &&
+      key !== 'data-testid'
+    ) {
       delete domProps[key];
     }
   });
@@ -314,7 +319,7 @@ function ChipMock({ children, onClose, ...props }) {
     {
       ...filterProps(props),
       'data-testid': 'chip',
-      onClick: onClose,
+      'data-slot': 'chip',
     },
     children,
     onClose &&
@@ -330,16 +335,43 @@ function ChipMock({ children, onClose, ...props }) {
   );
 }
 
-function AutocompleteMock({ children, onSelectionChange, ...props }) {
+function AutocompleteMock({
+  children,
+  onSelectionChange,
+  isDisabled,
+  ...props
+}) {
+  // Add a state for the input value
+  const [inputValue, setInputValue] = React.useState('');
+
   return React.createElement(
     'div',
     {
       ...filterProps(props),
-      'data-testid': 'autocomplete',
+      'data-testid': props['data-testid'] || 'autocomplete',
+      placeholder: props.placeholder, // Keep placeholder on wrapper
     },
     React.createElement('input', {
       placeholder: props.placeholder,
-      onChange: (e) => onSelectionChange && onSelectionChange(e.target.value),
+      disabled: isDisabled,
+      value: inputValue,
+      onChange: (e) => {
+        const value = e.target.value;
+        setInputValue(value);
+        // Only trigger selection change on Enter or when value is cleared
+      },
+      onKeyDown: (e) => {
+        if (
+          e.key === 'Enter' &&
+          inputValue &&
+          onSelectionChange &&
+          !isDisabled
+        ) {
+          e.preventDefault();
+          onSelectionChange(inputValue);
+          setInputValue('');
+        }
+      },
     }),
     children
   );
