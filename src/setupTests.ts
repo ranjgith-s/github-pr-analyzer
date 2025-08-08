@@ -1,5 +1,11 @@
 import '@testing-library/jest-dom';
 
+// Polyfill scrollIntoView for tests (JSDOM does not implement it)
+if (!HTMLElement.prototype.scrollIntoView) {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  HTMLElement.prototype.scrollIntoView = function () {};
+}
+
 // Mock fetch for Octokit in tests
 if (!global.fetch) {
   global.fetch = jest.fn();

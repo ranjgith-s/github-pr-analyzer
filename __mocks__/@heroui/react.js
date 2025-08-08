@@ -60,7 +60,14 @@ function TextareaMock(props) {
   return React.createElement('textarea', filterProps(rest));
 }
 
-function ButtonMock({ children, onPress, onClick, isDisabled, ...props }) {
+function ButtonMock({
+  children,
+  onPress,
+  onClick,
+  isDisabled,
+  color,
+  ...props
+}) {
   // Map onPress to onClick for DOM, do not pass onPress to DOM
   const handler = onPress || onClick;
   const domProps = {
@@ -69,6 +76,10 @@ function ButtonMock({ children, onPress, onClick, isDisabled, ...props }) {
     disabled: isDisabled,
     className: props.className,
   };
+  // expose color for tests to assert success state changes
+  if (color) {
+    domProps['data-color'] = color;
+  }
   return React.createElement('button', domProps, children);
 }
 
