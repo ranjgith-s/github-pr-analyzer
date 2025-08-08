@@ -35,19 +35,37 @@ export function formatDuration(start?: string | null, end?: string | null) {
 interface MetricsTableProps {
   query: string;
   queryParams?: QueryParams;
+  totalCount?: number; // total results from GitHub (for server-side pagination)
+  onPageChange?: (page: number) => void;
+  onPerPageChange?: (perPage: number) => void;
+  onSortChange?: (sort: string) => void;
+  onOrderChange?: (order: 'asc' | 'desc') => void;
 }
 
 export default function MetricsTable({
   query,
   queryParams,
+  totalCount,
+  onPageChange,
+  onPerPageChange,
+  onSortChange,
+  onOrderChange,
 }: MetricsTableProps) {
   const { token } = useAuth();
-  const { items, loading, error } = usePullRequestMetrics(token!, {
+  const {
+    items,
+    loading,
+    error,
+    totalCount: fetchedTotal,
+  } = usePullRequestMetrics(token!, {
     query,
     page: queryParams?.page,
     sort: queryParams?.sort as 'updated' | 'created' | 'comments',
     perPage: queryParams?.per_page,
+    order: queryParams?.order as 'asc' | 'desc',
   });
+
+  const effectiveTotal = totalCount ?? fetchedTotal ?? items.length;
 
   // Log error for now, in the future we can show it in the UI
   if (error) {
@@ -56,12 +74,24 @@ export default function MetricsTable({
   const [search, setSearch] = useState('');
   const [repoFilter, setRepoFilter] = useState<string>('');
   const [authorFilter, setAuthorFilter] = useState<string>('');
-  const [pageIndex, setPageIndex] = useState<number>(1); // 1-based for Pagination
+  const [pageIndex, setPageIndex] = useState<number>(queryParams?.page || 1); // 1-based
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [pageSize, setPageSize] = useState<number>(20); // Dynamic page size
+  const [pageSize, setPageSize] = useState<number>(queryParams?.per_page || 20); // server per_page
+  const [sort, setSort] = useState<string>(queryParams?.sort || 'updated');
+  const [order, setOrder] = useState<'asc' | 'desc'>(
+    (queryParams?.order as 'asc' | 'desc') || 'desc'
+  );
   const tableContainerRef = useRef<HTMLDivElement>(null);
-  const ROW_HEIGHT = 48;
-  const PAGINATION_HEIGHT = 64;
+
+  // Sync external changes
+  useEffect(() => {
+    if (queryParams) {
+      setPageIndex(queryParams.page || 1);
+      setPageSize(queryParams.per_page || 20);
+      setSort(queryParams.sort || 'updated');
+      setOrder((queryParams.order as 'asc' | 'desc') || 'desc');
+    }
+  }, [queryParams]);
 
   const navigate = useNavigate();
   const loadingMessages = [
@@ -73,16 +103,15 @@ export default function MetricsTable({
   const repos = Array.from(new Set(items.map((i) => i.repo))).sort();
   const authors = Array.from(new Set(items.map((i) => i.author))).sort();
 
-  // Search and filter logic
+  // Search and filter logic (client side, on current page only)
   const filteredItems = items.filter((item) => {
+    const queryLower = search.toLowerCase();
     const matchesSearch =
       !search ||
-      item.title.toLowerCase().includes(search.toLowerCase()) ||
-      item.repo.toLowerCase().includes(search.toLowerCase()) ||
-      item.author.toLowerCase().includes(search.toLowerCase()) ||
-      item.reviewers.some((r) =>
-        r.toLowerCase().includes(search.toLowerCase())
-      );
+      item.title.toLowerCase().includes(queryLower) ||
+      item.repo.toLowerCase().includes(queryLower) ||
+      item.author.toLowerCase().includes(queryLower) ||
+      item.reviewers.some((r) => r.toLowerCase().includes(queryLower));
     return (
       matchesSearch &&
       (!repoFilter || item.repo === repoFilter) &&
@@ -94,28 +123,8 @@ export default function MetricsTable({
     setPageIndex(1);
   }, [repoFilter, authorFilter]);
 
-  useEffect(() => {
-    function updatePageSize() {
-      if (tableContainerRef.current) {
-        const containerRect = tableContainerRef.current.getBoundingClientRect();
-        // Calculate available height from the bottom of filters to the bottom of the viewport
-        const availableHeight =
-          window.innerHeight - containerRect.top - PAGINATION_HEIGHT - 24; // 24px margin
-        const rows = Math.max(1, Math.floor(availableHeight / ROW_HEIGHT));
-        setPageSize(rows);
-      }
-    }
-    updatePageSize();
-    window.addEventListener('resize', updatePageSize);
-    return () => window.removeEventListener('resize', updatePageSize);
-  }, []);
-
-  const paginatedItems = filteredItems.slice(
-    (pageIndex - 1) * pageSize,
-    pageIndex * pageSize
-  );
-
-  const selectedItem = items.find((i) => selectedIds.includes(i.id));
+  // We do server-side paging already, so the pageSize is the per_page param
+  const paginatedItems = filteredItems; // already server sized
 
   const columns = [
     {
@@ -195,7 +204,6 @@ export default function MetricsTable({
       id: 'timeline',
       header: 'Timeline',
       cell: (row: PRItem) => {
-        // Use HeroUI ProgressBar for timeline visualization
         const created = new Date(row.created_at);
         const published = row.published_at
           ? new Date(row.published_at)
@@ -209,20 +217,16 @@ export default function MetricsTable({
         const closeMs = Math.max(closed.getTime() - reviewed.getTime(), 0);
         const total = draftMs + reviewMs + closeMs || 1;
 
-        // Each stage as a percentage
         const draftPct = (draftMs / total) * 100;
         const reviewPct = (reviewMs / total) * 100;
         const closePct = (closeMs / total) * 100;
 
-        // Tooltip text for accessibility
         const tooltipText = [
           `Draft: ${formatDuration(row.created_at, row.published_at)}`,
           `Review: ${formatDuration(row.published_at || row.created_at, row.first_review_at)}`,
           `Close: ${formatDuration(row.first_review_at || row.published_at || row.created_at, row.closed_at)}`,
         ].join('\n');
 
-        // Use HeroUI ProgressBar (or SegmentedProgress if available)
-        // Fallback to 3 stacked ProgressBar if segmented is not available
         return (
           <div aria-label={tooltipText} className="flex items-center w-24">
             <div className="flex w-full gap-0.5">
@@ -258,7 +262,6 @@ export default function MetricsTable({
     },
   ];
 
-  // --- Visible Columns State ---
   const allColumns = columns;
   const defaultVisibleColumns = allColumns.map((col) => col.id);
   const [visibleColumns, setVisibleColumns] = useState<string[]>(
@@ -267,11 +270,46 @@ export default function MetricsTable({
 
   const handleRepoFilterChange = (repo: string) => {
     setRepoFilter(repo);
-    setAuthorFilter(''); // Reset author filter when repo changes
+    setAuthorFilter('');
   };
   const handleAuthorFilterChange = (author: string) => {
     setAuthorFilter(author);
-    setRepoFilter(''); // Reset repo filter when author changes
+    setRepoFilter('');
+  };
+  const handleSortChange = (newSort: string) => {
+    setSort(newSort);
+    onSortChange?.(newSort);
+  };
+  const handleOrderChange = (newOrder: 'asc' | 'desc') => {
+    setOrder(newOrder);
+    onOrderChange?.(newOrder);
+  };
+  const handlePerPageChange = (newSize: number) => {
+    setPageSize(newSize);
+    setPageIndex(1);
+    onPerPageChange?.(newSize);
+  };
+
+  const extractFirstKey = (keys: any): string => {
+    if (!keys) return '';
+    if (typeof keys === 'string') return keys;
+    if (Array.isArray(keys)) return keys[0];
+    if (keys instanceof Set) return Array.from(keys)[0] as string;
+    if (typeof keys === 'object' && 'currentKey' in keys)
+      return (keys as any).currentKey as string;
+    return '';
+  };
+
+  // Derived values & handlers that were removed inadvertently
+  const totalPages = Math.max(1, Math.ceil(effectiveTotal / pageSize));
+  const handlePageChange = (newPage: number) => {
+    setPageIndex(newPage);
+    onPageChange?.(newPage);
+  };
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
   };
 
   if (loading) {
@@ -280,20 +318,21 @@ export default function MetricsTable({
 
   return (
     <div ref={tableContainerRef} style={{ width: '100%' }}>
-      <div className="flex mb-6 gap-3 items-center">
+      <div className="flex mb-6 gap-3 items-center flex-wrap">
         <Input
           isClearable
           placeholder="Search..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="min-w-[220px]"
+          aria-label="Search pull requests"
         />
         <Dropdown>
           <DropdownTrigger>
             <Button
               variant="flat"
               className="min-w-[160px]"
-              aria-label="Repository"
+              aria-label="Repository filter"
             >
               {repoFilter || 'Repository'}
             </Button>
@@ -301,15 +340,29 @@ export default function MetricsTable({
           <DropdownMenu
             aria-label="Select repository"
             selectionMode="single"
-            selectedKeys={repoFilter ? [repoFilter] : []}
+            selectedKeys={repoFilter ? new Set([repoFilter]) : new Set()}
             onSelectionChange={(keys) =>
-              handleRepoFilterChange(Array.from(keys)[0] as string)
+              handleRepoFilterChange(extractFirstKey(keys))
             }
           >
             <>
-              <DropdownItem key="">All</DropdownItem>
+              {/* All option: empty key resets filter */}
+              <DropdownItem
+                key=""
+                role="menuitem"
+                onClick={() => handleRepoFilterChange('')}
+              >
+                All
+              </DropdownItem>
               {repos.map((r) => (
-                <DropdownItem key={r || 'all-repos'}>{r}</DropdownItem>
+                <DropdownItem
+                  key={r || 'all-repos'}
+                  data-testid={`repo-option-${r}`}
+                  role="menuitem"
+                  onClick={() => handleRepoFilterChange(r)}
+                >
+                  {r}
+                </DropdownItem>
               ))}
             </>
           </DropdownMenu>
@@ -319,7 +372,7 @@ export default function MetricsTable({
             <Button
               variant="flat"
               className="min-w-[160px]"
-              aria-label="Author"
+              aria-label="Author filter"
             >
               {authorFilter || 'Author'}
             </Button>
@@ -327,15 +380,138 @@ export default function MetricsTable({
           <DropdownMenu
             aria-label="Select author"
             selectionMode="single"
-            selectedKeys={authorFilter ? [authorFilter] : []}
+            selectedKeys={authorFilter ? new Set([authorFilter]) : new Set()}
             onSelectionChange={(keys) =>
-              handleAuthorFilterChange(Array.from(keys)[0] as string)
+              handleAuthorFilterChange(extractFirstKey(keys))
             }
           >
             <>
-              <DropdownItem key="">All</DropdownItem>
+              <DropdownItem
+                key=""
+                role="menuitem"
+                onClick={() => handleAuthorFilterChange('')}
+              >
+                All
+              </DropdownItem>
               {authors.map((a) => (
-                <DropdownItem key={a || 'all-authors'}>{a}</DropdownItem>
+                <DropdownItem
+                  key={a || 'all-authors'}
+                  data-testid={`author-option-${a}`}
+                  role="menuitem"
+                  onClick={() => handleAuthorFilterChange(a)}
+                >
+                  {a}
+                </DropdownItem>
+              ))}
+            </>
+          </DropdownMenu>
+        </Dropdown>
+        <Dropdown>
+          <DropdownTrigger>
+            <Button
+              variant="flat"
+              className="min-w-[120px]"
+              aria-label="Sort field"
+            >
+              Sort: {sort}
+            </Button>
+          </DropdownTrigger>
+          <DropdownMenu
+            aria-label="Select sort field"
+            selectionMode="single"
+            selectedKeys={new Set([sort])}
+            onSelectionChange={(keys) =>
+              handleSortChange(extractFirstKey(keys))
+            }
+          >
+            <>
+              <DropdownItem
+                key="updated"
+                role="menuitem"
+                onClick={() => handleSortChange('updated')}
+              >
+                updated
+              </DropdownItem>
+              <DropdownItem
+                key="created"
+                role="menuitem"
+                onClick={() => handleSortChange('created')}
+              >
+                created
+              </DropdownItem>
+              <DropdownItem
+                key="comments"
+                role="menuitem"
+                onClick={() => handleSortChange('comments')}
+              >
+                comments
+              </DropdownItem>
+            </>
+          </DropdownMenu>
+        </Dropdown>
+        <Dropdown>
+          <DropdownTrigger>
+            <Button
+              variant="flat"
+              className="min-w-[100px]"
+              aria-label="Sort order"
+            >
+              Order: {order}
+            </Button>
+          </DropdownTrigger>
+          <DropdownMenu
+            aria-label="Select order"
+            selectionMode="single"
+            selectedKeys={new Set([order])}
+            onSelectionChange={(keys) =>
+              handleOrderChange(extractFirstKey(keys) as 'asc' | 'desc')
+            }
+          >
+            <>
+              <DropdownItem
+                key="desc"
+                role="menuitem"
+                onClick={() => handleOrderChange('desc')}
+              >
+                desc
+              </DropdownItem>
+              <DropdownItem
+                key="asc"
+                role="menuitem"
+                onClick={() => handleOrderChange('asc')}
+              >
+                asc
+              </DropdownItem>
+            </>
+          </DropdownMenu>
+        </Dropdown>
+        <Dropdown>
+          <DropdownTrigger>
+            <Button
+              variant="flat"
+              className="min-w-[120px]"
+              aria-label="Items per page"
+            >
+              Per page: {pageSize}
+            </Button>
+          </DropdownTrigger>
+          <DropdownMenu
+            aria-label="Select per page"
+            selectionMode="single"
+            selectedKeys={new Set([String(pageSize)])}
+            onSelectionChange={(keys) =>
+              handlePerPageChange(Number(extractFirstKey(keys)))
+            }
+          >
+            <>
+              {[10, 20, 30, 40, 50].map((n) => (
+                <DropdownItem
+                  key={n}
+                  role="menuitem"
+                  onClick={() => handlePerPageChange(n)}
+                >
+                  {n}
+                </DropdownItem>
               ))}
             </>
           </DropdownMenu>
@@ -355,29 +531,52 @@ export default function MetricsTable({
               setVisibleColumns(Array.from(keys as Set<string>))
             }
           >
-            {allColumns.map((col) => (
-              <DropdownItem key={col.id}>{col.header}</DropdownItem>
-            ))}
+            <>
+              {allColumns.map((col) => (
+                <DropdownItem
+                  key={col.id}
+                  role="menuitem"
+                  onClick={() => {
+                    setVisibleColumns((prev) =>
+                      prev.includes(col.id)
+                        ? prev.filter((c) => c !== col.id)
+                        : [...prev, col.id]
+                    );
+                  }}
+                >
+                  {col.header}
+                </DropdownItem>
+              ))}
+            </>
           </DropdownMenu>
         </Dropdown>
-      </div>
-      {selectedIds.length === 1 && (
-        <div style={{ marginBottom: 16 }}>
-          <Button
-            color="primary"
-            onClick={() =>
-              navigate(
-                `/pr/${selectedItem!.owner}/${selectedItem!.repo_name}/${selectedItem!.number}`,
-                { state: selectedItem }
-              )
-            }
-          >
-            View pull request
-          </Button>
+        <div
+          className="text-sm text-default-500 ml-auto"
+          data-testid="total-count"
+        >
+          Total: {effectiveTotal}
         </div>
-      )}
+      </div>
+      <div style={{ marginBottom: 16 }}>
+        <Button
+          color="primary"
+          isDisabled={selectedIds.length !== 1}
+          aria-label="View pull request"
+          onClick={() => {
+            const selectedItem = items.find((i) => selectedIds.includes(i.id));
+            if (!selectedItem) return;
+            navigate(
+              `/pr/${selectedItem.owner}/${selectedItem.repo_name}/${selectedItem.number}`,
+              { state: selectedItem }
+            );
+          }}
+        >
+          View pull request
+        </Button>
+      </div>
       <Table
         aria-label="PR Metrics Table"
+        data-testid="metrics-table"
         selectionMode="multiple"
         selectedKeys={new Set(selectedIds)}
         onSelectionChange={(keys) =>
@@ -387,9 +586,11 @@ export default function MetricsTable({
         fullWidth
         bottomContent={
           <Pagination
-            total={Math.ceil(filteredItems.length / pageSize)}
+            data-testid="pagination"
+            aria-label="Pagination"
+            total={totalPages}
             page={pageIndex}
-            onChange={setPageIndex}
+            onChange={handlePageChange}
             size="sm"
             className="mt-4"
           />
@@ -408,11 +609,14 @@ export default function MetricsTable({
           emptyContent={<span>No pull requests found.</span>}
         >
           {(row: PRItem) => (
-            <TableRow key={row.id || row.title || row.repo}>
+            <TableRow
+              key={row.id} // ensure stable unique key
+              onClick={() => toggleSelect(row.id)}
+            >
               {allColumns
                 .filter((col) => visibleColumns.includes(col.id))
                 .map((col) => (
-                  <TableCell key={col.id}>
+                  <TableCell key={col.id} data-testid={`cell-${col.id}`}>
                     {col.cell
                       ? col.cell(row)
                       : col.accessorKey

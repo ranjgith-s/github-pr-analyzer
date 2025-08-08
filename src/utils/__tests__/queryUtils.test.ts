@@ -60,7 +60,7 @@ describe('queryUtils', () => {
   describe('parseQueryParams', () => {
     it('should parse URL parameters correctly', () => {
       const searchParams = new URLSearchParams(
-        'q=is:pr+author:john&page=2&sort=created&per_page=10'
+        'q=is:pr+author:john&page=2&sort=created&per_page=10&order=asc'
       );
       const params = parseQueryParams(searchParams);
       expect(params).toEqual({
@@ -68,6 +68,7 @@ describe('queryUtils', () => {
         page: 2,
         sort: 'created',
         per_page: 10,
+        order: 'asc',
       });
     });
 
@@ -79,6 +80,7 @@ describe('queryUtils', () => {
         page: 1,
         sort: 'updated',
         per_page: 20,
+        order: 'desc',
       });
     });
 
@@ -90,6 +92,7 @@ describe('queryUtils', () => {
         page: 3,
         sort: 'updated',
         per_page: 20,
+        order: 'desc',
       });
     });
 
@@ -101,6 +104,7 @@ describe('queryUtils', () => {
         page: NaN, // Number('abc') returns NaN
         sort: 'updated',
         per_page: NaN, // Number('xyz') returns NaN
+        order: 'desc',
       });
     });
 
@@ -108,6 +112,7 @@ describe('queryUtils', () => {
       const searchParams = new URLSearchParams('q=is%3Apr+author%3Ajohn');
       const params = parseQueryParams(searchParams);
       expect(params.q).toBe('is:pr author:john');
+      expect(params.order).toBe('desc');
     });
   });
 
@@ -118,10 +123,11 @@ describe('queryUtils', () => {
         page: 2,
         sort: 'created',
         per_page: 10,
+        order: 'asc',
       };
       const queryString = buildQueryString(params);
       expect(queryString).toBe(
-        'q=is%3Apr+author%3Ajohn&page=2&sort=created&per_page=10'
+        'q=is%3Apr+author%3Ajohn&page=2&sort=created&per_page=10&order=asc'
       );
     });
 
@@ -131,6 +137,7 @@ describe('queryUtils', () => {
         page: 1, // default value
         sort: 'updated', // default value
         per_page: 20, // default value
+        order: 'desc', // default value
       };
       const queryString = buildQueryString(params);
       expect(queryString).toBe('q=is%3Apr+author%3Ajohn');

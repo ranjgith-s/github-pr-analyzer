@@ -33,7 +33,7 @@ describe('useQueryContext', () => {
     expect(result.current).toEqual({
       query: 'is:pr involves:testuser',
       isDefaultQuery: true,
-      params: { page: 1, sort: 'updated', per_page: 20 },
+      params: { page: 1, sort: 'updated', per_page: 20, order: 'desc' },
       source: 'default',
     });
   });
@@ -46,7 +46,7 @@ describe('useQueryContext', () => {
     expect(result.current).toEqual({
       query: 'is:pr author:john',
       isDefaultQuery: false,
-      params: { page: 2, sort: 'updated', per_page: 20 },
+      params: { page: 2, sort: 'updated', per_page: 20, order: 'desc' },
       source: 'url',
     });
   });
@@ -57,6 +57,7 @@ describe('useQueryContext', () => {
     });
 
     expect(result.current.params.sort).toBe('created');
+    expect(result.current.params.order).toBe('desc');
     expect(result.current.source).toBe('default'); // No query param, so still default
   });
 
@@ -66,19 +67,20 @@ describe('useQueryContext', () => {
     });
 
     expect(result.current.params.per_page).toBe(50);
+    expect(result.current.params.order).toBe('desc');
   });
 
   it('should handle all parameters together', () => {
     const { result } = renderHook(() => useQueryContext(), {
       wrapper: createWrapper([
-        '/insights?q=is:pr+state:open&page=3&sort=created&per_page=10',
+        '/insights?q=is:pr+state:open&page=3&sort=created&per_page=10&order=asc',
       ]),
     });
 
     expect(result.current).toEqual({
       query: 'is:pr state:open',
       isDefaultQuery: false,
-      params: { page: 3, sort: 'created', per_page: 10 },
+      params: { page: 3, sort: 'created', per_page: 10, order: 'asc' },
       source: 'url',
     });
   });
@@ -97,6 +99,7 @@ describe('useQueryContext', () => {
 
     expect(result.current.query).toBe('');
     expect(result.current.isDefaultQuery).toBe(true);
+    expect(result.current.params.order).toBe('desc');
     expect(result.current.source).toBe('default');
   });
 
@@ -109,5 +112,13 @@ describe('useQueryContext', () => {
 
     expect(result.current.query).toBe('is:pr author:john state:open');
     expect(result.current.isDefaultQuery).toBe(false);
+    expect(result.current.params.order).toBe('desc');
+  });
+
+  it('should parse provided order value', () => {
+    const { result } = renderHook(() => useQueryContext(), {
+      wrapper: createWrapper(['/insights?order=asc']),
+    });
+    expect(result.current.params.order).toBe('asc');
   });
 });

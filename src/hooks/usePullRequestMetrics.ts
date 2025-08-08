@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
-import { fetchPullRequestMetrics } from '../utils/services/githubService';
+import {
+  fetchPullRequestMetrics,
+  getRateLimit,
+} from '../utils/services/githubService';
 import { PRItem } from '../types';
 
 interface UsePullRequestMetricsOptions {
@@ -7,15 +10,32 @@ interface UsePullRequestMetricsOptions {
   page?: number;
   sort?: 'updated' | 'created' | 'comments';
   perPage?: number;
+  order?: 'asc' | 'desc';
+}
+
+export interface UsePullRequestMetricsReturn {
+  items: PRItem[];
+  totalCount: number | null;
+  incomplete: boolean;
+  loading: boolean;
+  error: string | null;
+  rateLimit?: { remaining: number; limit: number; reset: number } | null;
 }
 
 export function usePullRequestMetrics(
   token: string | null,
   options?: UsePullRequestMetricsOptions
-) {
+): UsePullRequestMetricsReturn {
   const [items, setItems] = useState<PRItem[]>([]);
+  const [totalCount, setTotalCount] = useState<number | null>(null);
+  const [incomplete, setIncomplete] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [rateLimit, setRateLimit] = useState<{
+    remaining: number;
+    limit: number;
+    reset: number;
+  } | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -31,15 +51,20 @@ export function usePullRequestMetrics(
             page: options?.page,
             sort: options?.sort,
             per_page: options?.perPage,
+            order: options?.order,
           }
         );
 
         if (isMounted) {
-          // Handle both legacy array format and new PRSearchResult format
           if (Array.isArray(result)) {
+            // Legacy array format
             setItems(result);
+            setTotalCount(result.length);
+            setIncomplete(false);
           } else {
             setItems(result.items);
+            setTotalCount(result.total_count);
+            setIncomplete(result.incomplete_results);
           }
         }
       } catch (err) {
@@ -49,20 +74,38 @@ export function usePullRequestMetrics(
         }
       } finally {
         if (isMounted) setLoading(false);
+        // Fetch rate limit info (non-blocking)
+        if (token) {
+          getRateLimit(token)
+            .then(
+              (
+                rl: { remaining: number; limit: number; reset: number } | null
+              ) => {
+                if (isMounted) setRateLimit(rl);
+              }
+            )
+            .catch(() => {});
+        }
       }
     }
 
     if (token && options?.query) {
       load();
     } else {
-      // When conditions are not met, set loading to false
       setLoading(false);
     }
 
     return () => {
       isMounted = false;
     };
-  }, [token, options?.query, options?.page, options?.sort, options?.perPage]);
+  }, [
+    token,
+    options?.query,
+    options?.page,
+    options?.sort,
+    options?.perPage,
+    options?.order,
+  ]);
 
-  return { items, loading, error };
+  return { items, totalCount, incomplete, loading, error, rateLimit };
 }

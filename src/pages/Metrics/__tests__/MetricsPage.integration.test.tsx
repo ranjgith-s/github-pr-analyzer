@@ -65,6 +65,7 @@ describe('MetricsPage URL Parameter Integration', () => {
         page: 1,
         sort: 'updated',
         per_page: 20,
+        order: 'desc',
       })
     );
   });
@@ -81,13 +82,14 @@ describe('MetricsPage URL Parameter Integration', () => {
         page: 1,
         sort: 'updated',
         per_page: 20,
+        order: 'desc',
       })
     );
   });
 
   it('should parse all URL parameters correctly', () => {
     const { getByTestId } = renderWithProviders([
-      '/insights?q=is:pr+label:bug&page=3&sort=created&per_page=50',
+      '/insights?q=is:pr+label:bug&page=3&sort=created&per_page=50&order=asc',
     ]);
 
     expect(getByTestId('query')).toHaveTextContent('is:pr label:bug');
@@ -97,6 +99,7 @@ describe('MetricsPage URL Parameter Integration', () => {
         page: 3,
         sort: 'created',
         per_page: 50,
+        order: 'asc',
       })
     );
   });
@@ -129,6 +132,7 @@ describe('MetricsPage URL Parameter Integration', () => {
         page: 1,
         sort: 'updated',
         per_page: 20,
+        order: 'desc',
       })
     );
   });

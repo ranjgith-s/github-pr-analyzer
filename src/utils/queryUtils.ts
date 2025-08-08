@@ -3,6 +3,7 @@ export interface QueryParams {
   page?: number;
   sort?: string;
   per_page?: number;
+  order?: string; // asc | desc (optional)
 }
 
 export interface User {
@@ -47,12 +48,14 @@ export function parseQueryParams(searchParams: URLSearchParams): QueryParams {
   const page = searchParams.get('page');
   const sort = searchParams.get('sort');
   const perPage = searchParams.get('per_page');
+  const order = searchParams.get('order');
 
   return {
     q: q || undefined,
     page: page ? Number(page) : 1,
     sort: sort || 'updated',
     per_page: perPage ? Number(perPage) : 20,
+    order: order || 'desc',
   };
 }
 
@@ -66,6 +69,8 @@ export function buildQueryString(params: QueryParams): string {
     searchParams.set('sort', params.sort);
   if (params.per_page && params.per_page !== 20)
     searchParams.set('per_page', params.per_page.toString());
+  if (params.order && params.order !== 'desc')
+    searchParams.set('order', params.order);
 
   return searchParams.toString();
 }

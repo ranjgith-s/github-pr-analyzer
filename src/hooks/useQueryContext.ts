@@ -10,6 +10,7 @@ export interface QueryContext {
     page: number;
     sort: string;
     per_page: number;
+    order: string;
   };
   source: 'url' | 'default';
 }
@@ -32,6 +33,7 @@ export function useQueryContext(): QueryContext {
         page: urlParams.page || 1,
         sort: urlParams.sort || 'updated',
         per_page: urlParams.per_page || 20,
+        order: urlParams.order || 'desc',
       },
       source: isDefaultQuery ? 'default' : 'url',
     };

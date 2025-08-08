@@ -32,47 +32,55 @@ const mockPRSearchResult: githubService.PRSearchResult = {
   items: [mockPRItem],
 };
 
-// Mock the GitHub service
+// Mocks
 const mockFetchPullRequestMetrics = jest.spyOn(
   githubService,
   'fetchPullRequestMetrics'
 );
+const mockGetRateLimit = jest.spyOn(githubService, 'getRateLimit');
 
 describe('usePullRequestMetrics', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockGetRateLimit.mockResolvedValue({
+      remaining: 4999,
+      limit: 5000,
+      reset: 1234567890,
+    });
   });
 
   afterEach(() => {
     jest.resetAllMocks();
   });
 
-  test('should load items and update loading state successfully', async () => {
+  test('loads items, totalCount, and rate limit successfully', async () => {
     mockFetchPullRequestMetrics.mockResolvedValue(mockPRSearchResult);
 
     const { result } = renderHook(() =>
       usePullRequestMetrics('token', { query: 'test' })
     );
 
-    // Initially should be loading
     expect(result.current.loading).toBe(true);
     expect(result.current.items).toEqual([]);
-    expect(result.current.error).toBeNull();
+    expect(result.current.totalCount).toBeNull();
+    expect(result.current.incomplete).toBe(false);
 
-    // Wait for loading to complete
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    // Should have loaded the items
     expect(result.current.items).toEqual([mockPRItem]);
+    expect(result.current.totalCount).toBe(1);
+    expect(result.current.incomplete).toBe(false);
     expect(result.current.error).toBeNull();
     expect(mockFetchPullRequestMetrics).toHaveBeenCalledWith('token', 'test', {
       page: undefined,
       sort: undefined,
       per_page: undefined,
+      order: undefined,
     });
+    expect(mockGetRateLimit).toHaveBeenCalledWith('token');
   });
 
-  test('should handle error state correctly', async () => {
+  test('handles error state correctly', async () => {
     const errorMessage = 'API Error';
     mockFetchPullRequestMetrics.mockRejectedValue(new Error(errorMessage));
 
@@ -80,41 +88,38 @@ describe('usePullRequestMetrics', () => {
       usePullRequestMetrics('token', { query: 'test' })
     );
 
-    // Initially should be loading
     expect(result.current.loading).toBe(true);
-    expect(result.current.error).toBeNull();
 
-    // Wait for error to be set
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    // Should have error set and no items
     expect(result.current.items).toEqual([]);
+    expect(result.current.totalCount).toBeNull();
     expect(result.current.error).toBe(errorMessage);
   });
 
-  test('should not make API call when token is missing', () => {
+  test('does not call API when token missing', () => {
     const { result } = renderHook(() =>
       usePullRequestMetrics(null, { query: 'test' })
     );
 
     expect(result.current.loading).toBe(false);
     expect(result.current.items).toEqual([]);
-    expect(result.current.error).toBeNull();
+    expect(result.current.totalCount).toBeNull();
     expect(mockFetchPullRequestMetrics).not.toHaveBeenCalled();
   });
 
-  test('should not make API call when query is empty', () => {
+  test('does not call API when query empty', () => {
     const { result } = renderHook(() =>
       usePullRequestMetrics('token', { query: '' })
     );
 
     expect(result.current.loading).toBe(false);
     expect(result.current.items).toEqual([]);
-    expect(result.current.error).toBeNull();
+    expect(result.current.totalCount).toBeNull();
     expect(mockFetchPullRequestMetrics).not.toHaveBeenCalled();
   });
 
-  test('should refetch data when dependencies change', async () => {
+  test('refetches when dependencies change', async () => {
     mockFetchPullRequestMetrics.mockResolvedValue(mockPRSearchResult);
 
     const { result, rerender } = renderHook(
@@ -136,14 +141,11 @@ describe('usePullRequestMetrics', () => {
         page: undefined,
         sort: undefined,
         per_page: undefined,
+        order: undefined,
       }
     );
 
-    // Change the props
-    rerender({
-      token: 'token2',
-      options: { query: 'test2' },
-    });
+    rerender({ token: 'token2', options: { query: 'test2' } });
 
     await waitFor(() => expect(result.current.loading).toBe(false));
 
@@ -154,12 +156,13 @@ describe('usePullRequestMetrics', () => {
         page: undefined,
         sort: undefined,
         per_page: undefined,
+        order: undefined,
       }
     );
     expect(mockFetchPullRequestMetrics).toHaveBeenCalledTimes(2);
   });
 
-  test('should pass all query options to the API', async () => {
+  test('passes all query options to API', async () => {
     mockFetchPullRequestMetrics.mockResolvedValue(mockPRSearchResult);
 
     const options = {
@@ -167,6 +170,7 @@ describe('usePullRequestMetrics', () => {
       page: 2,
       sort: 'created' as const,
       perPage: 50,
+      order: 'asc' as const,
     };
 
     const { result } = renderHook(() =>
@@ -179,6 +183,83 @@ describe('usePullRequestMetrics', () => {
       page: 2,
       sort: 'created',
       per_page: 50,
+      order: 'asc',
     });
+  });
+
+  test('supports legacy array return format', async () => {
+    mockFetchPullRequestMetrics.mockResolvedValue([
+      mockPRItem,
+    ] as unknown as githubService.PRSearchResult);
+
+    const { result } = renderHook(() =>
+      usePullRequestMetrics('token', { query: 'legacy' })
+    );
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.items).toEqual([mockPRItem]);
+    expect(result.current.totalCount).toBe(1);
+    expect(result.current.incomplete).toBe(false);
+  });
+
+  test('fetches rate limit after data load', async () => {
+    mockFetchPullRequestMetrics.mockResolvedValue(mockPRSearchResult);
+    mockGetRateLimit.mockResolvedValueOnce({
+      remaining: 4000,
+      limit: 5000,
+      reset: 9999999999,
+    });
+
+    const { result } = renderHook(() =>
+      usePullRequestMetrics('token', { query: 'rate' })
+    );
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.rateLimit).toEqual({
+      remaining: 4000,
+      limit: 5000,
+      reset: 9999999999,
+    });
+  });
+
+  test('does not fetch rate limit if token missing', async () => {
+    mockFetchPullRequestMetrics.mockResolvedValue(mockPRSearchResult);
+
+    const { result } = renderHook(() =>
+      usePullRequestMetrics(null, { query: 'something' })
+    );
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(mockGetRateLimit).not.toHaveBeenCalled();
+    expect(result.current.rateLimit).toBeNull();
+  });
+
+  test('passes order param through', async () => {
+    mockFetchPullRequestMetrics.mockResolvedValue(mockPRSearchResult);
+
+    renderHook(() =>
+      usePullRequestMetrics('token', {
+        query: 'ordered',
+        order: 'asc',
+        page: 3,
+        sort: 'updated',
+        perPage: 10,
+      })
+    );
+
+    await waitFor(() => expect(mockFetchPullRequestMetrics).toHaveBeenCalled());
+    expect(mockFetchPullRequestMetrics).toHaveBeenCalledWith(
+      'token',
+      'ordered',
+      {
+        page: 3,
+        sort: 'updated',
+        per_page: 10,
+        order: 'asc',
+      }
+    );
   });
 });

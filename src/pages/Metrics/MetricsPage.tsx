@@ -7,6 +7,8 @@ import MetricsTable from '../../components/MetricsTable/MetricsTable';
 import LoadingOverlay from '../../components/LoadingOverlay/LoadingOverlay';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 import { useMetaDescription } from '../../hooks/useMetaDescription';
+import { buildQueryString } from '../../utils/queryUtils';
+import { useNavigate } from 'react-router-dom';
 
 export default function MetricsPage() {
   useDocumentTitle('Pull request insights');
@@ -14,22 +16,35 @@ export default function MetricsPage() {
 
   const { token } = useAuth();
   const queryContext = useQueryContext();
+  const navigate = useNavigate();
 
-  const { items, loading, error } = usePullRequestMetrics(token!, {
-    query: queryContext.query,
-    page: queryContext.params.page,
-    sort: queryContext.params.sort as 'updated' | 'created' | 'comments',
-    perPage: queryContext.params.per_page,
-  });
+  const { items, loading, error, totalCount, rateLimit } =
+    usePullRequestMetrics(token!, {
+      query: queryContext.query,
+      page: queryContext.params.page,
+      sort: queryContext.params.sort as 'updated' | 'created' | 'comments',
+      perPage: queryContext.params.per_page,
+      order: queryContext.params.order as 'asc' | 'desc',
+    });
 
-  const handleQueryChange = useCallback((newQuery: string) => {
-    // The QueryDisplay component handles URL updates
-    // This callback can be used for analytics or side effects
-    console.log('Query changed:', newQuery);
-
-    // Note: The usePullRequestMetrics hook will automatically refetch
-    // when the query changes via URL parameters
-  }, []);
+  const handleQueryChange = useCallback(
+    (newQuery: string) => {
+      const qs = buildQueryString({
+        q: newQuery,
+        page: 1, // reset page on new query
+        sort: queryContext.params.sort,
+        per_page: queryContext.params.per_page,
+        order: queryContext.params.order,
+      });
+      navigate(`/insights?${qs}`);
+    },
+    [
+      navigate,
+      queryContext.params.sort,
+      queryContext.params.per_page,
+      queryContext.params.order,
+    ]
+  );
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -42,12 +57,19 @@ export default function MetricsPage() {
 
       <QueryDisplay
         query={queryContext.query}
-        resultCount={loading ? undefined : items?.length}
+        resultCount={loading ? undefined : (totalCount ?? items?.length)}
         isLoading={loading}
         error={error}
         onQueryChange={handleQueryChange}
         editable={true}
       />
+
+      {rateLimit && !loading && (
+        <div className="text-xs text-default-400 mt-2">
+          Rate limit: {rateLimit.remaining}/{rateLimit.limit} resets at{' '}
+          {new Date(rateLimit.reset * 1000).toLocaleTimeString()}
+        </div>
+      )}
 
       {loading && (
         <LoadingOverlay
@@ -67,6 +89,47 @@ export default function MetricsPage() {
         <MetricsTable
           query={queryContext.query}
           queryParams={queryContext.params}
+          totalCount={totalCount ?? items.length}
+          onPageChange={(page: number) => {
+            const qs = buildQueryString({
+              q: queryContext.query,
+              page,
+              sort: queryContext.params.sort,
+              per_page: queryContext.params.per_page,
+              order: queryContext.params.order,
+            });
+            navigate(`/insights?${qs}`);
+          }}
+          onPerPageChange={(perPage: number) => {
+            const qs = buildQueryString({
+              q: queryContext.query,
+              page: 1, // reset page when per-page changes
+              sort: queryContext.params.sort,
+              per_page: perPage,
+              order: queryContext.params.order,
+            });
+            navigate(`/insights?${qs}`);
+          }}
+          onSortChange={(sort: string) => {
+            const qs = buildQueryString({
+              q: queryContext.query,
+              page: 1, // reset page on sort change
+              sort,
+              per_page: queryContext.params.per_page,
+              order: queryContext.params.order,
+            });
+            navigate(`/insights?${qs}`);
+          }}
+          onOrderChange={(order: 'asc' | 'desc') => {
+            const qs = buildQueryString({
+              q: queryContext.query,
+              page: 1,
+              sort: queryContext.params.sort,
+              per_page: queryContext.params.per_page,
+              order,
+            });
+            navigate(`/insights?${qs}`);
+          }}
         />
       )}
 

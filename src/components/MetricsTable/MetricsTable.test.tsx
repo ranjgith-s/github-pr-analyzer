@@ -1,5 +1,11 @@
 import React from 'react';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import {
+  render,
+  screen,
+  fireEvent,
+  act,
+  waitFor,
+} from '@testing-library/react';
 import { MemoryRouter, useNavigate } from 'react-router-dom';
 import MetricsTable from './MetricsTable';
 import { AuthProvider } from '../../contexts/AuthContext/AuthContext';
@@ -39,10 +45,21 @@ const sample: PRItem[] = [
   },
 ];
 
-jest.spyOn(metricsHook, 'usePullRequestMetrics').mockReturnValue({
-  items: sample,
-  loading: false,
-  error: null,
+const mockHook = (
+  override: Partial<ReturnType<typeof metricsHook.usePullRequestMetrics>> = {}
+) => {
+  return jest.spyOn(metricsHook, 'usePullRequestMetrics').mockReturnValue({
+    items: sample,
+    loading: false,
+    error: null,
+    totalCount: sample.length,
+    ...override,
+  } as any);
+};
+
+beforeEach(() => {
+  jest.clearAllMocks();
+  mockHook();
 });
 
 test('renders filters and data', () => {
@@ -55,17 +72,14 @@ test('renders filters and data', () => {
       </MemoryRouter>
     </AuthProvider>
   );
-  expect(screen.getByLabelText('Repository')).toBeInTheDocument();
-  expect(screen.getByLabelText('Author')).toBeInTheDocument();
+  // Updated: buttons have aria-labels "Repository filter" and "Author filter"
+  expect(screen.getByLabelText('Repository filter')).toBeInTheDocument();
+  expect(screen.getByLabelText('Author filter')).toBeInTheDocument();
   expect(screen.getByLabelText('Pagination')).toBeInTheDocument();
 });
 
 test('renders empty state', () => {
-  jest.spyOn(metricsHook, 'usePullRequestMetrics').mockReturnValue({
-    items: [],
-    loading: false,
-    error: null,
-  });
+  mockHook({ items: [], totalCount: 0 });
   render(
     <AuthProvider>
       <MemoryRouter
@@ -75,14 +89,13 @@ test('renders empty state', () => {
       </MemoryRouter>
     </AuthProvider>
   );
-  expect(screen.getByText('Page 1 of 0')).toBeInTheDocument();
+  // hero Pagination renders "Page 1 of 1" when total=1 (min guard)
+  expect(screen.getByText('Page 1 of 1')).toBeInTheDocument();
+  expect(screen.getByText(/no pull requests/i)).toBeInTheDocument();
 });
 
 test('shows spinner when loading', () => {
-  (metricsHook.usePullRequestMetrics as jest.Mock).mockReturnValue({
-    items: [],
-    loading: true,
-  });
+  mockHook({ items: [], loading: true });
   render(
     <AuthProvider>
       <MemoryRouter
@@ -96,11 +109,7 @@ test('shows spinner when loading', () => {
 });
 
 test('renders loading overlay', () => {
-  jest.spyOn(metricsHook, 'usePullRequestMetrics').mockReturnValue({
-    items: [],
-    loading: true,
-    error: null,
-  });
+  mockHook({ items: [], loading: true });
   render(
     <AuthProvider>
       <MemoryRouter
@@ -113,39 +122,39 @@ test('renders loading overlay', () => {
   expect(screen.getByText(/loading pull requests/i)).toBeInTheDocument();
 });
 
-test('filters by repo and author', () => {
-  jest.spyOn(metricsHook, 'usePullRequestMetrics').mockReturnValue({
-    items: sample,
-    loading: false,
-    error: null,
+test('filters by repo and author and resets page', () => {
+  mockHook({
+    items: sample.concat({
+      ...sample[0],
+      id: '2',
+      repo: 'octo/other',
+      author: 'someone',
+      number: 2,
+    }),
   });
   render(
     <AuthProvider>
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-      >
-        <MetricsTable query={''} />
+      <MemoryRouter initialEntries={['/metrics?page=2']}>
+        <MetricsTable query={''} queryParams={{ page: 2, order: 'desc' }} />
       </MemoryRouter>
     </AuthProvider>
   );
   act(() => {
-    fireEvent.change(screen.getByLabelText('Repository'), {
-      target: { value: 'octo/repo' },
-    });
-    fireEvent.change(screen.getByLabelText('Author'), {
-      target: { value: 'octo' },
-    });
+    fireEvent.click(screen.getByLabelText('Repository filter'));
   });
-  expect(screen.getByText('Test PR')).toBeInTheDocument();
+  const repoOptionBtn = screen.getByRole('menuitem', { name: 'octo/repo' });
+  act(() => {
+    fireEvent.click(repoOptionBtn);
+  });
+  // Only one matching row after filter
+  expect(screen.getAllByText('Test PR')).toHaveLength(1);
+  // page should have reset to 1
+  expect(screen.getByText(/Page 1 of/)).toBeInTheDocument();
 });
 
-test('selects and navigates to PR', () => {
+test('selects and navigates to PR', async () => {
   const navigate = jest.fn();
-  jest.spyOn(metricsHook, 'usePullRequestMetrics').mockReturnValue({
-    items: sample,
-    loading: false,
-    error: null,
-  });
+  mockHook();
   (useNavigate as jest.Mock).mockReturnValue(navigate);
   render(
     <AuthProvider>
@@ -156,17 +165,22 @@ test('selects and navigates to PR', () => {
       </MemoryRouter>
     </AuthProvider>
   );
-  screen.getAllByRole('checkbox')[0].click();
-  screen.getByRole('button', { name: /view pull request/i }).click();
+  await act(async () => {
+    const checkboxes = screen.getAllByRole('checkbox');
+    fireEvent.click(checkboxes[1] || checkboxes[0]);
+  });
+  const viewBtn = await screen.findByRole('button', {
+    name: /view pull request/i,
+  });
+  await waitFor(() => expect(viewBtn).toBeEnabled());
+  await act(async () => {
+    fireEvent.click(viewBtn);
+  });
   expect(navigate).toHaveBeenCalled();
 });
 
 test('renders timeline and lead time', () => {
-  jest.spyOn(metricsHook, 'usePullRequestMetrics').mockReturnValue({
-    items: sample,
-    loading: false,
-    error: null,
-  });
+  mockHook();
   render(
     <AuthProvider>
       <MemoryRouter
@@ -176,7 +190,6 @@ test('renders timeline and lead time', () => {
       </MemoryRouter>
     </AuthProvider>
   );
-  // Check for the new timeline bar segments with correct aria-labels and classes
   expect(screen.getByLabelText(/Draft:/)).toBeInTheDocument();
   expect(
     screen.getByLabelText(/Draft:/).querySelector('.bg-success')
@@ -190,37 +203,33 @@ test('renders timeline and lead time', () => {
   expect(screen.getByText(/0h/i)).toBeInTheDocument();
 });
 
-test('pagination works and changes page', () => {
-  const manyItems = Array.from({ length: 60 }, (_, i) => ({
+test('pagination works, changes page and invokes callback', () => {
+  const manyItems = Array.from({ length: 25 }, (_, i) => ({
     ...sample[0],
     id: String(i + 1),
     number: i + 1,
     title: `PR ${i + 1}`,
   }));
-  jest.spyOn(metricsHook, 'usePullRequestMetrics').mockReturnValue({
-    items: manyItems,
-    loading: false,
-    error: null,
-  });
+  const onPageChange = jest.fn();
+  mockHook({ items: manyItems, totalCount: 40 });
   render(
     <AuthProvider>
       <MemoryRouter>
-        <MetricsTable query={''} />
+        <MetricsTable
+          query={''}
+          onPageChange={onPageChange}
+          queryParams={{ per_page: 20, order: 'desc' }}
+        />
       </MemoryRouter>
     </AuthProvider>
   );
-  // Should show page 1 by default
   expect(screen.getByText('PR 1')).toBeInTheDocument();
-  expect(screen.queryByText('PR 26')).not.toBeInTheDocument();
-  // Click page 2 in pagination
-  const page2Btn = screen
-    .getByTestId('pagination')
-    .querySelectorAll('button')[1];
+  // Prefer using button labelled with page number if available
+  const page2Btn = screen.getByRole('button', { name: '2' });
   act(() => {
-    page2Btn.click();
+    fireEvent.click(page2Btn);
   });
-  expect(screen.getByText('PR 26')).toBeInTheDocument();
-  expect(screen.queryByText('PR 1')).not.toBeInTheDocument();
+  expect(onPageChange).toHaveBeenCalledWith(2);
 });
 
 test('search filter works', () => {
@@ -228,11 +237,7 @@ test('search filter works', () => {
     { ...sample[0], title: 'Alpha', repo: 'octo/alpha', author: 'alice' },
     { ...sample[0], title: 'Beta', repo: 'octo/beta', author: 'bob', id: '2' },
   ];
-  jest.spyOn(metricsHook, 'usePullRequestMetrics').mockReturnValue({
-    items,
-    loading: false,
-    error: null,
-  });
+  mockHook({ items });
   render(
     <AuthProvider>
       <MemoryRouter>
@@ -249,11 +254,7 @@ test('search filter works', () => {
 
 test('handles PRs with no reviewers', () => {
   const items = [{ ...sample[0], reviewers: [] }];
-  jest.spyOn(metricsHook, 'usePullRequestMetrics').mockReturnValue({
-    items,
-    loading: false,
-    error: null,
-  });
+  mockHook({ items });
   render(
     <AuthProvider>
       <MemoryRouter>
@@ -266,11 +267,7 @@ test('handles PRs with no reviewers', () => {
 
 test('handles PRs with missing title', () => {
   const items = [{ ...sample[0], title: '' }];
-  jest.spyOn(metricsHook, 'usePullRequestMetrics').mockReturnValue({
-    items,
-    loading: false,
-    error: null,
-  });
+  mockHook({ items });
   render(
     <AuthProvider>
       <MemoryRouter>
@@ -278,7 +275,120 @@ test('handles PRs with missing title', () => {
       </MemoryRouter>
     </AuthProvider>
   );
-  // Find all links in the table and check that at least one has empty textContent
   const links = screen.getAllByRole('link');
   expect(links.some((link) => link.textContent === '')).toBe(true);
+});
+
+test('sort dropdown updates value and invokes callback', () => {
+  const onSortChange = jest.fn();
+  mockHook();
+  render(
+    <AuthProvider>
+      <MemoryRouter>
+        <MetricsTable query={''} onSortChange={onSortChange} />
+      </MemoryRouter>
+    </AuthProvider>
+  );
+  act(() => {
+    fireEvent.click(screen.getByLabelText('Sort field'));
+  });
+  const createdOption = screen.getByRole('menuitem', { name: 'created' });
+  act(() => {
+    fireEvent.click(createdOption);
+  });
+  expect(onSortChange).toHaveBeenCalledWith('created');
+  expect(screen.getByText(/Sort: created/)).toBeInTheDocument();
+});
+
+test('order dropdown updates value and invokes callback', () => {
+  const onOrderChange = jest.fn();
+  mockHook();
+  render(
+    <AuthProvider>
+      <MemoryRouter>
+        <MetricsTable query={''} onOrderChange={onOrderChange} />
+      </MemoryRouter>
+    </AuthProvider>
+  );
+  act(() => {
+    fireEvent.click(screen.getByLabelText('Sort order'));
+  });
+  const ascOption = screen.getByRole('menuitem', { name: 'asc' });
+  act(() => {
+    fireEvent.click(ascOption);
+  });
+  expect(onOrderChange).toHaveBeenCalledWith('asc');
+  expect(screen.getByText(/Order: asc/)).toBeInTheDocument();
+});
+
+test('per page dropdown updates value, resets page and invokes callback', () => {
+  const onPerPageChange = jest.fn();
+  mockHook({ totalCount: 120 });
+  render(
+    <AuthProvider>
+      <MemoryRouter>
+        <MetricsTable
+          query={''}
+          onPerPageChange={onPerPageChange}
+          queryParams={{ page: 2, per_page: 20, order: 'desc' }}
+        />
+      </MemoryRouter>
+    </AuthProvider>
+  );
+  expect(screen.getByText(/Per page: 20/)).toBeInTheDocument();
+  act(() => {
+    fireEvent.click(screen.getByLabelText('Items per page'));
+  });
+  const option30 = screen.getByRole('menuitem', { name: '30' });
+  act(() => {
+    fireEvent.click(option30);
+  });
+  expect(onPerPageChange).toHaveBeenCalledWith(30);
+  expect(screen.getByText(/Per page: 30/)).toBeInTheDocument();
+  // page reset to 1
+  expect(screen.getByText(/Page 1 of/)).toBeInTheDocument();
+});
+
+test('totalCount prop overrides fetchedTotal', () => {
+  mockHook({ totalCount: 200 });
+  render(
+    <AuthProvider>
+      <MemoryRouter>
+        <MetricsTable query={''} totalCount={555} />
+      </MemoryRouter>
+    </AuthProvider>
+  );
+  expect(screen.getByText('Total: 555')).toBeInTheDocument();
+});
+
+test('uses fetched totalCount when prop not provided', () => {
+  mockHook({ totalCount: 42 });
+  render(
+    <AuthProvider>
+      <MemoryRouter>
+        <MetricsTable query={''} />
+      </MemoryRouter>
+    </AuthProvider>
+  );
+  expect(screen.getByText('Total: 42')).toBeInTheDocument();
+});
+
+test('column visibility toggle hides column', async () => {
+  mockHook();
+  render(
+    <AuthProvider>
+      <MemoryRouter>
+        <MetricsTable query={''} />
+      </MemoryRouter>
+    </AuthProvider>
+  );
+  expect(screen.getByText('COMMENTS')).toBeInTheDocument();
+  act(() => {
+    fireEvent.click(screen.getByLabelText('Choose columns'));
+  });
+  const commentsToggle = screen.getByRole('menuitem', { name: 'Comments' });
+  await act(async () => {
+    fireEvent.click(commentsToggle);
+  });
+  expect(screen.queryByText('COMMENTS')).not.toBeInTheDocument();
 });

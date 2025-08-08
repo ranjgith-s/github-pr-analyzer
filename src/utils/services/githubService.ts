@@ -504,4 +504,17 @@ export async function fetchPullRequestDetails(
   return pr;
 }
 
+export async function getRateLimit(
+  token: string
+): Promise<{ remaining: number; limit: number; reset: number } | null> {
+  try {
+    const octokit = githubApi.getOctokit(token);
+    const resp = await octokit.rest.rateLimit.get();
+    const core = (resp.data as any).resources.core;
+    return { remaining: core.remaining, limit: core.limit, reset: core.reset };
+  } catch {
+    return null;
+  }
+}
+
 export { userCache, repoCache }; // For testing
