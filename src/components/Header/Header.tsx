@@ -11,13 +11,14 @@ interface GitHubUser {
   avatar_url: string;
 }
 
-interface BreadcrumbItem {
+// Renamed to avoid confusion with imported BreadcrumbItem component
+interface AppBreadcrumb {
   label: string;
   to: string;
 }
 
 interface HeaderProps {
-  breadcrumbs?: BreadcrumbItem[];
+  breadcrumbs?: AppBreadcrumb[];
 }
 
 export default function Header({ breadcrumbs }: HeaderProps) {
@@ -46,7 +47,8 @@ export default function Header({ breadcrumbs }: HeaderProps) {
           underline="hover"
           className="font-bold"
         >
-          <BreadcrumbItem>
+          {/* Explicit key to avoid implicit index key collision */}
+          <BreadcrumbItem key="root">
             <RouterLink to="/" className="flex items-center gap-1">
               <ChevronUpIcon />
               PR-ism
@@ -55,7 +57,8 @@ export default function Header({ breadcrumbs }: HeaderProps) {
           {breadcrumbs &&
             breadcrumbs.map((bc, i) => (
               <BreadcrumbItem
-                key={i}
+                // Use stable unique key derived from path+label
+                key={`${bc.to || 'nolink'}::${bc.label}`}
                 color={i === breadcrumbs.length - 1 ? 'foreground' : undefined}
                 isCurrent={i === breadcrumbs.length - 1}
               >

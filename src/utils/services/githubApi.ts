@@ -32,6 +32,7 @@ export async function searchPRs(
     await octokit.rest.search.issuesAndPullRequests({
       q: query,
       per_page: perPage,
+      // NOTE: advanced_search intentionally omitted here to preserve legacy behavior for this helper
     })
   ).data.items;
 }
@@ -45,15 +46,23 @@ export async function searchPRsWithOptions(
     per_page?: number;
     sort?: 'updated' | 'created' | 'comments';
     order?: 'asc' | 'desc';
+    advanced_search?: boolean; // opt-in ability (defaults to true)
   } = {}
 ): Promise<{ total_count: number; incomplete_results: boolean; items: any[] }> {
+  // GitHub Changelog (2025-03-06): issues advanced search will become default on 2025-09-04
+  // https://github.blog/changelog/2025-03-06-github-issues-projects-api-support-for-issues-advanced-search-and-more/
+  // The legacy (non-advanced) search is deprecated and triggers a console warning in Octokit.
+  // Suppress deprecation warning and future-proof by explicitly setting advanced_search=true until it becomes default.
   const response = await octokit.rest.search.issuesAndPullRequests({
     q: query,
     sort: options.sort,
     order: options.order,
     per_page: options.per_page || 20,
     page: options.page || 1,
-  });
+    // Setting advanced_search (currently in public preview / early adoption) avoids deprecation warning.
+    // Safe to always send true; allow override mainly for testing.
+    advanced_search: options.advanced_search !== false, // default true
+  } as any); // cast due to Octokit types not yet including advanced_search
 
   return response.data;
 }
