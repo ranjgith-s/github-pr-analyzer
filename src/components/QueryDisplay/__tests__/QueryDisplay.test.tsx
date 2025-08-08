@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen, act, fireEvent } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryDisplay } from '../QueryDisplay';
 import { AuthProvider } from '../../../contexts/AuthContext/AuthContext';
@@ -99,21 +100,27 @@ describe('QueryDisplay', () => {
 
     rerender(
       <BrowserRouter>
-        <QueryDisplay query="test" error="Error message" />
+        <AuthProvider>
+          <QueryDisplay query="test" error="Error message" />
+        </AuthProvider>
       </BrowserRouter>
     );
     expect(screen.getByText(/Error:/)).toBeInTheDocument();
 
     rerender(
       <BrowserRouter>
-        <QueryDisplay query="test" resultCount={5} />
+        <AuthProvider>
+          <QueryDisplay query="test" resultCount={5} />
+        </AuthProvider>
       </BrowserRouter>
     );
     expect(screen.getByText('5 results')).toBeInTheDocument();
 
     rerender(
       <BrowserRouter>
-        <QueryDisplay query="test" />
+        <AuthProvider>
+          <QueryDisplay query="test" />
+        </AuthProvider>
       </BrowserRouter>
     );
     expect(screen.getByText('Ready to search')).toBeInTheDocument();
@@ -134,6 +141,7 @@ describe('QueryDisplay', () => {
   });
 
   it('should update character count as user types', async () => {
+    const user = userEvent.setup();
     renderWithRouter(<QueryDisplay query="abc" />);
 
     await act(async () => {
@@ -146,6 +154,11 @@ describe('QueryDisplay', () => {
     expect(screen.getByText('3/256')).toBeInTheDocument();
 
     await act(async () => {
+      // Clear and type new content
+      await user.clear(textarea);
+      await user.type(textarea, 'abcdef');
+
+      // Additionally simulate the change event directly for HeroUI compatibility
       fireEvent.change(textarea, { target: { value: 'abcdef' } });
     });
 
@@ -153,6 +166,7 @@ describe('QueryDisplay', () => {
   });
 
   it('should call onQueryChange with valid query on save', async () => {
+    const user = userEvent.setup();
     const handleChange = jest.fn();
     renderWithRouter(<QueryDisplay query="foo" onQueryChange={handleChange} />);
 
@@ -165,6 +179,11 @@ describe('QueryDisplay', () => {
     ) as HTMLTextAreaElement;
 
     await act(async () => {
+      // Clear and type new content
+      await user.clear(textarea);
+      await user.type(textarea, 'bar');
+
+      // Additionally simulate the change event directly for HeroUI compatibility
       fireEvent.change(textarea, { target: { value: 'bar' } });
     });
 

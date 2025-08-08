@@ -17,11 +17,18 @@ import {
   PencilIcon,
   CheckIcon,
   XMarkIcon,
+  ShareIcon,
+  BookmarkIcon,
 } from '@heroicons/react/24/outline';
 import { validateQuery } from '../../services/queryValidator';
 import { getDefaultQuery } from '../../utils/queryUtils';
 import { VisualFilterBuilder } from './VisualFilterBuilder';
 import { useFilterSuggestions } from '../../hooks/useFilterSuggestions';
+import { QueryAutocomplete, AutocompleteSuggestion } from './QueryAutocomplete';
+import { ShareQueryModal } from './ShareQueryModal';
+import { SuggestionService } from '../../services/suggestionService';
+import { useQueryHistory } from '../../hooks/useQueryHistory';
+import { useAuth } from '../../contexts/AuthContext/AuthContext';
 
 export interface QueryDisplayProps {
   query: string;
@@ -44,13 +51,23 @@ export function QueryDisplay({
 }: QueryDisplayProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(query);
-  const [editMode, setEditMode] = useState<'visual' | 'advanced'>('visual');
+  const [editMode, setEditMode] = useState<'visual' | 'advanced'>('advanced');
   const [validationResult, setValidationResult] = useState(
     validateQuery(query)
   );
   const [, setSearchParams] = useSearchParams();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const suggestions = useFilterSuggestions();
+
+  // New autocomplete state
+  const [showAutocomplete, setShowAutocomplete] = useState(false);
+  const [autocompletePosition, setAutocompletePosition] = useState(0);
+  const [autocompleteSuggestions, setAutocompleteSuggestions] = useState<
+    AutocompleteSuggestion[]
+  >([]);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const { token } = useAuth();
+  const { addToHistory, addBookmark } = useQueryHistory();
 
   // Update edit value when query prop changes
   useEffect(() => {
@@ -82,6 +99,7 @@ export function QueryDisplay({
     setIsEditing(false);
     setEditValue(query);
     setValidationResult(validateQuery(query));
+    setShowAutocomplete(false);
   };
 
   const handleEditSave = () => {
@@ -95,10 +113,14 @@ export function QueryDisplay({
       }
       setSearchParams(newParams);
 
+      // Add to query history
+      addToHistory(sanitizedQuery);
+
       // Notify parent component
       onQueryChange?.(sanitizedQuery);
 
       setIsEditing(false);
+      setShowAutocomplete(false);
     }
   };
 
@@ -108,7 +130,83 @@ export function QueryDisplay({
       handleEditSave();
     } else if (e.key === 'Escape') {
       e.preventDefault();
-      handleEditCancel();
+      if (showAutocomplete) {
+        setShowAutocomplete(false);
+      } else {
+        handleEditCancel();
+      }
+    }
+  };
+
+  // Autocomplete handlers
+  const handleTextareaChange = async (value: string) => {
+    if (!textareaRef.current) return;
+
+    const newValue = value;
+    const cursorPosition = textareaRef.current.selectionStart;
+
+    setEditValue(newValue);
+    setAutocompletePosition(cursorPosition);
+
+    // Get autocomplete suggestions
+    if (token && newValue.length > 0) {
+      try {
+        const suggestions = await SuggestionService.getSuggestions({
+          query: newValue,
+          cursorPosition,
+          token,
+        });
+
+        if (suggestions.length > 0) {
+          setAutocompleteSuggestions(suggestions);
+          setShowAutocomplete(true);
+        } else {
+          setShowAutocomplete(false);
+        }
+      } catch (error) {
+        console.error('Failed to get autocomplete suggestions:', error);
+        setShowAutocomplete(false);
+      }
+    } else {
+      setShowAutocomplete(false);
+    }
+  };
+
+  const handleSuggestionSelect = (
+    suggestion: AutocompleteSuggestion,
+    position: number
+  ) => {
+    if (!textareaRef.current) return;
+
+    const textarea = textareaRef.current;
+    const beforeCursor = editValue.substring(0, position);
+    const afterCursor = editValue.substring(position);
+
+    // Find the start of the current word/token being typed
+    const wordStart = Math.max(
+      beforeCursor.lastIndexOf(' ') + 1,
+      beforeCursor.lastIndexOf(':') + 1,
+      0
+    );
+
+    const insertText = suggestion.insertText || suggestion.value;
+    const newValue =
+      editValue.substring(0, wordStart) + insertText + ' ' + afterCursor;
+
+    setEditValue(newValue);
+    setShowAutocomplete(false);
+
+    // Set cursor position after the inserted suggestion
+    const newCursorPos = wordStart + insertText.length + 1;
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
+  };
+
+  const handleBookmarkQuery = () => {
+    if (validationResult.isValid) {
+      addBookmark(validationResult.sanitized);
     }
   };
 
@@ -200,15 +298,35 @@ export function QueryDisplay({
                   </Button>
                 </>
               ) : (
-                <Button
-                  size="sm"
-                  color="primary"
-                  variant="flat"
-                  startContent={<PencilIcon className="h-4 w-4" />}
-                  onPress={handleEditStart}
-                >
-                  Edit Query
-                </Button>
+                <>
+                  <Button
+                    size="sm"
+                    color="primary"
+                    variant="flat"
+                    startContent={<PencilIcon className="h-4 w-4" />}
+                    onPress={handleEditStart}
+                  >
+                    Edit Query
+                  </Button>
+                  <Button
+                    size="sm"
+                    color="default"
+                    variant="flat"
+                    startContent={<ShareIcon className="h-4 w-4" />}
+                    onPress={() => setShowShareModal(true)}
+                  >
+                    Share
+                  </Button>
+                  <Button
+                    size="sm"
+                    color="default"
+                    variant="flat"
+                    startContent={<BookmarkIcon className="h-4 w-4" />}
+                    onPress={handleBookmarkQuery}
+                  >
+                    Bookmark
+                  </Button>
+                </>
               )}
             </div>
           )}
@@ -226,11 +344,12 @@ export function QueryDisplay({
                 suggestions={suggestions}
               />
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-3 relative">
                 <Textarea
                   ref={textareaRef}
                   value={editValue}
-                  onChange={(e) => setEditValue(e.target.value)}
+                  onValueChange={handleTextareaChange}
+                  onChange={(e) => handleTextareaChange(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Enter GitHub search query..."
                   minRows={2}
@@ -242,6 +361,16 @@ export function QueryDisplay({
                       : 'border-danger',
                   }}
                   aria-label="Edit search query"
+                />
+
+                {/* Autocomplete dropdown */}
+                <QueryAutocomplete
+                  query={editValue}
+                  position={autocompletePosition}
+                  onSuggestionSelect={handleSuggestionSelect}
+                  onClose={() => setShowAutocomplete(false)}
+                  isVisible={showAutocomplete}
+                  suggestions={autocompleteSuggestions}
                 />
 
                 {/* Validation feedback */}
@@ -300,6 +429,13 @@ export function QueryDisplay({
           </div>
         )}
       </CardBody>
+
+      {/* Share Modal */}
+      <ShareQueryModal
+        query={query}
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+      />
     </Card>
   );
 }

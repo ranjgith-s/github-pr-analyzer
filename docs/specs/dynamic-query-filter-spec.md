@@ -247,37 +247,96 @@ export async function fetchPullRequestMetrics(
 
 ### Must Have
 
-- [ ] Users can view and edit current query
-- [ ] Query changes update URL immediately
-- [ ] Shared URLs work correctly for other users
-- [ ] Error states show helpful guidance
-- [ ] Visual filter builder for common use cases
+- [x] Users can view and edit current query
+- [x] Query changes update URL immediately (applies on explicit Apply action; no live execution while typing yet)
+- [x] Shared URLs work correctly for other users (query read from `?q=` and Share modal copies URL)
+- [x] Error states show helpful guidance (validation + fetch errors surfaced)
+- [x] Visual filter builder for common use cases
 
 ### Should Have
 
-- [ ] Autocomplete for users, repos, and labels
-- [ ] Query result preview before execution
-- [ ] Common query templates/examples
-- [ ] Browser navigation (back/forward) works
+- [x] Autocomplete for users, repos, and labels (syntax + value + templates)
+- [ ] Query result preview before execution (NOT IMPLEMENTED: no live total count while editing)
+- [x] Common query templates/examples (template suggestions in autocomplete)
+- [x] Browser navigation (back/forward) works via URL search params
 
 ### Nice to Have
 
-- [ ] Saved query bookmarks
-- [ ] Query performance metrics
-- [ ] Advanced query builder with drag-drop
-- [ ] Team-specific query suggestions
+- [x] Saved query bookmarks (implemented via `useQueryHistory` + Bookmark button)
+- [ ] Query performance metrics (NOT IMPLEMENTED)
+- [ ] Advanced query builder with drag-drop (NOT IMPLEMENTED)
+- [ ] Team-specific query suggestions (NOT IMPLEMENTED)
 
-## Future Enhancements
+### Additional Implemented (Not Originally Listed)
 
-- **Saved Queries**: Personal query library
-- **Team Templates**: Organization-wide query templates  
-- **Query Analytics**: Popular queries and success metrics
-- **Advanced Visualizations**: Charts and graphs for query results
-- **Real-time Updates**: Live query result updates via webhooks
+- Query history (recent queries persisted in localStorage)
+- Multi-channel sharing (Twitter, Slack, Email) in Share modal
+- Real-time query validation with warnings + auto "is:pr" injection
+- Result caching (in-memory + service-level cache for search results)
+- Local bookmarks persistence
+- Templates surfaced in autocomplete when query empty
+
+### Gaps / Deviations
+
+- Live preview (result count before Apply) absent; spec called for debounced execution and preview.
+- Hook `usePullRequestMetrics` discards `total_count` from enhanced search response; only items length shown.
+- Rate limit status / warnings not surfaced (spec: show usage warnings & graceful degradation).
+- No UI controls yet for pagination & per-page adjustments (params handled internally, but not exposed in QueryDisplay/MetricsPage UI).
+- Sorting UI not surfaced (sort param supported in context, but no control to change it on screen).
+- Performance / latency metrics and analytics instrumentation (query diversity, sharing activity) not yet implemented.
+- Team-specific or org-aware suggestions not present (only personal repos + generic labels).
+- No compression/length mitigation for very long queries (not yet an issue, but noted in risks).
+
+## Implementation Audit (2025-08-08)
+
+Phase Coverage:
+
+- Phase 1 (Core Query Interface): Achieved (query editing, URL params, dynamic fetch, error handling) except live preview.
+- Phase 2 (Enhanced UX): Partially achieved (visual builder, autocomplete, sharing modal, empty/loading states, bookmarks added). Missing: live preview, richer suggestion categories (labels fetched per repo), deep analytical tracking.
+- Phase 3 (Polish & Optimization): Not started (performance instrumentation, onboarding tooltips, query analytics).
+
+Key Components Present:
+
+- `QueryDisplay` (edit modes, validation, share, bookmark) ✅
+- `VisualFilterBuilder` (authors, reviewers, repos, labels, states, draft, date ranges) ✅
+- `QueryAutocomplete` + `SuggestionService` (syntax/value/templates suggestions) ✅
+- URL sync via `useQueryContext` ✅
+- Validation via `queryValidator` (adds `is:pr`, enforces qualifier/value formats) ✅
+- Service layer: `fetchPullRequestMetrics` supports dynamic query, caching, GraphQL enrichment ✅
+
+Outstanding Risks:
+
+- Potential over-fetch: full PR detail retrieval even when only preview count needed.
+- Missing rate limit feedback may lead to silent failures under heavy use.
+- Lack of analytics impairs ability to measure adoption metrics defined in spec (query diversity, sharing, mode usage).
+
+## Recommended Next Steps (Prioritized)
+
+1. Live Query Preview: Add debounced (500–700ms) lightweight search (per_page=1) to fetch `total_count` while editing; render provisional count and error state before Apply.
+2. Preserve & Expose Total Count: Update `usePullRequestMetrics` to return `{ items, totalCount, incomplete, loading, error }` when available; adjust `MetricsTable` & `QueryDisplay`.
+3. Pagination & Sorting UI: Add controls (page selector, per-page, sort dropdown) that update URL params; implement `totalPages = Math.ceil(totalCount / per_page)`.
+4. Rate Limit Awareness: Add hook (`useRateLimit`) querying `octokit.rateLimit.get` after searches; surface remaining requests + reset time, warn when <10%.
+5. Performance & Reliability Metrics: Instrument timings (search latency, transform time) and error rates; log to console initially then integrate with analytics pipeline.
+6. Analytics & Adoption Metrics: Capture events (edit_mode, applied_query_length, templates_used, share_clicked, bookmark_added) to measure defined success KPIs.
+7. Enhanced Suggestions: Fetch repository-specific labels dynamically once repo filters chosen; add org/team suggestions if user belongs to orgs.
+8. Query History UI: Optional panel/modal to browse & re-run history/bookmarks (with delete); improves discoverability.
+9. Onboarding Tooltips / Examples: Provide inline "Try these" examples under empty state; highlight Visual vs Advanced toggle first time.
+10. Optional Optimization: Defer GraphQL enrichment until details needed (lazy load) to reduce initial search latency, especially for previews.
+11. Future (Stretch): Team-specific templates, drag-drop advanced builder, query compression for very long queries.
+
+## Updated Timeline Projection
+
+- Remaining Phase 2 items (1–3): ~2–3 days
+- Rate limit + analytics (4–6): ~2 days
+- Enhanced suggestions + history UI (7–8): ~2 days
+- Onboarding + optimization (9–10): ~2–3 days
+
+Total to reach spec parity + polish: ~8–10 working days.
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: August 6, 2025  
-**Status**: Ready for Implementation  
+**Document Version**: 1.1 (Updated after implementation audit)
+**Last Updated**: August 8, 2025
+**Status**: In Progress (Post Phase 2 Partial)
+**Next Milestone**: Live Preview & Analytics Enablement
 **Estimated Effort**: 4 weeks (1 developer)
