@@ -157,6 +157,7 @@ function validateQualifierValue(query: string): string[] {
 
   // Extract qualifier:value pairs
   const pairs = query.match(/(-?[\w-]+):([^\s)]+)/g);
+  /* istanbul ignore if -- unreachable because validateQuery always ensures at least one qualifier (is:pr) */
   if (!pairs) return errors;
 
   for (const pair of pairs) {
