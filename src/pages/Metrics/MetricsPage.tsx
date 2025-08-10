@@ -4,28 +4,139 @@ import { useQueryContext } from '../../hooks/useQueryContext';
 import { usePullRequestMetrics } from '../../hooks/usePullRequestMetrics';
 import { useAuth } from '../../contexts/AuthContext/AuthContext';
 import MetricsTable from '../../components/MetricsTable/MetricsTable';
-import LoadingOverlay from '../../components/LoadingOverlay/LoadingOverlay';
+// Removed LoadingOverlay in favor of lightweight skeletons
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 import { useMetaDescription } from '../../hooks/useMetaDescription';
 import { buildQueryString } from '../../utils/queryUtils';
 import { useNavigate } from 'react-router-dom';
 import { computeSummaryMetrics } from '../../utils/metrics/summary';
 
-function RateLimitBadge({
-  rateLimit,
+// --- New lightweight UI primitives ---
+function Skeleton({
+  width = 'w-16',
+  className = '',
 }: {
-  rateLimit: { remaining: number; limit: number; reset: number };
+  width?: string;
+  className?: string;
 }) {
-  const pct = rateLimit.limit ? rateLimit.remaining / rateLimit.limit : 0;
+  return (
+    <span
+      className={`inline-block bg-default-200/60 rounded h-4 animate-pulse ${width} ${className}`}
+    />
+  );
+}
+
+// Condensed status bar (rate limit + total count)
+function StatusBar({
+  total,
+  rateLimit,
+  loading,
+}: {
+  total?: number;
+  rateLimit?: { remaining: number; limit: number; reset: number } | null;
+  loading: boolean;
+}) {
+  if (!rateLimit && total == null) return null;
+  const pct = rateLimit?.limit ? rateLimit.remaining / rateLimit.limit : 0;
   const color =
     pct < 0.1 ? 'text-danger' : pct < 0.3 ? 'text-warning' : 'text-default-500';
   return (
-    <div className={`text-xs ${color}`} aria-live="polite">
-      API {rateLimit.remaining}/{rateLimit.limit} · resets{' '}
-      {new Date(rateLimit.reset * 1000).toLocaleTimeString()}
+    <div
+      className="flex items-center justify-end gap-4 mt-3 text-xs text-default-500"
+      aria-live="polite"
+    >
+      <div>
+        {loading ? (
+          <Skeleton width="w-10" />
+        ) : total != null ? (
+          `${total.toLocaleString()} PRs`
+        ) : null}
+      </div>
+      {rateLimit && (
+        <div
+          className={color}
+          title={`Resets at ${new Date(rateLimit.reset * 1000).toLocaleTimeString()}`}
+        >
+          API {rateLimit.remaining}/{rateLimit.limit}
+        </div>
+      )}
     </div>
   );
 }
+
+// Horizontal metric strip (replaces card grid)
+function SummaryMetricsStrip({
+  summary,
+  loading,
+}: {
+  summary: ReturnType<typeof computeSummaryMetrics> | null;
+  loading: boolean;
+}) {
+  const metrics: { label: string; value: string | number | null }[] = [
+    { label: 'PRs', value: summary?.count ?? null },
+    { label: 'Open', value: summary?.open ?? null },
+    { label: 'Merged', value: summary?.merged ?? null },
+    {
+      label: 'Median Lead',
+      value:
+        summary?.medianLeadTimeH != null
+          ? formatHours(summary.medianLeadTimeH)
+          : null,
+    },
+    {
+      label: 'Median Review',
+      value:
+        summary?.medianReviewH != null
+          ? formatHours(summary.medianReviewH)
+          : null,
+    },
+  ];
+  return (
+    <section aria-label="Pull request summary metrics" className="mt-4">
+      <div className="flex flex-wrap items-stretch gap-3 bg-default-50 border border-default-200 rounded-md px-4 py-3">
+        {metrics.map((m) => (
+          <div
+            key={m.label}
+            role="group"
+            aria-label={m.label}
+            className="flex flex-col justify-center min-w-[70px]"
+          >
+            <span className="text-[10px] uppercase tracking-wide text-default-400">
+              {m.label}
+            </span>
+            <span
+              className="text-sm font-semibold text-default-700"
+              aria-live="polite"
+            >
+              {loading ? (
+                <Skeleton width="w-8" />
+              ) : m.value != null ? (
+                <>{m.value}</>
+              ) : (
+                '—'
+              )}
+            </span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function formatHours(h: number) {
+  if (h >= 48) return `${(h / 24).toFixed(1)}d`;
+  if (h >= 24) return '1d+';
+  return `${h}h`;
+}
+
+// Type helper for updating query params
+type QueryPatch = Partial<{
+  page: number;
+  sort: string;
+  per_page: number;
+  order: string;
+  q: string;
+}>;
 
 export default function MetricsPage() {
   useDocumentTitle('Pull request insights');
@@ -46,17 +157,17 @@ export default function MetricsPage() {
     });
 
   const summary = useMemo(() => computeSummaryMetrics(items), [items]);
+  const effectiveTotal = totalCount ?? items?.length ?? 0;
+
+  // Central UI state machine (simplified for readability & lint compliance)
+  let uiState: 'loading' | 'error' | 'empty' | 'ready';
+  if (loading && items.length === 0) uiState = 'loading';
+  else if (error) uiState = 'error';
+  else if (!loading && items.length === 0) uiState = 'empty';
+  else uiState = 'ready';
 
   const updateQueryParams = useCallback(
-    (
-      patch: Partial<{
-        page: number;
-        sort: string;
-        per_page: number;
-        order: string;
-        q: string;
-      }>
-    ) => {
+    (patch: QueryPatch) => {
       const qs = buildQueryString({
         q: patch.q ?? queryContext.query,
         page: patch.page ?? (patch.q ? 1 : queryContext.params.page),
@@ -77,150 +188,81 @@ export default function MetricsPage() {
   );
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Test-only debug elements to assert query + params after refactor */}
-      {process.env.NODE_ENV === 'test' && (
-        <div style={{ display: 'none' }} data-testid="debug-query-container">
-          <div data-testid="query-debug">{queryContext.query}</div>
-          {/* stringify only stable primitive params */}
-          <div data-testid="query-params-debug">
-            {JSON.stringify(queryContext.params)}
-          </div>
-        </div>
-      )}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Pull Request Insights</h1>
-        <p className="text-default-600">
-          Analyze pull request metrics and performance data.
-        </p>
-      </div>
+    <div className="container mx-auto px-4 py-6">
+      <header className="mb-4">
+        <h1 className="text-2xl font-semibold">Pull Request Insights</h1>
+      </header>
 
       <QueryDisplay
         query={queryContext.query}
-        resultCount={loading ? undefined : (totalCount ?? items?.length)}
+        resultCount={loading ? undefined : effectiveTotal}
         isLoading={loading}
         error={error}
         onQueryChange={handleQueryChange}
         editable={true}
       />
 
-      <div className="flex flex-wrap gap-4 items-end mb-6">
-        {summary && (
-          <div
-            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 w-full md:w-auto flex-1"
-            aria-label="Pull request metrics summary"
-          >
-            <SummaryCard label="PRs" value={summary.count} />
-            <SummaryCard label="Open" value={summary.open} />
-            <SummaryCard label="Merged" value={summary.merged} />
-            <SummaryCard
-              label="Median Lead"
-              value={
-                summary.medianLeadTimeH != null
-                  ? `${summary.medianLeadTimeH}h`
-                  : '—'
+      <SummaryMetricsStrip summary={summary} loading={loading} />
+      <StatusBar
+        total={effectiveTotal}
+        rateLimit={rateLimit}
+        loading={loading}
+      />
+
+      <main className="mt-4" aria-live="polite">
+        {uiState === 'error' && (
+          <div className="flex items-center justify-between rounded-md border border-danger-200 bg-danger-50 px-3 py-2 text-sm text-danger">
+            <span>Failed to load pull request data: {error}</span>
+            <button
+              onClick={() =>
+                updateQueryParams({ page: 1, q: queryContext.query })
               }
-            />
-            <SummaryCard
-              label="Median Review"
-              value={
-                summary.medianReviewH != null
-                  ? `${summary.medianReviewH}h`
-                  : '—'
-              }
-            />
+              className="text-xs font-medium underline hover:no-underline"
+            >
+              Retry
+            </button>
           </div>
         )}
-        {rateLimit && !loading && <RateLimitBadge rateLimit={rateLimit} />}
-      </div>
 
-      {loading && items.length === 0 && (
-        <LoadingOverlay
-          show={true}
-          messages={['Loading pull request data...']}
-        />
-      )}
-
-      {error && (
-        <div className="text-center py-8">
-          <p className="text-danger mb-4">Failed to load pull request data</p>
-          <p className="text-sm text-default-500">{error}</p>
-          <button
-            onClick={() =>
-              updateQueryParams({ page: 1, q: queryContext.query })
-            }
-            className="mt-4 text-sm px-3 py-1 rounded bg-default-200 hover:bg-default-300"
-          >
-            Retry
-          </button>
-        </div>
-      )}
-
-      {items && items.length > 0 && (
-        <MetricsTable
-          queryParams={queryContext.params}
-          totalCount={totalCount ?? items.length}
-          items={items}
-          loading={loading}
-          error={error}
-          onPageChange={(page: number) => updateQueryParams({ page })}
-          onPerPageChange={(perPage: number) =>
-            updateQueryParams({ per_page: perPage, page: 1 })
-          }
-          onSortChange={(sort: string) => updateQueryParams({ sort, page: 1 })}
-          onOrderChange={(order: 'asc' | 'desc') =>
-            updateQueryParams({ order, page: 1 })
-          }
-        />
-      )}
-
-      {items && items.length === 0 && !loading && !error && (
-        <div className="text-center py-8">
-          <p className="text-default-500 mb-4">No pull requests found</p>
-          <div className="text-sm text-default-400 space-y-2">
-            <p>Try adjusting your search query or use one of these examples:</p>
-            <div className="flex flex-wrap gap-2 justify-center">
-              {[
-                'is:pr is:open author:@me',
-                'is:pr review-requested:@me',
-                'is:pr is:merged',
-              ].map((q) => (
-                <button
-                  key={q}
-                  onClick={() => handleQueryChange(q)}
-                  className="px-2 py-1 text-xs rounded bg-default-100 hover:bg-default-200"
-                >
-                  {q}
-                </button>
-              ))}
-            </div>
+        {uiState === 'empty' && (
+          <div className="text-center py-10 text-sm text-default-500">
+            No pull requests found for this query.
           </div>
-        </div>
-      )}
+        )}
+
+        {uiState === 'loading' && (
+          <div className="mt-6 space-y-2" aria-label="Loading results">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-9 rounded-md bg-default-100 animate-pulse"
+              />
+            ))}
+          </div>
+        )}
+
+        {uiState === 'ready' && (
+          <MetricsTable
+            queryParams={queryContext.params}
+            totalCount={effectiveTotal}
+            items={items}
+            loading={loading}
+            error={error}
+            onPageChange={(page: number) => updateQueryParams({ page })}
+            onPerPageChange={(perPage: number) =>
+              updateQueryParams({ per_page: perPage, page: 1 })
+            }
+            onSortChange={(sort: string) =>
+              updateQueryParams({ sort, page: 1 })
+            }
+            onOrderChange={(order: 'asc' | 'desc') =>
+              updateQueryParams({ order, page: 1 })
+            }
+          />
+        )}
+      </main>
     </div>
   );
 }
 
-function SummaryCard({
-  label,
-  value,
-}: {
-  label: string;
-  value: number | string;
-}) {
-  return (
-    <div
-      className="rounded-md bg-default-100 p-3 flex flex-col min-w-[90px]"
-      role="figure"
-    >
-      <span className="text-xs text-default-500">{label}</span>
-      <span
-        className="text-lg font-semibold"
-        aria-label={label}
-        aria-live="polite"
-      >
-        {value}
-      </span>
-    </div>
-  );
-}
+// Removed old SummaryCard & RateLimitBadge components as functionality replaced by new condensed components

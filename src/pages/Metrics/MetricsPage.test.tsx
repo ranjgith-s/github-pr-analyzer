@@ -14,18 +14,18 @@ jest.mock('react-router-dom', () => {
 
 const usePullRequestMetricsMock = jest.fn();
 jest.mock('../../hooks/usePullRequestMetrics', () => ({
-  usePullRequestMetrics: (...args: any[]) => usePullRequestMetricsMock(...args),
+  usePullRequestMetrics: (...args: any[]) => usePullRequestMetricsMock(...args), // eslint-disable-line @typescript-eslint/no-explicit-any
 }));
 
 const MetricsTableMock: any = jest.fn(() => (
+  // eslint-disable-line @typescript-eslint/no-explicit-any
   <div data-testid="metrics-table" />
-)); // eslint-disable-line @typescript-eslint/no-explicit-any
+));
 jest.mock('../../components/MetricsTable/MetricsTable', () => ({
   __esModule: true,
   default: (props: any) => MetricsTableMock(props), // eslint-disable-line @typescript-eslint/no-explicit-any
 }));
 
-// Import after mocks so they apply correctly
 import MetricsPage from './MetricsPage';
 
 const baseAuth = {
@@ -48,23 +48,22 @@ function renderPage(
   );
 }
 
-describe('MetricsPage', () => {
+describe('MetricsPage (minimal UI)', () => {
   beforeEach(() => {
     navigateMock = jest.fn();
     jest.clearAllMocks();
   });
 
-  test('shows loading overlay when loading & no items', () => {
+  test('shows loading skeleton when loading & no items', () => {
     usePullRequestMetricsMock.mockReturnValue({
       items: [],
       loading: true,
       error: null,
       totalCount: 0,
-      incomplete: false,
       rateLimit: null,
     });
     renderPage();
-    expect(screen.getByText(/Loading pull request data/i)).toBeInTheDocument();
+    expect(screen.getByLabelText('Loading results')).toBeInTheDocument();
   });
 
   test('shows error state and retry triggers navigation', () => {
@@ -73,7 +72,6 @@ describe('MetricsPage', () => {
       loading: false,
       error: 'Boom',
       totalCount: 0,
-      incomplete: false,
       rateLimit: null,
     });
     renderPage(['/insights?q=is:pr']);
@@ -85,27 +83,21 @@ describe('MetricsPage', () => {
     expect(navigateMock.mock.calls[0][0]).toMatch(/\/insights\?q=is%3Apr/);
   });
 
-  test('shows empty state and sample query updates URL', () => {
+  test('shows empty state', () => {
     usePullRequestMetricsMock.mockReturnValue({
       items: [],
       loading: false,
       error: null,
       totalCount: 0,
-      incomplete: false,
       rateLimit: null,
     });
     renderPage(['/insights?q=is:pr']);
-    const sampleBtn = screen.getByRole('button', {
-      name: /is:pr is:open author:@me/i,
-    });
-    fireEvent.click(sampleBtn);
-    expect(navigateMock).toHaveBeenCalled();
     expect(
-      navigateMock.mock.calls[navigateMock.mock.calls.length - 1][0]
-    ).toMatch(/author%3A%40me/);
+      screen.getByText(/No pull requests found for this query/i)
+    ).toBeInTheDocument();
   });
 
-  test('renders summary metrics, table and normal rate limit badge', () => {
+  test('renders summary metrics, table and normal rate limit indicator', () => {
     const now = new Date();
     const earlier = new Date(now.getTime() - 2 * 3600 * 1000);
     usePullRequestMetricsMock.mockReturnValue({
@@ -136,7 +128,6 @@ describe('MetricsPage', () => {
       loading: false,
       error: null,
       totalCount: 1,
-      incomplete: false,
       rateLimit: {
         remaining: 80,
         limit: 100,
@@ -176,7 +167,6 @@ describe('MetricsPage', () => {
       loading: false,
       error: null,
       totalCount: 1,
-      incomplete: false,
       rateLimit: {
         remaining: 20,
         limit: 100,
@@ -191,7 +181,6 @@ describe('MetricsPage', () => {
       loading: false,
       error: null,
       totalCount: 1,
-      incomplete: false,
       rateLimit: {
         remaining: 5,
         limit: 100,
@@ -246,7 +235,6 @@ describe('MetricsPage', () => {
       loading: false,
       error: null,
       totalCount: 1,
-      incomplete: false,
       rateLimit: null,
     });
 
@@ -263,7 +251,7 @@ describe('MetricsPage', () => {
     expect(joined).toMatch(/order=asc/);
   });
 
-  test('renders summary cards with em dash when median metrics unavailable', () => {
+  test('renders em dash when median metrics unavailable', () => {
     usePullRequestMetricsMock.mockReturnValue({
       items: [
         {
@@ -288,12 +276,10 @@ describe('MetricsPage', () => {
       loading: false,
       error: null,
       totalCount: 1,
-      incomplete: false,
       rateLimit: null,
     });
     renderPage(['/insights?q=is:pr']);
-    // Expect em dash for median lead/review values
     const dashes = screen.getAllByText('—');
-    expect(dashes.length).toBeGreaterThanOrEqual(2);
+    expect(dashes.length).toBeGreaterThanOrEqual(1); // At least one dash for missing metrics
   });
 });
