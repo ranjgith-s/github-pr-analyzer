@@ -10,18 +10,14 @@ jest.mock('../../../hooks/usePullRequestMetrics', () => ({
     items: [{ id: '1', title: 'Test PR' }], // Mock some items so MetricsTable renders
     loading: false,
     error: null,
+    totalCount: 1,
   })),
 }));
 
-// Mock MetricsTable component to simplify testing
+// Mock MetricsTable component (no query props needed now)
 jest.mock('../../../components/MetricsTable/MetricsTable', () => {
-  return function MockedMetricsTable({ query, queryParams }: any) {
-    return (
-      <div data-testid="metrics-table">
-        <div data-testid="query">{query}</div>
-        <div data-testid="query-params">{JSON.stringify(queryParams)}</div>
-      </div>
-    );
+  return function MockedMetricsTable() {
+    return <div data-testid="metrics-table" />;
   };
 });
 
@@ -58,9 +54,11 @@ describe('MetricsPage URL Parameter Integration', () => {
   it('should use default query when no URL parameters', () => {
     const { getByTestId } = renderWithProviders(['/insights']);
 
-    expect(getByTestId('query')).toHaveTextContent('is:pr involves:testuser');
+    expect(getByTestId('query-debug')).toHaveTextContent(
+      'is:pr involves:testuser'
+    );
 
-    expect(getByTestId('query-params')).toHaveTextContent(
+    expect(getByTestId('query-params-debug')).toHaveTextContent(
       JSON.stringify({
         page: 1,
         sort: 'updated',
@@ -75,9 +73,9 @@ describe('MetricsPage URL Parameter Integration', () => {
       '/insights?q=is:pr+author:john',
     ]);
 
-    expect(getByTestId('query')).toHaveTextContent('is:pr author:john');
+    expect(getByTestId('query-debug')).toHaveTextContent('is:pr author:john');
 
-    expect(getByTestId('query-params')).toHaveTextContent(
+    expect(getByTestId('query-params-debug')).toHaveTextContent(
       JSON.stringify({
         page: 1,
         sort: 'updated',
@@ -92,9 +90,9 @@ describe('MetricsPage URL Parameter Integration', () => {
       '/insights?q=is:pr+label:bug&page=3&sort=created&per_page=50&order=asc',
     ]);
 
-    expect(getByTestId('query')).toHaveTextContent('is:pr label:bug');
+    expect(getByTestId('query-debug')).toHaveTextContent('is:pr label:bug');
 
-    expect(getByTestId('query-params')).toHaveTextContent(
+    expect(getByTestId('query-params-debug')).toHaveTextContent(
       JSON.stringify({
         page: 3,
         sort: 'created',
@@ -115,19 +113,17 @@ describe('MetricsPage URL Parameter Integration', () => {
       authValueWithoutUser
     );
 
-    expect(getByTestId('query')).toHaveTextContent('');
+    expect(getByTestId('query-debug')).toHaveTextContent('');
   });
 
-  it('should handle URL parameter changes', () => {
+  it('should handle URL parameter changes (initial parse)', () => {
     const { getByTestId } = renderWithProviders([
       '/insights?q=is:pr+author:alice',
     ]);
 
-    expect(getByTestId('query')).toHaveTextContent('is:pr author:alice');
+    expect(getByTestId('query-debug')).toHaveTextContent('is:pr author:alice');
 
-    // For a proper test of URL changes, we would need to test with actual routing
-    // This tests that the component correctly parses the initial URL
-    expect(getByTestId('query-params')).toHaveTextContent(
+    expect(getByTestId('query-params-debug')).toHaveTextContent(
       JSON.stringify({
         page: 1,
         sort: 'updated',
@@ -142,7 +138,7 @@ describe('MetricsPage URL Parameter Integration', () => {
       '/insights?q=is%3Apr+author%3Ajohn+label%3A%22bug+fix%22',
     ]);
 
-    expect(getByTestId('query')).toHaveTextContent(
+    expect(getByTestId('query-debug')).toHaveTextContent(
       'is:pr author:john label:"bug fix"'
     );
   });

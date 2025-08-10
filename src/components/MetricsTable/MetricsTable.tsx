@@ -1,8 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { usePullRequestMetrics } from '../../hooks/usePullRequestMetrics';
 import { PRItem } from '../../types';
-import { useAuth } from '../../contexts/AuthContext/AuthContext';
 import { QueryParams } from '../../utils/queryUtils';
 import LoadingOverlay from '../LoadingOverlay/LoadingOverlay';
 import {
@@ -33,9 +31,12 @@ export function formatDuration(start?: string | null, end?: string | null) {
 }
 
 interface MetricsTableProps {
-  query: string;
+  // Removed query param – component no longer fetches data itself
   queryParams?: QueryParams;
   totalCount?: number; // total results from GitHub (for server-side pagination)
+  items: PRItem[]; // externally provided list
+  loading?: boolean;
+  error?: string | null;
   onPageChange?: (page: number) => void;
   onPerPageChange?: (perPage: number) => void;
   onSortChange?: (sort: string) => void;
@@ -43,32 +44,22 @@ interface MetricsTableProps {
 }
 
 export default function MetricsTable({
-  query,
   queryParams,
   totalCount,
+  items,
+  loading,
+  error,
   onPageChange,
   onPerPageChange,
   onSortChange,
   onOrderChange,
 }: MetricsTableProps) {
-  const { token } = useAuth();
-  const {
-    items,
-    loading,
-    error,
-    totalCount: fetchedTotal,
-  } = usePullRequestMetrics(token!, {
-    query,
-    page: queryParams?.page,
-    sort: queryParams?.sort as 'updated' | 'created' | 'comments',
-    perPage: queryParams?.per_page,
-    order: queryParams?.order as 'asc' | 'desc',
-  });
-
+  const fetchedTotal = null; // no internal fetch anymore
   const effectiveTotal = totalCount ?? fetchedTotal ?? items.length;
 
   // Log error for now, in the future we can show it in the UI
   if (error) {
+    // eslint-disable-next-line no-console
     console.error('Failed to load pull request metrics:', error);
   }
   const [search, setSearch] = useState('');
@@ -103,7 +94,7 @@ export default function MetricsTable({
   const repos = Array.from(new Set(items.map((i) => i.repo))).sort();
   const authors = Array.from(new Set(items.map((i) => i.author))).sort();
 
-  // Search and filter logic (client side, on current page only)
+  // Search & filter
   const filteredItems = items.filter((item) => {
     const queryLower = search.toLowerCase();
     const matchesSearch =
@@ -123,8 +114,7 @@ export default function MetricsTable({
     setPageIndex(1);
   }, [repoFilter, authorFilter]);
 
-  // We do server-side paging already, so the pageSize is the per_page param
-  const paginatedItems = filteredItems; // already server sized
+  const paginatedItems = filteredItems; // server-sized already
 
   const columns = [
     {
@@ -216,17 +206,14 @@ export default function MetricsTable({
         const reviewMs = Math.max(reviewed.getTime() - published.getTime(), 0);
         const closeMs = Math.max(closed.getTime() - reviewed.getTime(), 0);
         const total = draftMs + reviewMs + closeMs || 1;
-
         const draftPct = (draftMs / total) * 100;
         const reviewPct = (reviewMs / total) * 100;
         const closePct = (closeMs / total) * 100;
-
         const tooltipText = [
           `Draft: ${formatDuration(row.created_at, row.published_at)}`,
           `Review: ${formatDuration(row.published_at || row.created_at, row.first_review_at)}`,
           `Close: ${formatDuration(row.first_review_at || row.published_at || row.created_at, row.closed_at)}`,
         ].join('\n');
-
         return (
           <div aria-label={tooltipText} className="flex items-center w-24">
             <div className="flex w-full gap-0.5">
@@ -300,7 +287,6 @@ export default function MetricsTable({
     return '';
   };
 
-  // Derived values & handlers that were removed inadvertently
   const totalPages = Math.max(1, Math.ceil(effectiveTotal / pageSize));
   const handlePageChange = (newPage: number) => {
     setPageIndex(newPage);
@@ -532,7 +518,7 @@ export default function MetricsTable({
             }
           >
             <>
-              {allColumns.map((col) => (
+              {columns.map((col) => (
                 <DropdownItem
                   key={col.id}
                   role="menuitem"
@@ -598,7 +584,7 @@ export default function MetricsTable({
         bottomContentPlacement="inside"
       >
         <TableHeader>
-          {allColumns
+          {columns
             .filter((col) => visibleColumns.includes(col.id))
             .map((col) => (
               <TableColumn key={col.id}>{col.header.toUpperCase()}</TableColumn>
@@ -613,7 +599,7 @@ export default function MetricsTable({
               key={row.id} // ensure stable unique key
               onClick={() => toggleSelect(row.id)}
             >
-              {allColumns
+              {columns
                 .filter((col) => visibleColumns.includes(col.id))
                 .map((col) => (
                   <TableCell key={col.id} data-testid={`cell-${col.id}`}>

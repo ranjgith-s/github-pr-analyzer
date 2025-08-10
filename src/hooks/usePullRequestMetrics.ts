@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   fetchPullRequestMetrics,
   getRateLimit,
@@ -11,6 +11,14 @@ interface UsePullRequestMetricsOptions {
   sort?: 'updated' | 'created' | 'comments';
   perPage?: number;
   order?: 'asc' | 'desc';
+  /**
+   * When true, retains previously fetched data while loading next request (improves UX by avoiding flashes)
+   */
+  keepPreviousData?: boolean;
+  /**
+   * Changing this value forces a refetch even if other params unchanged
+   */
+  reloadToken?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 export interface UsePullRequestMetricsReturn {
@@ -36,12 +44,19 @@ export function usePullRequestMetrics(
     limit: number;
     reset: number;
   } | null>(null);
+  const latestRequestId = useRef(0);
 
   useEffect(() => {
     let isMounted = true;
+    const requestId = ++latestRequestId.current;
+
     async function load() {
       try {
-        setLoading(true);
+        if (!options?.keepPreviousData) {
+          setLoading(true);
+        } else {
+          setLoading(true);
+        }
         setError(null);
 
         const result = await fetchPullRequestMetrics(
@@ -55,9 +70,8 @@ export function usePullRequestMetrics(
           }
         );
 
-        if (isMounted) {
+        if (isMounted && requestId === latestRequestId.current) {
           if (Array.isArray(result)) {
-            // Legacy array format
             setItems(result);
             setTotalCount(result.length);
             setIncomplete(false);
@@ -68,26 +82,27 @@ export function usePullRequestMetrics(
           }
         }
       } catch (err) {
-        if (isMounted) {
-          // Avoid noisy expected error logs during test runs
+        if (isMounted && requestId === latestRequestId.current) {
           if (process.env.NODE_ENV !== 'test') {
             console.error(err);
           }
           setError(err instanceof Error ? err.message : 'Unknown error');
         }
       } finally {
-        if (isMounted) setLoading(false);
-        // Fetch rate limit info (non-blocking)
-        if (token) {
-          getRateLimit(token)
-            .then(
-              (
-                rl: { remaining: number; limit: number; reset: number } | null
-              ) => {
-                if (isMounted) setRateLimit(rl);
-              }
-            )
-            .catch(() => {});
+        if (isMounted && requestId === latestRequestId.current) {
+          setLoading(false);
+          if (token) {
+            getRateLimit(token)
+              .then(
+                (
+                  rl: { remaining: number; limit: number; reset: number } | null
+                ) => {
+                  if (isMounted && requestId === latestRequestId.current)
+                    setRateLimit(rl);
+                }
+              )
+              .catch(() => {});
+          }
         }
       }
     }
@@ -108,6 +123,8 @@ export function usePullRequestMetrics(
     options?.sort,
     options?.perPage,
     options?.order,
+    options?.keepPreviousData,
+    options?.reloadToken,
   ]);
 
   return { items, totalCount, incomplete, loading, error, rateLimit };

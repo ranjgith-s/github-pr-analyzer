@@ -7,17 +7,12 @@ import {
   waitFor,
 } from '@testing-library/react';
 import { MemoryRouter, useNavigate } from 'react-router-dom';
-import MetricsTable from './MetricsTable';
-import { AuthProvider } from '../../contexts/AuthContext/AuthContext';
-import * as metricsHook from '../../hooks/usePullRequestMetrics';
+import MetricsTable, { formatDuration } from './MetricsTable';
 import { PRItem } from '../../types';
 
 jest.mock('react-router-dom', () => {
   const actual = jest.requireActual('react-router-dom');
-  return {
-    ...actual,
-    useNavigate: jest.fn(() => jest.fn()),
-  };
+  return { ...actual, useNavigate: jest.fn(() => jest.fn()) };
 });
 
 const sample: PRItem[] = [
@@ -45,125 +40,103 @@ const sample: PRItem[] = [
   },
 ];
 
-const mockHook = (
-  override: Partial<ReturnType<typeof metricsHook.usePullRequestMetrics>> = {}
-) => {
-  return jest.spyOn(metricsHook, 'usePullRequestMetrics').mockReturnValue({
-    items: sample,
-    loading: false,
-    error: null,
-    totalCount: sample.length,
-    ...override,
-  } as any);
+const baseItem: PRItem = {
+  id: '1',
+  owner: 'octo',
+  repo_name: 'repo',
+  repo: 'octo/repo',
+  number: 1,
+  title: 'Test PR',
+  url: 'http://example.com',
+  author: 'octo',
+  state: 'open',
+  created_at: '2020-01-01T00:00:00Z',
+  published_at: '2020-01-02T00:00:00Z',
+  closed_at: '2020-01-03T00:00:00Z',
+  first_review_at: '2020-01-02T06:00:00Z',
+  first_commit_at: '2020-01-01T00:00:00Z',
+  reviewers: ['r1', 'r2'],
+  changes_requested: 0,
+  additions: 10,
+  deletions: 2,
+  comment_count: 5,
+  timeline: [],
 };
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockHook();
 });
 
 test('renders filters and data', () => {
   render(
-    <AuthProvider>
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-      >
-        <MetricsTable query={''} />
-      </MemoryRouter>
-    </AuthProvider>
+    <MemoryRouter>
+      <MetricsTable items={sample} />
+    </MemoryRouter>
   );
-  // Updated: buttons have aria-labels "Repository filter" and "Author filter"
   expect(screen.getByLabelText('Repository filter')).toBeInTheDocument();
   expect(screen.getByLabelText('Author filter')).toBeInTheDocument();
   expect(screen.getByLabelText('Pagination')).toBeInTheDocument();
 });
 
 test('renders empty state', () => {
-  mockHook({ items: [], totalCount: 0 });
   render(
-    <AuthProvider>
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-      >
-        <MetricsTable query={''} />
-      </MemoryRouter>
-    </AuthProvider>
+    <MemoryRouter>
+      <MetricsTable items={[]} totalCount={0} />
+    </MemoryRouter>
   );
-  // hero Pagination renders "Page 1 of 1" when total=1 (min guard)
   expect(screen.getByText('Page 1 of 1')).toBeInTheDocument();
   expect(screen.getByText(/no pull requests/i)).toBeInTheDocument();
 });
 
 test('shows spinner when loading', () => {
-  mockHook({ items: [], loading: true });
   render(
-    <AuthProvider>
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-      >
-        <MetricsTable query={''} />
-      </MemoryRouter>
-    </AuthProvider>
+    <MemoryRouter>
+      <MetricsTable items={[]} loading />
+    </MemoryRouter>
   );
   expect(screen.getByTestId('spinner')).toBeInTheDocument();
 });
 
-test('renders loading overlay', () => {
-  mockHook({ items: [], loading: true });
+test('renders loading overlay message', () => {
   render(
-    <AuthProvider>
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-      >
-        <MetricsTable query={''} />
-      </MemoryRouter>
-    </AuthProvider>
+    <MemoryRouter>
+      <MetricsTable items={[]} loading />
+    </MemoryRouter>
   );
   expect(screen.getByText(/loading pull requests/i)).toBeInTheDocument();
 });
 
 test('filters by repo and author and resets page', () => {
-  mockHook({
-    items: sample.concat({
-      ...sample[0],
-      id: '2',
-      repo: 'octo/other',
-      author: 'someone',
-      number: 2,
-    }),
+  const items = sample.concat({
+    ...sample[0],
+    id: '2',
+    repo: 'octo/other',
+    repo_name: 'other',
+    author: 'someone',
+    number: 2,
   });
   render(
-    <AuthProvider>
-      <MemoryRouter initialEntries={['/metrics?page=2']}>
-        <MetricsTable query={''} queryParams={{ page: 2, order: 'desc' }} />
-      </MemoryRouter>
-    </AuthProvider>
+    <MemoryRouter initialEntries={['/metrics?page=2']}>
+      <MetricsTable items={items} queryParams={{ page: 2, order: 'desc' }} />
+    </MemoryRouter>
   );
   act(() => {
     fireEvent.click(screen.getByLabelText('Repository filter'));
   });
-  const repoOptionBtn = screen.getByRole('menuitem', { name: 'octo/repo' });
   act(() => {
-    fireEvent.click(repoOptionBtn);
+    fireEvent.click(screen.getByRole('menuitem', { name: 'octo/repo' }));
   });
-  // Only one matching row after filter
   expect(screen.getAllByText('Test PR')).toHaveLength(1);
-  // page should have reset to 1
   expect(screen.getByText(/Page 1 of/)).toBeInTheDocument();
 });
 
 test('selects and navigates to PR', async () => {
   const navigate = jest.fn();
-  mockHook();
   (useNavigate as jest.Mock).mockReturnValue(navigate);
   render(
-    <AuthProvider>
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-      >
-        <MetricsTable query={''} />
-      </MemoryRouter>
-    </AuthProvider>
+    <MemoryRouter>
+      <MetricsTable items={sample} />
+    </MemoryRouter>
   );
   await act(async () => {
     const checkboxes = screen.getAllByRole('checkbox');
@@ -180,15 +153,10 @@ test('selects and navigates to PR', async () => {
 });
 
 test('renders timeline and lead time', () => {
-  mockHook();
   render(
-    <AuthProvider>
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-      >
-        <MetricsTable query={''} />
-      </MemoryRouter>
-    </AuthProvider>
+    <MemoryRouter>
+      <MetricsTable items={sample} />
+    </MemoryRouter>
   );
   expect(screen.getByLabelText(/Draft:/)).toBeInTheDocument();
   expect(
@@ -211,20 +179,16 @@ test('pagination works, changes page and invokes callback', () => {
     title: `PR ${i + 1}`,
   }));
   const onPageChange = jest.fn();
-  mockHook({ items: manyItems, totalCount: 40 });
   render(
-    <AuthProvider>
-      <MemoryRouter>
-        <MetricsTable
-          query={''}
-          onPageChange={onPageChange}
-          queryParams={{ per_page: 20, order: 'desc' }}
-        />
-      </MemoryRouter>
-    </AuthProvider>
+    <MemoryRouter>
+      <MetricsTable
+        items={manyItems}
+        onPageChange={onPageChange}
+        queryParams={{ per_page: 20, order: 'desc' }}
+      />
+    </MemoryRouter>
   );
   expect(screen.getByText('PR 1')).toBeInTheDocument();
-  // Prefer using button labelled with page number if available
   const page2Btn = screen.getByRole('button', { name: '2' });
   act(() => {
     fireEvent.click(page2Btn);
@@ -237,13 +201,10 @@ test('search filter works', () => {
     { ...sample[0], title: 'Alpha', repo: 'octo/alpha', author: 'alice' },
     { ...sample[0], title: 'Beta', repo: 'octo/beta', author: 'bob', id: '2' },
   ];
-  mockHook({ items });
   render(
-    <AuthProvider>
-      <MemoryRouter>
-        <MetricsTable query={''} />
-      </MemoryRouter>
-    </AuthProvider>
+    <MemoryRouter>
+      <MetricsTable items={items} />
+    </MemoryRouter>
   );
   fireEvent.change(screen.getByPlaceholderText(/search/i), {
     target: { value: 'beta' },
@@ -254,26 +215,20 @@ test('search filter works', () => {
 
 test('handles PRs with no reviewers', () => {
   const items = [{ ...sample[0], reviewers: [] }];
-  mockHook({ items });
   render(
-    <AuthProvider>
-      <MemoryRouter>
-        <MetricsTable query={''} />
-      </MemoryRouter>
-    </AuthProvider>
+    <MemoryRouter>
+      <MetricsTable items={items} />
+    </MemoryRouter>
   );
   expect(screen.getByText('Test PR')).toBeInTheDocument();
 });
 
 test('handles PRs with missing title', () => {
   const items = [{ ...sample[0], title: '' }];
-  mockHook({ items });
   render(
-    <AuthProvider>
-      <MemoryRouter>
-        <MetricsTable query={''} />
-      </MemoryRouter>
-    </AuthProvider>
+    <MemoryRouter>
+      <MetricsTable items={items} />
+    </MemoryRouter>
   );
   const links = screen.getAllByRole('link');
   expect(links.some((link) => link.textContent === '')).toBe(true);
@@ -281,20 +236,16 @@ test('handles PRs with missing title', () => {
 
 test('sort dropdown updates value and invokes callback', () => {
   const onSortChange = jest.fn();
-  mockHook();
   render(
-    <AuthProvider>
-      <MemoryRouter>
-        <MetricsTable query={''} onSortChange={onSortChange} />
-      </MemoryRouter>
-    </AuthProvider>
+    <MemoryRouter>
+      <MetricsTable items={sample} onSortChange={onSortChange} />
+    </MemoryRouter>
   );
   act(() => {
     fireEvent.click(screen.getByLabelText('Sort field'));
   });
-  const createdOption = screen.getByRole('menuitem', { name: 'created' });
   act(() => {
-    fireEvent.click(createdOption);
+    fireEvent.click(screen.getByRole('menuitem', { name: 'created' }));
   });
   expect(onSortChange).toHaveBeenCalledWith('created');
   expect(screen.getByText(/Sort: created/)).toBeInTheDocument();
@@ -302,20 +253,16 @@ test('sort dropdown updates value and invokes callback', () => {
 
 test('order dropdown updates value and invokes callback', () => {
   const onOrderChange = jest.fn();
-  mockHook();
   render(
-    <AuthProvider>
-      <MemoryRouter>
-        <MetricsTable query={''} onOrderChange={onOrderChange} />
-      </MemoryRouter>
-    </AuthProvider>
+    <MemoryRouter>
+      <MetricsTable items={sample} onOrderChange={onOrderChange} />
+    </MemoryRouter>
   );
   act(() => {
     fireEvent.click(screen.getByLabelText('Sort order'));
   });
-  const ascOption = screen.getByRole('menuitem', { name: 'asc' });
   act(() => {
-    fireEvent.click(ascOption);
+    fireEvent.click(screen.getByRole('menuitem', { name: 'asc' }));
   });
   expect(onOrderChange).toHaveBeenCalledWith('asc');
   expect(screen.getByText(/Order: asc/)).toBeInTheDocument();
@@ -323,72 +270,179 @@ test('order dropdown updates value and invokes callback', () => {
 
 test('per page dropdown updates value, resets page and invokes callback', () => {
   const onPerPageChange = jest.fn();
-  mockHook({ totalCount: 120 });
   render(
-    <AuthProvider>
-      <MemoryRouter>
-        <MetricsTable
-          query={''}
-          onPerPageChange={onPerPageChange}
-          queryParams={{ page: 2, per_page: 20, order: 'desc' }}
-        />
-      </MemoryRouter>
-    </AuthProvider>
+    <MemoryRouter>
+      <MetricsTable
+        items={sample}
+        onPerPageChange={onPerPageChange}
+        queryParams={{ page: 2, per_page: 20, order: 'desc' }}
+      />
+    </MemoryRouter>
   );
   expect(screen.getByText(/Per page: 20/)).toBeInTheDocument();
   act(() => {
     fireEvent.click(screen.getByLabelText('Items per page'));
   });
-  const option30 = screen.getByRole('menuitem', { name: '30' });
   act(() => {
-    fireEvent.click(option30);
+    fireEvent.click(screen.getByRole('menuitem', { name: '30' }));
   });
   expect(onPerPageChange).toHaveBeenCalledWith(30);
   expect(screen.getByText(/Per page: 30/)).toBeInTheDocument();
-  // page reset to 1
   expect(screen.getByText(/Page 1 of/)).toBeInTheDocument();
 });
 
-test('totalCount prop overrides fetchedTotal', () => {
-  mockHook({ totalCount: 200 });
+test('totalCount prop overrides fallback length', () => {
   render(
-    <AuthProvider>
-      <MemoryRouter>
-        <MetricsTable query={''} totalCount={555} />
-      </MemoryRouter>
-    </AuthProvider>
+    <MemoryRouter>
+      <MetricsTable items={sample} totalCount={555} />
+    </MemoryRouter>
   );
   expect(screen.getByText('Total: 555')).toBeInTheDocument();
 });
 
-test('uses fetched totalCount when prop not provided', () => {
-  mockHook({ totalCount: 42 });
+test('falls back to items length when totalCount not provided', () => {
   render(
-    <AuthProvider>
-      <MemoryRouter>
-        <MetricsTable query={''} />
-      </MemoryRouter>
-    </AuthProvider>
+    <MemoryRouter>
+      <MetricsTable items={sample} />
+    </MemoryRouter>
   );
-  expect(screen.getByText('Total: 42')).toBeInTheDocument();
+  expect(screen.getByText(`Total: ${sample.length}`)).toBeInTheDocument();
 });
 
 test('column visibility toggle hides column', async () => {
-  mockHook();
   render(
-    <AuthProvider>
-      <MemoryRouter>
-        <MetricsTable query={''} />
-      </MemoryRouter>
-    </AuthProvider>
+    <MemoryRouter>
+      <MetricsTable items={sample} />
+    </MemoryRouter>
   );
   expect(screen.getByText('COMMENTS')).toBeInTheDocument();
   act(() => {
     fireEvent.click(screen.getByLabelText('Choose columns'));
   });
-  const commentsToggle = screen.getByRole('menuitem', { name: 'Comments' });
   await act(async () => {
-    fireEvent.click(commentsToggle);
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Comments' }));
   });
   expect(screen.queryByText('COMMENTS')).not.toBeInTheDocument();
+});
+
+describe('formatDuration edge cases', () => {
+  it('returns N/A when start missing', () => {
+    expect(formatDuration(undefined, '2020-01-01T00:00:00Z')).toBe('N/A');
+  });
+  it('returns N/A when end missing', () => {
+    expect(formatDuration('2020-01-01T00:00:00Z', undefined)).toBe('N/A');
+  });
+  it('returns N/A when negative diff', () => {
+    expect(formatDuration('2020-01-02T00:00:00Z', '2020-01-01T00:00:00Z')).toBe(
+      'N/A'
+    );
+  });
+  it('formats days + hours when > 24h', () => {
+    expect(formatDuration('2020-01-01T00:00:00Z', '2020-01-03T05:00:00Z')).toBe(
+      '2d 5h'
+    );
+  });
+  it('formats only hours when < 24h', () => {
+    expect(formatDuration('2020-01-01T00:00:00Z', '2020-01-01T05:00:00Z')).toBe(
+      '5h'
+    );
+  });
+});
+
+describe('MetricsTable additional coverage (merged)', () => {
+  const renderTable = (
+    override: Partial<PRItem>[] | PRItem[] = [baseItem],
+    props: any = {}
+  ) => {
+    const items: PRItem[] = override as PRItem[];
+    return render(
+      <MemoryRouter>
+        <MetricsTable items={items} {...props} />
+      </MemoryRouter>
+    );
+  };
+
+  it('enables view button after selecting a single row', async () => {
+    renderTable();
+    const viewBtn = screen.getByRole('button', { name: /view pull request/i });
+    const checkboxes = screen.getAllByRole('checkbox');
+    const rowCheckbox = checkboxes[1] || checkboxes[0];
+    await act(async () => {
+      fireEvent.click(rowCheckbox);
+    });
+    await waitFor(() => expect(viewBtn).toBeEnabled());
+  });
+
+  it('switching repository then author clears repository filter', () => {
+    const items = [
+      baseItem,
+      {
+        ...baseItem,
+        id: '2',
+        author: 'someone',
+        repo: 'octo/other',
+        repo_name: 'other',
+      },
+    ];
+    renderTable(items);
+    act(() => {
+      fireEvent.click(screen.getByLabelText('Repository filter'));
+    });
+    act(() => {
+      fireEvent.click(screen.getByRole('menuitem', { name: 'octo/repo' }));
+    });
+    act(() => {
+      fireEvent.click(screen.getByLabelText('Author filter'));
+    });
+    act(() => {
+      fireEvent.click(screen.getByRole('menuitem', { name: 'someone' }));
+    });
+    expect(screen.getByLabelText('Author filter')).toHaveTextContent('someone');
+    expect(screen.getByLabelText('Repository filter')).toHaveTextContent(
+      'Repository'
+    );
+  });
+
+  it('updates internal state when queryParams prop changes (sort/order/page/per_page)', () => {
+    const { rerender } = render(
+      <MemoryRouter>
+        <MetricsTable
+          items={[baseItem]}
+          queryParams={{
+            sort: 'updated',
+            order: 'desc',
+            page: 1,
+            per_page: 20,
+          }}
+        />
+      </MemoryRouter>
+    );
+    rerender(
+      <MemoryRouter>
+        <MetricsTable
+          items={[baseItem]}
+          queryParams={{ sort: 'created', order: 'asc', page: 3, per_page: 10 }}
+        />
+      </MemoryRouter>
+    );
+    expect(screen.getByText(/Sort: created/)).toBeInTheDocument();
+    expect(screen.getByText(/Order: asc/)).toBeInTheDocument();
+    expect(screen.getByText(/Per page: 10/)).toBeInTheDocument();
+  });
+
+  it('shows N/A timeline segments when dates missing', () => {
+    const items = [
+      {
+        ...baseItem,
+        id: '3',
+        published_at: undefined,
+        first_review_at: undefined,
+        closed_at: undefined,
+      },
+    ];
+    renderTable(items);
+    const timeline = screen.getByLabelText(/Draft:/);
+    expect(timeline).toBeInTheDocument();
+    expect(timeline.getAttribute('aria-label')).toMatch(/N\/A/);
+  });
 });
