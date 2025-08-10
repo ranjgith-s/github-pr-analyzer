@@ -69,7 +69,10 @@ export function usePullRequestMetrics(
         }
       } catch (err) {
         if (isMounted) {
-          console.error(err);
+          // Avoid noisy expected error logs during test runs
+          if (process.env.NODE_ENV !== 'test') {
+            console.error(err);
+          }
           setError(err instanceof Error ? err.message : 'Unknown error');
         }
       } finally {

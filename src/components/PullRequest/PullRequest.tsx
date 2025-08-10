@@ -75,8 +75,11 @@ export default function PullRequestPage() {
         <div className="mb-4">
           {events && (
             <ol className="relative border-s border-divider pl-6">
-              {events.map((e, i) => (
-                <li key={i} className="mb-6 last:mb-0 flex items-start">
+              {events.map((e) => (
+                <li
+                  key={`${e.label}-${e.date}`}
+                  className="mb-6 last:mb-0 flex items-start"
+                >
                   <span
                     className="flex-shrink-0 w-3 h-3 mt-1.5 rounded-full bg-primary border-2 border-content1 shadow"
                     aria-hidden="true"

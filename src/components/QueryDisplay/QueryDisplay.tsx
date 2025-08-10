@@ -265,8 +265,10 @@ export function QueryDisplay({
                       size="sm"
                       color="primary"
                       isSelected={editMode === 'advanced'}
-                      onValueChange={(checked) =>
-                        setEditMode(checked ? 'advanced' : 'visual')
+                      onChange={() =>
+                        setEditMode((prev) =>
+                          prev === 'advanced' ? 'visual' : 'advanced'
+                        )
                       }
                     />
                     <span className="text-xs text-default-500">Advanced</span>
@@ -349,7 +351,6 @@ export function QueryDisplay({
                   ref={textareaRef}
                   value={editValue}
                   onValueChange={handleTextareaChange}
-                  onChange={(e) => handleTextareaChange(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Enter GitHub search query..."
                   minRows={2}

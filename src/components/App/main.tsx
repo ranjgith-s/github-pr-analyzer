@@ -8,13 +8,7 @@ import { AuthProvider } from '../../contexts/AuthContext/AuthContext';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
-    <BrowserRouter
-      future={{
-        // Opt into React Router v7 behavior early to remove warnings & prepare transition
-        v7_startTransition: true,
-        v7_relativeSplatPath: true,
-      }}
-    >
+    <BrowserRouter>
       <HeroUIProvider>
         <AuthProvider>
           <App />

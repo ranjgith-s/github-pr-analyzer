@@ -24,6 +24,11 @@ const CUSTOM_PROPS = [
   'minRows',
   'maxRows',
   'classNames',
+  // Added to silence React DOM unknown prop warnings in tests
+  'isSelected',
+  'onValueChange',
+  'codeString',
+  'isIconOnly',
 ];
 
 function filterProps(props) {
@@ -50,14 +55,37 @@ function passthrough({ children, ...props }) {
 }
 
 function InputMock(props) {
-  const { isClearable, ...rest } = props;
-  return React.createElement('input', filterProps(rest));
+  const { isClearable, onValueChange, ...rest } = props; // strip isClearable/onValueChange
+  // If consumer provided onValueChange (HeroUI convention), map to onChange for tests
+  const mapped = {
+    ...rest,
+    onChange: (e) => {
+      if (rest.onChange) {
+        rest.onChange(e);
+      }
+      if (onValueChange) {
+        onValueChange(e.target.value);
+      }
+    },
+  };
+  return React.createElement('input', filterProps(mapped));
 }
 
 function TextareaMock(props) {
   // Remove custom props and create textarea element
-  const { minRows, maxRows, classNames, ...rest } = props;
-  return React.createElement('textarea', filterProps(rest));
+  const { minRows, maxRows, classNames, onValueChange, ...rest } = props;
+  const mapped = {
+    ...rest,
+    onChange: (e) => {
+      if (rest.onChange) {
+        rest.onChange(e);
+      }
+      if (onValueChange) {
+        onValueChange(e.target.value);
+      }
+    },
+  };
+  return React.createElement('textarea', filterProps(mapped));
 }
 
 function ButtonMock({
@@ -66,9 +94,10 @@ function ButtonMock({
   onClick,
   isDisabled,
   color,
+  isIconOnly, // filtered
   ...props
 }) {
-  // Map onPress to onClick for DOM, do not pass onPress to DOM
+  // Map onPress to onClick for DOM, do not pass onPress/isIconOnly to DOM
   const handler = onPress || onClick;
   const domProps = {
     ...filterProps(props),
@@ -154,10 +183,17 @@ function TableMock({
 }
 function TableHeaderMock({ children }) {
   // Wrap columns in a <tr> inside <thead>
+  // Ensure each header cell has a stable key to avoid React warnings in tests
+  const headerChildren = React.Children.map(children, (child, idx) => {
+    if (React.isValidElement(child) && child.key == null) {
+      return React.cloneElement(child, { key: `col-${idx}` });
+    }
+    return child;
+  });
   return React.createElement(
     'thead',
     null,
-    React.createElement('tr', null, children)
+    React.createElement('tr', null, headerChildren)
   );
 }
 function TableBodyMock({
@@ -192,7 +228,7 @@ function TableBodyMock({
           selectedKeys && onSelectionChange
             ? React.createElement(
                 'td',
-                null,
+                { key: `select-${item.id ?? idx}` },
                 React.createElement('input', {
                   type: 'checkbox',
                   role: 'checkbox',
@@ -203,11 +239,18 @@ function TableBodyMock({
             : null;
         const row = children(item, idx);
         // row is a <tr> element, so we need to clone and prepend the checkbox cell
-        if (checkbox && React.isValidElement(row)) {
-          return React.cloneElement(row, {}, [
-            checkbox,
-            ...React.Children.toArray(row.props.children),
-          ]);
+        if (React.isValidElement(row)) {
+          const existingChildren = React.Children.toArray(row.props.children);
+          // Add keys to each existing cell if missing to prevent warnings
+          const keyedCells = existingChildren.map((cell, cIdx) => {
+            if (React.isValidElement(cell) && cell.key == null) {
+              return React.cloneElement(cell, { key: `cell-${idx}-${cIdx}` });
+            }
+            return cell;
+          });
+          const newChildren = checkbox ? [checkbox, ...keyedCells] : keyedCells;
+          const keyVal = row.key || item.id || idx;
+          return React.cloneElement(row, { key: keyVal }, newChildren);
         }
         return row;
       })
@@ -256,7 +299,9 @@ function PaginationMock({ total, page, onChange, ...props }) {
         'button',
         {
           key: p,
-          onClick: () => onChange && onChange(p),
+          onClick: () => {
+            if (onChange) onChange(p);
+          },
           disabled: p === page,
           style: { fontWeight: p === page ? 'bold' : 'normal', margin: 2 },
         },
@@ -298,14 +343,25 @@ function BadgeMock({ children, ...props }) {
     children
   );
 }
-function SwitchMock({ children, ...props }) {
+function SwitchMock({
+  children,
+  isSelected,
+  onChange,
+  onValueChange,
+  ...props
+}) {
+  // Map isSelected to aria-checked and fire both onChange and onValueChange
   return React.createElement(
     'button',
     {
       ...filterProps(props),
       role: 'switch',
-      'aria-checked': props.isSelected ? 'true' : 'false',
-      onClick: props.onChange,
+      'aria-checked': isSelected ? 'true' : 'false',
+      onClick: (e) => {
+        if (onChange) onChange(e);
+        if (onValueChange) onValueChange(!isSelected);
+      },
+      'data-selected': isSelected ? 'true' : 'false',
     },
     children
   );
@@ -492,12 +548,14 @@ function ModalFooterMock({ children, ...props }) {
   );
 }
 
-function SnippetMock({ children, ...props }) {
+function SnippetMock({ children, codeString, ...props }) {
+  // codeString is HeroUI prop; remove from DOM
   return React.createElement(
     'code',
     {
       ...filterProps(props),
       'data-testid': 'snippet',
+      'data-code-string': codeString, // keep accessible for assertions if needed
     },
     children
   );

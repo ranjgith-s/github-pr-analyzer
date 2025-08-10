@@ -18,16 +18,17 @@ afterEach(() => {
 beforeEach(() => {
   mockedHook.usePullRequestMetrics.mockReturnValue({
     items: [],
+    totalCount: 0,
+    incomplete: false,
     loading: false,
     error: null,
+    rateLimit: null,
   });
 });
 
 test('shows login when not authenticated', () => {
   render(
-    <MemoryRouter
-      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-    >
+    <MemoryRouter>
       <ThemeModeProvider>
         <AuthProvider>
           <App />
@@ -50,9 +51,7 @@ function LoggedIn() {
 
 test('shows home card when authenticated', async () => {
   render(
-    <MemoryRouter
-      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-    >
+    <MemoryRouter>
       <ThemeModeProvider>
         <AuthProvider>
           <LoggedIn />
@@ -81,10 +80,7 @@ test('shows breadcrumb on insights page', async () => {
     return <App />;
   }
   render(
-    <MemoryRouter
-      initialEntries={['/insights']}
-      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-    >
+    <MemoryRouter initialEntries={['/insights']}>
       <ThemeModeProvider>
         <AuthProvider>
           <Wrapper />

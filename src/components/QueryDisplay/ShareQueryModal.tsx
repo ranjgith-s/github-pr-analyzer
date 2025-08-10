@@ -50,7 +50,11 @@ export function ShareQueryModal({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      console.error('Failed to copy URL:', error);
+      if (process.env.NODE_ENV !== 'test') {
+        // Avoid noisy expected error logs in test environment
+        // eslint-disable-next-line no-console
+        console.error('Failed to copy URL:', error);
+      }
     }
   };
 
@@ -129,14 +133,14 @@ export function ShareQueryModal({
                 symbol=""
                 className="flex-1"
                 variant="bordered"
-                codeString={shareUrl}
+                data-share-url={shareUrl}
               >
                 {shareUrl}
               </Snippet>
               <Button
                 size="md"
                 variant="bordered"
-                isIconOnly
+                aria-label="Copy share URL"
                 onPress={handleCopyUrl}
                 color={copied ? 'success' : 'default'}
               >
