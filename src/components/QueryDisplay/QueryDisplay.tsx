@@ -2,8 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Card, CardBody, CardHeader } from '../ui';
 import { Button, Switch, Spinner, Textarea } from '../ui-bridge';
-import { Divider } from '../ui-bridge'; // still bridge
-import { Link } from '../ui-bridge'; // still bridge
+import { Divider, Link } from '../ui';
 import {
   MagnifyingGlassIcon,
   ExclamationCircleIcon,

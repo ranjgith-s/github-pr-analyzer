@@ -10,3 +10,6 @@ export * from './textarea';
 export * from './switch';
 export * from './dialog';
 export * from './spinner';
+export * from './breadcrumbs';
+export * from './divider';
+export * from './link';

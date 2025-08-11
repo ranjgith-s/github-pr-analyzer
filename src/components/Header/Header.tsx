@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { ArrowLeftStartOnRectangleIcon } from '@heroicons/react/24/solid';
 import { Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext/AuthContext';
-import { Avatar } from '../ui';
-import { Button, BreadcrumbItem, Breadcrumbs } from '../ui-bridge';
+import { Avatar, BreadcrumbItem, Breadcrumbs } from '../ui';
+import { Button } from '../ui-bridge';
 import { ChevronUpIcon } from 'lucide-react';
 import { getAuthenticatedUserProfile } from '../../utils/services/githubService';
 
@@ -42,12 +42,7 @@ export default function Header({ breadcrumbs }: HeaderProps) {
   return (
     <header className="w-full px-6 py-3 border-divider bg-background/80 backdrop-blur-md flex items-center justify-between">
       <div className="flex items-center gap-4 min-w-0">
-        <Breadcrumbs
-          variant="light"
-          size="md"
-          underline="hover"
-          className="font-bold"
-        >
+        <Breadcrumbs size="md" className="font-bold">
           {/* Explicit key to avoid implicit index key collision */}
           <BreadcrumbItem key="root">
             <RouterLink to="/" className="flex items-center gap-1">

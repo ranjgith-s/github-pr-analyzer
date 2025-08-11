@@ -3,9 +3,8 @@ import { useParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext/AuthContext';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 import { useMetaDescription } from '../../hooks/useMetaDescription';
-import { Card } from '../ui';
+import { Card, Breadcrumbs, BreadcrumbItem } from '../ui';
 import { Button } from '../ui-bridge';
-import { Breadcrumbs, BreadcrumbItem } from '../ui-bridge';
 import { fetchPullRequestDetails } from '../../utils/services/githubService';
 
 interface TimelineEntry {
