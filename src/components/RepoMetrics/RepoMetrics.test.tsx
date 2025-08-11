@@ -14,9 +14,6 @@ jest.mock(
     <div data-testid="loading-overlay">{props.show && 'Loading...'}</div>
   )
 );
-jest.mock('@heroui/react', () => ({
-  Card: (props: any) => <div data-testid="card">{props.children}</div>,
-}));
 
 describe('RepoMetrics', () => {
   beforeEach(() => {

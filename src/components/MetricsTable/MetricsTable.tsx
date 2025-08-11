@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useRef } from 'react';
+// Clean minimal, syntactically valid MetricsTable rebuilt after corruption.
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PRItem } from '../../types';
 import { QueryParams } from '../../utils/queryUtils';
@@ -22,59 +23,46 @@ import { Settings2Icon } from 'lucide-react';
 
 export function formatDuration(start?: string | null, end?: string | null) {
   if (!start || !end) return 'N/A';
-  const diffMs = new Date(end).getTime() - new Date(start).getTime();
-  if (diffMs < 0) return 'N/A';
-  const diffHours = Math.floor(diffMs / 36e5);
-  const days = Math.floor(diffHours / 24);
-  const hours = diffHours % 24;
-  return days > 0 ? `${days}d ${hours}h` : `${hours}h`;
+  const diff = new Date(end).getTime() - new Date(start).getTime();
+  if (diff < 0) return 'N/A';
+  const hours = Math.floor(diff / 36e5);
+  const days = Math.floor(hours / 24);
+  const rem = hours % 24;
+  if (days) {
+    return rem ? `${days}d ${rem}h` : `${days}d`;
+  }
+  return `${rem}h`;
 }
 
 interface MetricsTableProps {
-  // Removed query param – component no longer fetches data itself
   queryParams?: QueryParams;
-  totalCount?: number; // total results from GitHub (for server-side pagination)
-  items: PRItem[]; // externally provided list
+  totalCount?: number;
+  items: PRItem[];
   loading?: boolean;
   error?: string | null;
-  onPageChange?: (page: number) => void;
-  onPerPageChange?: (perPage: number) => void;
-  onSortChange?: (sort: string) => void;
-  onOrderChange?: (order: 'asc' | 'desc') => void;
+  onPageChange?: (p: number) => void;
+  onPerPageChange?: (n: number) => void;
+  onSortChange?: (s: string) => void;
+  onOrderChange?: (o: 'asc' | 'desc') => void;
 }
 
-export default function MetricsTable({
-  queryParams,
-  totalCount,
-  items,
-  loading,
-  error,
-  onPageChange,
-  onPerPageChange,
-  onSortChange,
-  onOrderChange,
-}: MetricsTableProps) {
-  const fetchedTotal = null; // no internal fetch anymore
-  const effectiveTotal = totalCount ?? fetchedTotal ?? items.length;
+export default function MetricsTable(props: MetricsTableProps) {
+  const { queryParams, totalCount, items, loading, error } = props;
+  const navigate = useNavigate();
+  const effectiveTotal = totalCount ?? items.length;
 
-  // Log error for now, in the future we can show it in the UI
-  if (error) {
-    // eslint-disable-next-line no-console
-    console.error('Failed to load pull request metrics:', error);
-  }
+  // State (mirrors prior design to keep tests stable)
   const [search, setSearch] = useState('');
-  const [repoFilter, setRepoFilter] = useState<string>('');
-  const [authorFilter, setAuthorFilter] = useState<string>('');
-  const [pageIndex, setPageIndex] = useState<number>(queryParams?.page || 1); // 1-based
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [pageSize, setPageSize] = useState<number>(queryParams?.per_page || 20); // server per_page
-  const [sort, setSort] = useState<string>(queryParams?.sort || 'updated');
+  const [repoFilter, setRepoFilter] = useState('');
+  const [authorFilter, setAuthorFilter] = useState('');
+  const [pageIndex, setPageIndex] = useState(queryParams?.page || 1);
+  const [pageSize, setPageSize] = useState(queryParams?.per_page || 20);
+  const [sort, setSort] = useState(queryParams?.sort || 'updated');
   const [order, setOrder] = useState<'asc' | 'desc'>(
     (queryParams?.order as 'asc' | 'desc') || 'desc'
   );
-  const tableContainerRef = useRef<HTMLDivElement>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  // Sync external changes
   useEffect(() => {
     if (queryParams) {
       setPageIndex(queryParams.page || 1);
@@ -84,45 +72,61 @@ export default function MetricsTable({
     }
   }, [queryParams]);
 
-  const navigate = useNavigate();
-  const loadingMessages = [
-    'Loading pull requests...',
-    'Crunching numbers...',
-    'Preparing table...',
-  ];
-
-  const repos = Array.from(new Set(items.map((i) => i.repo))).sort();
-  const authors = Array.from(new Set(items.map((i) => i.author))).sort();
-
-  // Search & filter
-  const filteredItems = items.filter((item) => {
-    const queryLower = search.toLowerCase();
-    const matchesSearch =
-      !search ||
-      item.title.toLowerCase().includes(queryLower) ||
-      item.repo.toLowerCase().includes(queryLower) ||
-      item.author.toLowerCase().includes(queryLower) ||
-      item.reviewers.some((r) => r.toLowerCase().includes(queryLower));
+  if (error) console.error('Failed to load pull request metrics:', error); // eslint-disable-line
+  if (loading) {
     return (
-      matchesSearch &&
-      (!repoFilter || item.repo === repoFilter) &&
-      (!authorFilter || item.author === authorFilter)
+      <LoadingOverlay
+        show={true}
+        messages={[
+          'Loading pull requests...',
+          'Crunching numbers...',
+          'Preparing table...',
+        ]}
+      />
+    );
+  }
+
+  // Derived data
+  const repos = [...new Set(items.map((i) => i.repo))].sort();
+  const authors = [...new Set(items.map((i) => i.author))].sort();
+  const filtered = items.filter((it) => {
+    const q = search.toLowerCase();
+    const matchTitle = it.title.toLowerCase().includes(q);
+    const matchRepo = it.repo.toLowerCase().includes(q);
+    const matchAuthor = it.author.toLowerCase().includes(q);
+    const matchReviewer = it.reviewers.some((r) => r.toLowerCase().includes(q));
+    const searchOK =
+      !q || matchTitle || matchRepo || matchAuthor || matchReviewer;
+    return (
+      searchOK &&
+      (!repoFilter || it.repo === repoFilter) &&
+      (!authorFilter || it.author === authorFilter)
     );
   });
 
   useEffect(() => {
-    setPageIndex(1);
+    setPageIndex(1); // reset page when filters change
   }, [repoFilter, authorFilter]);
 
-  const paginatedItems = filteredItems; // server-sized already
-
+  // Column definitions
   const columns = [
     {
-      id: 'repo',
-      header: 'Repository',
-      accessorKey: 'repo',
-      rowHeader: true,
+      id: 'select',
+      header: '',
+      cell: (row: PRItem) => (
+        <input
+          type="checkbox"
+          aria-label={`Select PR ${row.id}`}
+          checked={selectedIds.includes(row.id)}
+          onClick={(e) => e.stopPropagation()}
+          onChange={(e) => {
+            e.stopPropagation();
+            toggleSelect(row.id);
+          }}
+        />
+      ),
     },
+    { id: 'repo', header: 'Repository', accessorKey: 'repo' },
     {
       id: 'title',
       header: 'Title',
@@ -131,7 +135,7 @@ export default function MetricsTable({
           href={row.url}
           target="_blank"
           rel="noopener noreferrer"
-          style={{ color: 'inherit', textDecoration: 'none' }}
+          style={{ textDecoration: 'none', color: 'inherit' }}
         >
           {row.title}
         </a>
@@ -155,16 +159,16 @@ export default function MetricsTable({
       header: 'Reviewers',
       cell: (row: PRItem) => (
         <span>
-          {row.reviewers.map((name: string, idx: number) => (
-            <React.Fragment key={name}>
+          {row.reviewers.map((n, i) => (
+            <React.Fragment key={n}>
               <a
-                href={`https://github.com/${name}`}
+                href={`https://github.com/${n}`}
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                {name}
+                {n}
               </a>
-              {idx < row.reviewers.length - 1 && ', '}
+              {i < row.reviewers.length - 1 && ', '}
             </React.Fragment>
           ))}
         </span>
@@ -180,59 +184,34 @@ export default function MetricsTable({
       header: 'Diff',
       cell: (row: PRItem) => (
         <span>
-          <span style={{ color: 'green' }}>{`+${row.additions}`}</span>{' '}
-          <span style={{ color: 'red' }}>{`-${row.deletions}`}</span>
+          <span style={{ color: 'green' }}>+{row.additions}</span>{' '}
+          <span style={{ color: 'red' }}>-{row.deletions}</span>
         </span>
       ),
     },
-    {
-      id: 'comment_count',
-      header: 'Comments',
-      accessorKey: 'comment_count',
-    },
+    { id: 'comment_count', header: 'Comments', accessorKey: 'comment_count' },
     {
       id: 'timeline',
       header: 'Timeline',
       cell: (row: PRItem) => {
-        const created = new Date(row.created_at);
-        const published = row.published_at
-          ? new Date(row.published_at)
-          : created;
-        const reviewed = row.first_review_at
-          ? new Date(row.first_review_at)
-          : published;
-        const closed = row.closed_at ? new Date(row.closed_at) : reviewed;
-        const draftMs = Math.max(published.getTime() - created.getTime(), 0);
-        const reviewMs = Math.max(reviewed.getTime() - published.getTime(), 0);
-        const closeMs = Math.max(closed.getTime() - reviewed.getTime(), 0);
-        const total = draftMs + reviewMs + closeMs || 1;
-        const draftPct = (draftMs / total) * 100;
-        const reviewPct = (reviewMs / total) * 100;
-        const closePct = (closeMs / total) * 100;
-        const tooltipText = [
-          `Draft: ${formatDuration(row.created_at, row.published_at)}`,
-          `Review: ${formatDuration(row.published_at || row.created_at, row.first_review_at)}`,
-          `Close: ${formatDuration(row.first_review_at || row.published_at || row.created_at, row.closed_at)}`,
-        ].join('\n');
+        const created = row.created_at ? new Date(row.created_at) : null;
+        const published = row.published_at ? new Date(row.published_at) : null;
+        const firstReview = row.first_review_at ? new Date(row.first_review_at) : null;
+        const closed = row.closed_at ? new Date(row.closed_at) : null;
+        const draftMs = created && published ? published.getTime() - created.getTime() : null;
+        const reviewMs = published && firstReview ? firstReview.getTime() - published.getTime() : null;
+        const activeMs = firstReview && closed ? closed.getTime() - firstReview.getTime() : null;
+        const a = draftMs ?? 0; const b = reviewMs ?? 0; const d = activeMs ?? 0; const total = (a + b + d) || 1; const pct = (x:number)=> (x/ total) * 100;
+        const fmt = (ms: number | null) => (ms == null ? 'N/A' : `${Math.floor(ms/36e5)}h`);
+        const draftLabel = fmt(draftMs); const reviewLabel = fmt(reviewMs); const activeLabel = fmt(activeMs);
         return (
-          <div aria-label={tooltipText} className="flex items-center w-24">
-            <div className="flex w-full gap-0.5">
-              <div
-                className="h-2 rounded-l bg-success"
-                style={{ width: `${draftPct}%` }}
-                title={`Draft: ${formatDuration(row.created_at, row.published_at)}`}
-              />
-              <div
-                className="h-2 bg-warning"
-                style={{ width: `${reviewPct}%` }}
-                title={`Review: ${formatDuration(row.published_at || row.created_at, row.first_review_at)}`}
-              />
-              <div
-                className="h-2 rounded-r bg-primary"
-                style={{ width: `${closePct}%` }}
-                title={`Close: ${formatDuration(row.first_review_at || row.published_at || row.created_at, row.closed_at)}`}
-              />
+          <div className="flex flex-col items-start w-32" aria-label={`Draft: ${draftLabel} Review: ${reviewLabel} Active: ${activeLabel}`}>
+            <div className="flex w-full gap-0.5 items-center">
+              <div className="h-2 rounded-l bg-success" style={{ width: `${pct(a)}%` }} />
+              <div className="h-2 bg-warning" style={{ width: `${pct(b)}%` }} />
+              <div className="h-2 rounded-r bg-primary" style={{ width: `${pct(d)}%` }} />
             </div>
+            <div className="text-[10px] mt-1 whitespace-nowrap" aria-hidden="true">{draftLabel} | {reviewLabel} | {activeLabel}</div>
           </div>
         );
       },
@@ -249,61 +228,31 @@ export default function MetricsTable({
     },
   ];
 
-  const allColumns = columns;
-  const defaultVisibleColumns = allColumns.map((col) => col.id);
   const [visibleColumns, setVisibleColumns] = useState<string[]>(
-    defaultVisibleColumns
+    columns.map((c) => c.id)
   );
 
-  const handleRepoFilterChange = (repo: string) => {
-    setRepoFilter(repo);
-    setAuthorFilter('');
-  };
-  const handleAuthorFilterChange = (author: string) => {
-    setAuthorFilter(author);
-    setRepoFilter('');
-  };
-  const handleSortChange = (newSort: string) => {
-    setSort(newSort);
-    onSortChange?.(newSort);
-  };
-  const handleOrderChange = (newOrder: 'asc' | 'desc') => {
-    setOrder(newOrder);
-    onOrderChange?.(newOrder);
-  };
-  const handlePerPageChange = (newSize: number) => {
-    setPageSize(newSize);
-    setPageIndex(1);
-    onPerPageChange?.(newSize);
-  };
-
-  const extractFirstKey = (keys: any): string => {
+  const firstKey = (keys: any): string => {
     if (!keys) return '';
     if (typeof keys === 'string') return keys;
     if (Array.isArray(keys)) return keys[0];
     if (keys instanceof Set) return Array.from(keys)[0] as string;
     if (typeof keys === 'object' && 'currentKey' in keys)
-      return (keys as any).currentKey as string;
+      return (keys as any).currentKey;
     return '';
   };
 
-  const totalPages = Math.max(1, Math.ceil(effectiveTotal / pageSize));
-  const handlePageChange = (newPage: number) => {
-    setPageIndex(newPage);
-    onPageChange?.(newPage);
-  };
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
   };
 
-  if (loading) {
-    return <LoadingOverlay show={loading} messages={loadingMessages} />;
-  }
+  const totalPages = Math.max(1, Math.ceil(effectiveTotal / pageSize));
 
   return (
-    <div ref={tableContainerRef} style={{ width: '100%' }}>
+    <div style={{ width: '100%' }}>
+      {/* Controls */}
       <div className="flex mb-6 gap-3 items-center flex-wrap">
         <Input
           clearable
@@ -313,6 +262,7 @@ export default function MetricsTable({
           className="min-w-[220px]"
           aria-label="Search pull requests"
         />
+        {/* Repository filter */}
         <Dropdown>
           <DropdownTrigger>
             <Button
@@ -327,16 +277,17 @@ export default function MetricsTable({
             aria-label="Select repository"
             selectionMode="single"
             selectedKeys={repoFilter ? new Set([repoFilter]) : new Set()}
-            onSelectionChange={(keys: any) =>
-              handleRepoFilterChange(extractFirstKey(keys))
-            }
+            onSelectionChange={(keys: any) => {
+              const r = firstKey(keys);
+              setRepoFilter(r);
+              if (r) setAuthorFilter('');
+            }}
           >
             <>
-              {/* All option: empty key resets filter */}
               <DropdownItem
                 itemKey=""
                 role="menuitem"
-                onClick={() => handleRepoFilterChange('')}
+                onClick={() => setRepoFilter('')}
               >
                 All
               </DropdownItem>
@@ -346,7 +297,7 @@ export default function MetricsTable({
                   itemKey={r || 'all-repos'}
                   data-testid={`repo-option-${r}`}
                   role="menuitem"
-                  onClick={() => handleRepoFilterChange(r)}
+                  onClick={() => { setRepoFilter(r); setAuthorFilter(''); }}
                 >
                   {r}
                 </DropdownItem>
@@ -354,6 +305,7 @@ export default function MetricsTable({
             </>
           </DropdownMenu>
         </Dropdown>
+        {/* Author filter */}
         <Dropdown>
           <DropdownTrigger>
             <Button
@@ -368,15 +320,17 @@ export default function MetricsTable({
             aria-label="Select author"
             selectionMode="single"
             selectedKeys={authorFilter ? new Set([authorFilter]) : new Set()}
-            onSelectionChange={(keys: any) =>
-              handleAuthorFilterChange(extractFirstKey(keys))
-            }
+            onSelectionChange={(keys: any) => {
+              const a = firstKey(keys);
+              setAuthorFilter(a);
+              if (a) setRepoFilter('');
+            }}
           >
             <>
               <DropdownItem
                 itemKey=""
                 role="menuitem"
-                onClick={() => handleAuthorFilterChange('')}
+                onClick={() => setAuthorFilter('')}
               >
                 All
               </DropdownItem>
@@ -386,7 +340,7 @@ export default function MetricsTable({
                   itemKey={a || 'all-authors'}
                   data-testid={`author-option-${a}`}
                   role="menuitem"
-                  onClick={() => handleAuthorFilterChange(a)}
+                  onClick={() => { setAuthorFilter(a); setRepoFilter(''); }}
                 >
                   {a}
                 </DropdownItem>
@@ -394,6 +348,7 @@ export default function MetricsTable({
             </>
           </DropdownMenu>
         </Dropdown>
+        {/* Sort field */}
         <Dropdown>
           <DropdownTrigger>
             <Button
@@ -408,35 +363,34 @@ export default function MetricsTable({
             aria-label="Select sort field"
             selectionMode="single"
             selectedKeys={new Set([sort])}
-            onSelectionChange={(keys: any) =>
-              handleSortChange(extractFirstKey(keys))
-            }
+            onSelectionChange={(keys: any) => { const s = firstKey(keys); setSort(s); props.onSortChange?.(s); }}
           >
             <>
               <DropdownItem
                 itemKey="updated"
                 role="menuitem"
-                onClick={() => handleSortChange('updated')}
+                onClick={() => { setSort('updated'); props.onSortChange?.('updated'); }}
               >
                 updated
               </DropdownItem>
               <DropdownItem
                 itemKey="created"
                 role="menuitem"
-                onClick={() => handleSortChange('created')}
+                onClick={() => { setSort('created'); props.onSortChange?.('created'); }}
               >
                 created
               </DropdownItem>
               <DropdownItem
                 itemKey="comments"
                 role="menuitem"
-                onClick={() => handleSortChange('comments')}
+                onClick={() => { setSort('comments'); props.onSortChange?.('comments'); }}
               >
                 comments
               </DropdownItem>
             </>
           </DropdownMenu>
         </Dropdown>
+        {/* Order */}
         <Dropdown>
           <DropdownTrigger>
             <Button
@@ -451,28 +405,27 @@ export default function MetricsTable({
             aria-label="Select order"
             selectionMode="single"
             selectedKeys={new Set([order])}
-            onSelectionChange={(keys: any) =>
-              handleOrderChange(extractFirstKey(keys) as 'asc' | 'desc')
-            }
+            onSelectionChange={(keys: any) => { const o = firstKey(keys) as 'asc' | 'desc'; setOrder(o); props.onOrderChange?.(o); }}
           >
             <>
               <DropdownItem
                 itemKey="desc"
                 role="menuitem"
-                onClick={() => handleOrderChange('desc')}
+                onClick={() => { setOrder('desc'); props.onOrderChange?.('desc'); }}
               >
                 desc
               </DropdownItem>
               <DropdownItem
                 itemKey="asc"
                 role="menuitem"
-                onClick={() => handleOrderChange('asc')}
+                onClick={() => { setOrder('asc'); props.onOrderChange?.('asc'); }}
               >
                 asc
               </DropdownItem>
             </>
           </DropdownMenu>
         </Dropdown>
+        {/* Page size */}
         <Dropdown>
           <DropdownTrigger>
             <Button
@@ -487,9 +440,10 @@ export default function MetricsTable({
             aria-label="Select per page"
             selectionMode="single"
             selectedKeys={new Set([String(pageSize)])}
-            onSelectionChange={(keys: any) =>
-              handlePerPageChange(Number(extractFirstKey(keys)))
-            }
+            onSelectionChange={(keys: any) => {
+              const v = Number(firstKey(keys));
+              if (v) { setPageSize(v); setPageIndex(1); props.onPerPageChange?.(v); }
+            }}
           >
             <>
               {[10, 20, 30, 40, 50].map((n) => (
@@ -497,7 +451,7 @@ export default function MetricsTable({
                   key={n}
                   itemKey={String(n)}
                   role="menuitem"
-                  onClick={() => handlePerPageChange(n)}
+                  onClick={() => { setPageSize(n); setPageIndex(1); props.onPerPageChange?.(n); }}
                 >
                   {n}
                 </DropdownItem>
@@ -505,6 +459,7 @@ export default function MetricsTable({
             </>
           </DropdownMenu>
         </Dropdown>
+        {/* Column chooser */}
         <Dropdown>
           <DropdownTrigger>
             <Button variant="light" aria-label="Choose columns">
@@ -534,7 +489,7 @@ export default function MetricsTable({
                     );
                   }}
                 >
-                  {col.header}
+                  {col.header || '(select)'}
                 </DropdownItem>
               ))}
             </>
@@ -547,6 +502,7 @@ export default function MetricsTable({
           Total: {effectiveTotal}
         </div>
       </div>
+      {/* Action bar */}
       <div style={{ marginBottom: 16 }}>
         <Button
           variant="solid"
@@ -557,13 +513,16 @@ export default function MetricsTable({
             if (!selectedItem) return;
             navigate(
               `/pr/${selectedItem.owner}/${selectedItem.repo_name}/${selectedItem.number}`,
-              { state: selectedItem }
+              {
+                state: selectedItem,
+              }
             );
           }}
         >
           View pull request
         </Button>
       </div>
+      {/* Table */}
       <Table
         aria-label="PR Metrics Table"
         data-testid="metrics-table"
@@ -571,29 +530,31 @@ export default function MetricsTable({
       >
         <TableHeader>
           {columns
-            .filter((col) => visibleColumns.includes(col.id))
-            .map((col) => (
-              <TableColumn key={col.id}>{col.header.toUpperCase()}</TableColumn>
+            .filter((c) => visibleColumns.includes(c.id))
+            .map((c) => (
+              <TableColumn key={c.id}>
+                {c.header ? String(c.header).toUpperCase() : ''}
+              </TableColumn>
             ))}
         </TableHeader>
         <TableBody
-          items={paginatedItems}
+          items={filtered}
           emptyContent={<span>No pull requests found.</span>}
         >
           {(row: PRItem) => (
             <TableRow
-              key={row.id} // ensure stable unique key
+              key={row.id}
               onClick={() => toggleSelect(row.id)}
               className={selectedIds.includes(row.id) ? 'bg-accent/40' : ''}
             >
               {columns
-                .filter((col) => visibleColumns.includes(col.id))
-                .map((col) => (
-                  <TableCell key={col.id} data-testid={`cell-${col.id}`}>
-                    {col.cell
-                      ? col.cell(row)
-                      : col.accessorKey
-                        ? (row as any)[col.accessorKey]
+                .filter((c) => visibleColumns.includes(c.id))
+                .map((c) => (
+                  <TableCell key={c.id} data-testid={`cell-${c.id}`}>
+                    {c.cell
+                      ? c.cell(row)
+                      : c.accessorKey
+                        ? (row as any)[c.accessorKey]
                         : null}
                   </TableCell>
                 ))}
@@ -601,16 +562,28 @@ export default function MetricsTable({
           )}
         </TableBody>
       </Table>
-      <div className="flex justify-center">
-        <Pagination
-          data-testid="pagination"
-          aria-label="Pagination"
-          total={totalPages}
-          page={pageIndex}
-          onChange={handlePageChange}
-          size="sm"
-          className="mt-4"
-        />
+      {/* Pagination */}
+      <div className="flex flex-col items-center gap-2 mt-4" aria-label="Pagination">
+        <div
+          className="text-xs text-muted-foreground"
+          aria-label="pagination-summary"
+        >
+          Page {pageIndex} of {totalPages}
+        </div>
+        {totalPages > 1 && (
+          <Pagination
+            data-testid="pagination"
+            aria-label="Pagination"
+            total={totalPages}
+            page={pageIndex}
+            onChange={(p) => {
+              setPageIndex(p);
+              props.onPageChange?.(p);
+            }}
+            size="sm"
+            className="mt-0"
+          />
+        )}
       </div>
     </div>
   );

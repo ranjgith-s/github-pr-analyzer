@@ -4,9 +4,8 @@ exports[`Home matches snapshot 1`] = `
 <div
   class="flex justify-center mt-12 gap-6"
 >
-  <div
-    as="a"
-    class="p-8 w-full max-w-sm hover:shadow-xl transition-shadow mock-card"
+  <a
+    class="rounded-lg border bg-card text-card-foreground shadow-sm cursor-pointer p-8 w-full max-w-sm hover:shadow-xl transition-shadow"
     href="/insights"
   >
     <div
@@ -38,10 +37,9 @@ exports[`Home matches snapshot 1`] = `
     >
       See metrics for your pull requests, including review time and lead time.
     </p>
-  </div>
-  <div
-    as="a"
-    class="p-8 w-full max-w-sm hover:shadow-xl transition-shadow mock-card"
+  </a>
+  <a
+    class="rounded-lg border bg-card text-card-foreground shadow-sm cursor-pointer p-8 w-full max-w-sm hover:shadow-xl transition-shadow"
     href="/developer"
   >
     <div
@@ -76,10 +74,9 @@ exports[`Home matches snapshot 1`] = `
     >
       View a developer's contributions and review activity across GitHub repositories with radar charts.
     </p>
-  </div>
-  <div
-    as="a"
-    class="p-8 w-full max-w-sm hover:shadow-xl transition-shadow mock-card"
+  </a>
+  <a
+    class="rounded-lg border bg-card text-card-foreground shadow-sm cursor-pointer p-8 w-full max-w-sm hover:shadow-xl transition-shadow"
     href="/repo"
   >
     <div
@@ -109,7 +106,6 @@ exports[`Home matches snapshot 1`] = `
     >
       Explore repository health and DevOps metrics from GitHub.
     </p>
-  </div>
+  </a>
 </div>
 `;
-

@@ -29,7 +29,7 @@ textarea {
 
 :root {
   --magic-radius: 24px;
-  /* Map Primer custom properties to HeroUI tokens or fallback colors */
+  /* Map Primer custom properties to internal design tokens or fallback colors */
   --color-canvas-default: var(--nextui-background-default, #ffffff);
   --bgColor-neutral-muted: var(--nextui-content2-default, #f4f4f5);
   --bgColor-neutral-emphasis: var(--nextui-content3-default, #e4e4e7);

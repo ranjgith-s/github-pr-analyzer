@@ -148,6 +148,7 @@ export const Button = React.forwardRef<HTMLButtonElement, LegacyButtonProps>(
           'inline-flex items-center gap-2',
           className
         )}
+  data-color={color}
         {...rest}
       >
         {startContent && (

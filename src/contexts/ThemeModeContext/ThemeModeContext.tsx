@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { HeroUIProvider } from '@heroui/system';
+// Removed HeroUIProvider; shadcn/ui relies only on Tailwind + CSS vars. This provider now only manages color mode.
 
 // Context for color mode (day/night)
 const ThemeModeContext = createContext<{
@@ -30,7 +30,7 @@ export const ThemeModeProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <ThemeModeContext.Provider value={{ colorMode, toggleColorMode }}>
-      <HeroUIProvider>{children}</HeroUIProvider>
+      {children}
     </ThemeModeContext.Provider>
   );
 };

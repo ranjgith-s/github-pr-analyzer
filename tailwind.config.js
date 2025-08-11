@@ -1,5 +1,4 @@
 // tailwind.config.js
-import { heroui } from '@heroui/theme';
 import animate from 'tailwindcss-animate';
 
 /** @type {import('tailwindcss').Config} */
@@ -7,7 +6,6 @@ export default {
   content: [
     './src/**/*.{js,ts,jsx,tsx}',
     './index.html',
-    './node_modules/@heroui/theme/dist/components/**/*.js', // include all heroui components
     './src/components/ui-bridge/**/*.{ts,tsx}',
     './src/components/ui/**/*.{ts,tsx}',
   ],
@@ -51,5 +49,5 @@ export default {
     },
   },
   darkMode: 'class',
-  plugins: [heroui(), animate],
+  plugins: [animate],
 };

@@ -49,6 +49,7 @@ interface BreadcrumbItemProps {
   color?: 'foreground' | string;
   isCurrent?: boolean;
   className?: string;
+  href?: string; // support legacy usage passing href directly
 }
 
 export const BreadcrumbItem: React.FC<BreadcrumbItemProps> = ({
@@ -56,6 +57,7 @@ export const BreadcrumbItem: React.FC<BreadcrumbItemProps> = ({
   color,
   isCurrent = false,
   className,
+  href,
 }) => {
   const baseLinkClasses = clsx(
     'whitespace-nowrap truncate',
@@ -67,6 +69,19 @@ export const BreadcrumbItem: React.FC<BreadcrumbItemProps> = ({
     !isCurrent && 'hover:text-foreground transition-colors',
     className
   );
+
+  if (href) {
+    return (
+      <li
+        aria-current={isCurrent ? 'page' : undefined}
+        className="flex items-center gap-1 max-w-[14ch]"
+      >
+        <a href={href} className={baseLinkClasses}>
+          {children}
+        </a>
+      </li>
+    );
+  }
 
   if (React.isValidElement(children)) {
     return (

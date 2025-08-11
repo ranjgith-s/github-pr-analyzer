@@ -38,9 +38,12 @@ export const Spinner: React.FC<LegacySpinnerProps> = ({
 }) => {
   return (
     <span
-      role="status"
+      role="progressbar"
       aria-label={label}
       className="inline-flex items-center justify-center"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuetext={label}
     >
       <Loader2
         aria-hidden="true"

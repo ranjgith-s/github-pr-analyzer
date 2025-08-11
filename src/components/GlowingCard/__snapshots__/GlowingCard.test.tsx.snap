@@ -2,9 +2,8 @@
 
 exports[`GlowingCard matches snapshot 1`] = `
 <div
-  class="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl shadow-xl p-8 min-w-[320px] max-w-[400px] mx-auto  mock-card"
+  class="border bg-card text-card-foreground bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl shadow-xl p-8 min-w-[320px] max-w-[400px] mx-auto"
 >
   Snapshot
 </div>
 `;
-

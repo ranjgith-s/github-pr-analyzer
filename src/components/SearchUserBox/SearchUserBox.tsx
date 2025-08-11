@@ -23,7 +23,7 @@ export default function SearchUserBox({
         onChange={(e) => onQueryChange(e.target.value)}
         className="w-full"
         aria-label="Search GitHub users"
-        // @heroui prop mapping
+        /* legacy: clearable attr retained for API parity */
         clearable
       />
       {options.length > 0 && (

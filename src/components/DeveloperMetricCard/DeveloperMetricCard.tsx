@@ -42,12 +42,12 @@ export default function DeveloperMetricCard({
       </h3>
       <span className="text-base block">{brief}</span>
       <p className="text-foreground/60 text-xs">{details}</p>
-      <p className="text-xs flex items-center gap-1">
+      <div className="text-xs flex items-center gap-1">
         <Badge variant={badgeVariant as any}>
           {format ? format(value) : value}
         </Badge>
-        {valueDesc}
-      </p>
+        <span>{valueDesc}</span>
+      </div>
     </Card>
   );
 }

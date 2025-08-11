@@ -49,7 +49,10 @@ export const Chip: React.FC<ChipProps> = ({
         : flatOverlay[color];
 
   return (
-    <span className={clsx(base, sizeClasses, variantClasses, className)}>
+    <span
+      className={clsx(base, sizeClasses, variantClasses, className)}
+      data-testid="chip"
+    >
       {children}
       {onClose && (
         <button

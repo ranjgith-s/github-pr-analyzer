@@ -12,8 +12,6 @@ module.exports = {
     '\\.(css|less|scss)$': 'identity-obj-proxy',
     '^framer-motion$': '<rootDir>/__mocks__/framer-motion.js',
     '^@headlessui/react$': '<rootDir>/__mocks__/@headlessui/react.js',
-    '^@heroui/react$': '<rootDir>/__mocks__/@heroui/react.js',
-    '^@heroui/system$': '<rootDir>/__mocks__/@heroui/system.js',
     '^@octokit/request-error$': '<rootDir>/__mocks__/@octokit/request-error.js',
   },
   transformIgnorePatterns: [
