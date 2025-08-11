@@ -1,5 +1,12 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { Card, CardBody, Kbd, Divider, ScrollShadow } from '@heroui/react';
+// Replaced direct HeroUI imports with bridge components
+import {
+  Card,
+  CardBody,
+  Kbd,
+  Divider,
+  ScrollShadow,
+} from '../../components/ui-bridge';
 import {
   MagnifyingGlassIcon,
   UserIcon,
@@ -153,14 +160,14 @@ export function QueryAutocomplete({
                         key={`${suggestion.type}-${suggestion.value}`}
                         className={`flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors ${
                           selectedIndex === currentIndex
-                            ? 'bg-primary-50 text-primary-900'
-                            : 'hover:bg-default-100'
+                            ? 'bg-primary/10 text-primary'
+                            : 'hover:bg-muted'
                         }`}
                         onClick={() => onSuggestionSelect(suggestion, position)}
                         role="option"
                         aria-selected={selectedIndex === currentIndex}
                       >
-                        <span className="text-default-500 flex-shrink-0">
+                        <span className="text-muted-foreground flex-shrink-0">
                           {getIcon(suggestion)}
                         </span>
                         <div className="flex-1 min-w-0">
@@ -168,7 +175,7 @@ export function QueryAutocomplete({
                             {suggestion.display}
                           </div>
                           {suggestion.description && (
-                            <div className="text-xs text-default-500 truncate">
+                            <div className="text-xs text-muted-foreground truncate">
                               {suggestion.description}
                             </div>
                           )}
@@ -186,8 +193,8 @@ export function QueryAutocomplete({
             )}
           </div>
         </ScrollShadow>
-        <div className="px-3 py-2 border-t border-divider bg-default-50">
-          <div className="flex items-center gap-2 text-xs text-default-500">
+        <div className="px-3 py-2 border-t border-border bg-muted/30">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Kbd>↑↓</Kbd>
             <span>Navigate</span>
             <Kbd>Enter</Kbd>

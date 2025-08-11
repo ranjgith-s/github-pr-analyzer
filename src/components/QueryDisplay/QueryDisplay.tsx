@@ -2,9 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Card, CardBody, CardHeader, Button, Switch } from '../ui-bridge';
 import { Spinner } from '../ui-bridge';
-import { Divider } from '@heroui/react'; // TODO: replace with local divider
+import { Divider } from '../ui-bridge'; // migrated divider bridge
 import { Textarea } from '../ui-bridge';
-import { Link } from '@heroui/react'; // pending replacement
+import { Link } from '../ui-bridge'; // migrated link bridge
 import {
   MagnifyingGlassIcon,
   ExclamationCircleIcon,

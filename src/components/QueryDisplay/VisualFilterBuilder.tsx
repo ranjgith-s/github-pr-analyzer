@@ -7,7 +7,7 @@ import {
   Chip,
   Autocomplete,
   AutocompleteItem,
-} from '@heroui/react';
+} from '../ui-bridge';
 import {
   parseGitHubQuery,
   buildGitHubQuery,

@@ -13,7 +13,7 @@ import {
   Snippet,
   Divider,
   ButtonGroup,
-} from '@heroui/react';
+} from '../../components/ui-bridge';
 import {
   ShareIcon,
   ClipboardIcon,
@@ -92,12 +92,12 @@ export function ShareQueryModal({
           {/* Query Preview */}
           <Card shadow="sm">
             <CardBody className="p-4">
-              <div className="text-sm text-default-500 mb-2">Query:</div>
-              <code className="text-sm bg-default-100 p-2 rounded block break-all">
+              <div className="text-sm text-muted-foreground mb-2">Query:</div>
+              <code className="text-sm bg-muted/30 p-2 rounded block break-all">
                 {query}
               </code>
               {resultCount !== undefined && (
-                <div className="text-xs text-default-500 mt-2">
+                <div className="text-xs text-muted-foreground mt-2">
                   {resultCount} result{resultCount !== 1 ? 's' : ''}
                 </div>
               )}
@@ -107,19 +107,14 @@ export function ShareQueryModal({
           {/* Customization */}
           <div className="space-y-3">
             <Input
-              label="Title (optional)"
               placeholder="My awesome PR search"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              variant="bordered"
             />
             <Textarea
-              label="Description (optional)"
               placeholder="Additional context about this search..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              variant="bordered"
-              minRows={2}
             />
           </div>
 
@@ -130,7 +125,6 @@ export function ShareQueryModal({
             <div className="text-sm font-medium">Share URL</div>
             <div className="flex gap-2">
               <Snippet
-                symbol=""
                 className="flex-1"
                 variant="bordered"
                 data-share-url={shareUrl}
@@ -158,9 +152,10 @@ export function ShareQueryModal({
           {/* Social Sharing */}
           <div className="space-y-3">
             <div className="text-sm font-medium">Share via</div>
-            <ButtonGroup variant="bordered" className="w-full">
+            <ButtonGroup className="w-full">
               <Button
                 className="flex-1"
+                variant="bordered"
                 startContent={
                   <svg
                     className="h-4 w-4"
@@ -176,6 +171,7 @@ export function ShareQueryModal({
               </Button>
               <Button
                 className="flex-1"
+                variant="bordered"
                 startContent={
                   <svg
                     className="h-4 w-4"
@@ -191,6 +187,7 @@ export function ShareQueryModal({
               </Button>
               <Button
                 className="flex-1"
+                variant="bordered"
                 startContent={<LinkIcon className="h-4 w-4" />}
                 onPress={handleShareViaEmail}
               >

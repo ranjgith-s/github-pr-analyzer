@@ -25,6 +25,43 @@ export * from '../ui/textarea';
 export * from '../ui/switch';
 
 // NOTE: Gradually replace above HeroUI re-exports with local ones.
-export { Breadcrumbs, BreadcrumbItem } from './breadcrumbs'; // temp pass-through until replaced
+export { Breadcrumbs, BreadcrumbItem } from './breadcrumbs'; // now local TSX implementation
 export { Divider } from './divider';
 export { Link } from './link';
+export { Kbd } from './kbd';
+export { ScrollShadow } from './scroll-shadow';
+
+// Modal suite (pass-through for now)
+export {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+} from './modal';
+// Snippet (pass-through for now)
+export { Snippet } from './snippet';
+// ButtonGroup (pass-through for now)
+export { ButtonGroup } from './button-group';
+export {
+  Table,
+  TableHeader,
+  TableBody,
+  TableColumn,
+  TableRow,
+  TableCell,
+} from './table';
+
+// Newly added bridge components
+export {
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+} from './dropdown';
+export { Pagination } from './pagination';
+
+// Newly added select, chip, autocomplete bridge wrappers
+export { Select, SelectItem } from './select';
+export { Chip } from './chip';
+export { Autocomplete, AutocompleteItem } from './autocomplete';

@@ -17,7 +17,7 @@ import {
   DropdownMenu,
   DropdownItem,
   Input,
-} from '@heroui/react';
+} from '../ui-bridge';
 import { Settings2Icon } from 'lucide-react';
 
 export function formatDuration(start?: string | null, end?: string | null) {
@@ -306,7 +306,7 @@ export default function MetricsTable({
     <div ref={tableContainerRef} style={{ width: '100%' }}>
       <div className="flex mb-6 gap-3 items-center flex-wrap">
         <Input
-          isClearable
+          clearable
           placeholder="Search..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -327,14 +327,14 @@ export default function MetricsTable({
             aria-label="Select repository"
             selectionMode="single"
             selectedKeys={repoFilter ? new Set([repoFilter]) : new Set()}
-            onSelectionChange={(keys) =>
+            onSelectionChange={(keys: any) =>
               handleRepoFilterChange(extractFirstKey(keys))
             }
           >
             <>
               {/* All option: empty key resets filter */}
               <DropdownItem
-                key=""
+                itemKey=""
                 role="menuitem"
                 onClick={() => handleRepoFilterChange('')}
               >
@@ -343,6 +343,7 @@ export default function MetricsTable({
               {repos.map((r) => (
                 <DropdownItem
                   key={r || 'all-repos'}
+                  itemKey={r || 'all-repos'}
                   data-testid={`repo-option-${r}`}
                   role="menuitem"
                   onClick={() => handleRepoFilterChange(r)}
@@ -367,13 +368,13 @@ export default function MetricsTable({
             aria-label="Select author"
             selectionMode="single"
             selectedKeys={authorFilter ? new Set([authorFilter]) : new Set()}
-            onSelectionChange={(keys) =>
+            onSelectionChange={(keys: any) =>
               handleAuthorFilterChange(extractFirstKey(keys))
             }
           >
             <>
               <DropdownItem
-                key=""
+                itemKey=""
                 role="menuitem"
                 onClick={() => handleAuthorFilterChange('')}
               >
@@ -382,6 +383,7 @@ export default function MetricsTable({
               {authors.map((a) => (
                 <DropdownItem
                   key={a || 'all-authors'}
+                  itemKey={a || 'all-authors'}
                   data-testid={`author-option-${a}`}
                   role="menuitem"
                   onClick={() => handleAuthorFilterChange(a)}
@@ -406,27 +408,27 @@ export default function MetricsTable({
             aria-label="Select sort field"
             selectionMode="single"
             selectedKeys={new Set([sort])}
-            onSelectionChange={(keys) =>
+            onSelectionChange={(keys: any) =>
               handleSortChange(extractFirstKey(keys))
             }
           >
             <>
               <DropdownItem
-                key="updated"
+                itemKey="updated"
                 role="menuitem"
                 onClick={() => handleSortChange('updated')}
               >
                 updated
               </DropdownItem>
               <DropdownItem
-                key="created"
+                itemKey="created"
                 role="menuitem"
                 onClick={() => handleSortChange('created')}
               >
                 created
               </DropdownItem>
               <DropdownItem
-                key="comments"
+                itemKey="comments"
                 role="menuitem"
                 onClick={() => handleSortChange('comments')}
               >
@@ -449,20 +451,20 @@ export default function MetricsTable({
             aria-label="Select order"
             selectionMode="single"
             selectedKeys={new Set([order])}
-            onSelectionChange={(keys) =>
+            onSelectionChange={(keys: any) =>
               handleOrderChange(extractFirstKey(keys) as 'asc' | 'desc')
             }
           >
             <>
               <DropdownItem
-                key="desc"
+                itemKey="desc"
                 role="menuitem"
                 onClick={() => handleOrderChange('desc')}
               >
                 desc
               </DropdownItem>
               <DropdownItem
-                key="asc"
+                itemKey="asc"
                 role="menuitem"
                 onClick={() => handleOrderChange('asc')}
               >
@@ -485,7 +487,7 @@ export default function MetricsTable({
             aria-label="Select per page"
             selectionMode="single"
             selectedKeys={new Set([String(pageSize)])}
-            onSelectionChange={(keys) =>
+            onSelectionChange={(keys: any) =>
               handlePerPageChange(Number(extractFirstKey(keys)))
             }
           >
@@ -493,6 +495,7 @@ export default function MetricsTable({
               {[10, 20, 30, 40, 50].map((n) => (
                 <DropdownItem
                   key={n}
+                  itemKey={String(n)}
                   role="menuitem"
                   onClick={() => handlePerPageChange(n)}
                 >
@@ -513,7 +516,7 @@ export default function MetricsTable({
             closeOnSelect={false}
             selectionMode="multiple"
             selectedKeys={new Set(visibleColumns)}
-            onSelectionChange={(keys) =>
+            onSelectionChange={(keys: any) =>
               setVisibleColumns(Array.from(keys as Set<string>))
             }
           >
@@ -521,6 +524,7 @@ export default function MetricsTable({
               {columns.map((col) => (
                 <DropdownItem
                   key={col.id}
+                  itemKey={col.id}
                   role="menuitem"
                   onClick={() => {
                     setVisibleColumns((prev) =>
@@ -545,7 +549,7 @@ export default function MetricsTable({
       </div>
       <div style={{ marginBottom: 16 }}>
         <Button
-          color="primary"
+          variant="solid"
           isDisabled={selectedIds.length !== 1}
           aria-label="View pull request"
           onClick={() => {
@@ -563,25 +567,7 @@ export default function MetricsTable({
       <Table
         aria-label="PR Metrics Table"
         data-testid="metrics-table"
-        selectionMode="multiple"
-        selectedKeys={new Set(selectedIds)}
-        onSelectionChange={(keys) =>
-          setSelectedIds(Array.from(keys as Set<string>))
-        }
         isStriped
-        fullWidth
-        bottomContent={
-          <Pagination
-            data-testid="pagination"
-            aria-label="Pagination"
-            total={totalPages}
-            page={pageIndex}
-            onChange={handlePageChange}
-            size="sm"
-            className="mt-4"
-          />
-        }
-        bottomContentPlacement="inside"
       >
         <TableHeader>
           {columns
@@ -598,6 +584,7 @@ export default function MetricsTable({
             <TableRow
               key={row.id} // ensure stable unique key
               onClick={() => toggleSelect(row.id)}
+              className={selectedIds.includes(row.id) ? 'bg-accent/40' : ''}
             >
               {columns
                 .filter((col) => visibleColumns.includes(col.id))
@@ -614,6 +601,17 @@ export default function MetricsTable({
           )}
         </TableBody>
       </Table>
+      <div className="flex justify-center">
+        <Pagination
+          data-testid="pagination"
+          aria-label="Pagination"
+          total={totalPages}
+          page={pageIndex}
+          onChange={handlePageChange}
+          size="sm"
+          className="mt-4"
+        />
+      </div>
     </div>
   );
 }

@@ -111,6 +111,10 @@ If shadcn implementation causes issues, revert wrapper commit; since call sites 
 
 ## Progress Log
 
+- Migrated VisualFilterBuilder to use bridge components (Select, Chip, Autocomplete, Card, CardBody) removing direct `@heroui/react` imports.
+- Added bridge wrappers: `select.tsx` (Select, SelectItem), `chip.tsx` (Chip), `autocomplete.tsx` (Autocomplete, AutocompleteItem) and exported via `ui-bridge/index.ts`.
+- Remaining direct `@heroui/react` imports limited to bridge layer, breadcrumbs pass-through, and test mocks.
+
 ### Recent Updates
 
 - Migrated Card usages (Home, RepoMetrics, GlowingCard, PullRequest, SearchUserBox, SearchRepoBox, LoadingOverlay) to bridge `Card`.
@@ -121,11 +125,18 @@ If shadcn implementation causes issues, revert wrapper commit; since call sites 
 - Implemented bridge wrappers for `Badge`, `Avatar` (size mapping), and `Spinner` (Loader2 icon) replacing HeroUI re-exports.
 - Updated LoadingOverlay to use bridge Card & Spinner (now internal bridge spinner).
 - Replaced direct `@heroui/react` Card imports in `DeveloperProfilePage` with bridge, and Breadcrumb imports in `Header` & `PullRequest` now via bridge pass-through temporary wrapper. Added temporary breadcrumbs bridge file.
+- Added bridge wrappers for `Divider`, `Link`, `Kbd`, and `ScrollShadow`; migrated `QueryAutocomplete` to bridge components (removed direct HeroUI imports).
+- Migrated `ShareQueryModal` to use bridge Modal suite, Snippet, ButtonGroup, Divider, Input, Textarea, Button (removed direct HeroUI imports there).
+- Scaffolded initial semantic Table bridge components (`Table`, `TableHeader`, `TableBody`, `TableColumn`, `TableRow`, `TableCell`).
+- Implemented bridge `Dropdown` (trigger, menu, item) and `Pagination` components and migrated `MetricsTable` to use bridge Table + Dropdown + Pagination + Input + Button (removed direct `@heroui/react` imports there).
+- Replaced HeroUI Breadcrumbs pass-through with custom bridge implementation (no direct `@heroui/react` usage) using semantic nav/ol/li structure.
+- Migrated Breadcrumbs bridge to TSX implementation (semantic nav/ol/li, Tailwind styling) and removed direct HeroUI dependency.
+- Remaining HeroUI usage now confined to bridge wrappers (Select, Chip, Autocomplete) and test mocks pending full replacement.
 
 ### Pending Next
 
-- Implement bridge wrappers for Divider, Link, Modal suite, Table suite, Dropdown, Autocomplete, Chip (map to Badge), Pagination, Breadcrumbs.
-- Replace remaining `@heroui/react` imports in MetricsTable, VisualFilterBuilder, ShareQueryModal, QueryAutocomplete, DeveloperProfilePage.
+- Implement remaining composite bridges: Autocomplete (command-based), Chip (map to Badge), Breadcrumbs final (replace pass-through), Select.
+- Migrate `VisualFilterBuilder` to bridge Autocomplete/Select/Chip; cleanup remaining direct imports elsewhere.
 - Introduce migration status script to list remaining component imports.
 
 ## Acceptance Criteria
