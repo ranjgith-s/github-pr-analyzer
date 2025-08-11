@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card } from '../ui-bridge';
+import { Card } from '../ui';
 
 interface Props {
   children: React.ReactNode;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Badge } from '../ui-bridge';
+import { Card, Badge } from '../ui';
 
 interface Props {
   name: string;

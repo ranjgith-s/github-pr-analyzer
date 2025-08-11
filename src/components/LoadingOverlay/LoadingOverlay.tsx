@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Spinner, Card } from '../ui-bridge';
+import { Spinner, Card } from '../ui';
 
 interface LoadingOverlayProps {
   show: boolean;
@@ -29,7 +29,7 @@ export default function LoadingOverlay({
       style={{ minHeight: '100vh' }}
     >
       <Card className="flex flex-col items-center gap-4 p-8 shadow-xl border bg-card/90">
-        <Spinner /* size, color props pending bridge implementation */ />
+        <Spinner /* size, color props supported */ />
         <p className="text-base font-mono animate-pulse text-foreground/80 text-center min-w-[200px] min-h-[24px]">
           {messages[index]}
         </p>

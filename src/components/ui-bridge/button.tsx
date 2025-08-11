@@ -102,6 +102,13 @@ export const Button = React.forwardRef<HTMLButtonElement, LegacyButtonProps>(
     },
     ref
   ) => {
+    if (process.env.NODE_ENV !== 'production') {
+      // eslint-disable-next-line no-console
+      console.warn(
+        '[ui-bridge] Button is deprecated. Import from ../ui and adapt props.'
+      );
+    }
+
     const mappedVariant = mapVariant(legacyVariant);
     const mappedSize = mapSize(legacySize);
 
@@ -148,7 +155,7 @@ export const Button = React.forwardRef<HTMLButtonElement, LegacyButtonProps>(
           'inline-flex items-center gap-2',
           className
         )}
-  data-color={color}
+        data-color={color}
         {...rest}
       >
         {startContent && (

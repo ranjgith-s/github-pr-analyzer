@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext/AuthContext';
 import { useRepoInsights } from '../../hooks/useRepoInsights';
 import LoadingOverlay from '../LoadingOverlay/LoadingOverlay';
-import { Card } from '../ui-bridge';
+import { Card } from '../ui';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 import { useMetaDescription } from '../../hooks/useMetaDescription';
 

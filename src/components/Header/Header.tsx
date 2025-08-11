@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { ArrowLeftStartOnRectangleIcon } from '@heroicons/react/24/solid';
 import { Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext/AuthContext';
-import { Avatar, Button, BreadcrumbItem, Breadcrumbs } from '../ui-bridge';
+import { Avatar } from '../ui';
+import { Button, BreadcrumbItem, Breadcrumbs } from '../ui-bridge';
 import { ChevronUpIcon } from 'lucide-react';
 import { getAuthenticatedUserProfile } from '../../utils/services/githubService';
 
@@ -73,7 +74,7 @@ export default function Header({ breadcrumbs }: HeaderProps) {
       </div>
       {user && (
         <div className="flex items-center gap-2">
-          <Avatar src={user.avatar_url} alt="avatar" size="sm" />
+          <Avatar src={user.avatar_url} alt="avatar" className="h-8 w-8" />
           <span className="font-mono text-sm px-2">{user.login}</span>
           <Button
             variant="bordered"

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Input, Card } from '../ui-bridge';
+import { Input, Card } from '../ui';
 
 interface RepoOption {
   owner: string;

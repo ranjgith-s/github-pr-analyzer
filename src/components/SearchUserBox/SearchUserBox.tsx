@@ -1,6 +1,6 @@
 import React from 'react';
 import { GitHubUser } from '../../utils/services/auth';
-import { Input, Card, Avatar } from '../ui-bridge';
+import { Input, Card, Avatar } from '../ui';
 
 interface Props {
   query: string;

@@ -1,13 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronUpIcon } from '@heroicons/react/24/solid';
-import {
-  Card,
-  CardHeader,
-  CardBody,
-  CardFooter,
-  Button,
-  Input,
-} from '../ui-bridge';
+import { Card, CardHeader, CardBody, CardFooter, Button, Input } from '../ui';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext/AuthContext';
 import { validateToken } from '../../utils/services/auth';

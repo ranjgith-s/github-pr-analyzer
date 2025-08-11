@@ -1,10 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Card, CardBody, CardHeader, Button, Switch } from '../ui-bridge';
-import { Spinner } from '../ui-bridge';
-import { Divider } from '../ui-bridge'; // migrated divider bridge
-import { Textarea } from '../ui-bridge';
-import { Link } from '../ui-bridge'; // migrated link bridge
+import { Card, CardBody, CardHeader } from '../ui';
+import { Button, Switch, Spinner, Textarea } from '../ui-bridge';
+import { Divider } from '../ui-bridge'; // still bridge
+import { Link } from '../ui-bridge'; // still bridge
 import {
   MagnifyingGlassIcon,
   ExclamationCircleIcon,
@@ -241,7 +240,7 @@ export function QueryDisplay({
   const statusContent = getStatusContent();
 
   return (
-    <Card className={`mb-6 ${className}`} shadow="sm">
+    <Card className={`mb-6 ${className}`}>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-2">

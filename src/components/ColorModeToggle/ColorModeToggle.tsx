@@ -1,5 +1,5 @@
 import React from 'react';
-import { Switch } from '../ui-bridge';
+import { Switch } from '../ui';
 import { useThemeMode } from '../../contexts/ThemeModeContext/ThemeModeContext';
 
 const ColorModeToggle: React.FC = () => {
