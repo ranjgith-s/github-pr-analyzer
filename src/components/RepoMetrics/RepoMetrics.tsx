@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext/AuthContext';
 import { useRepoInsights } from '../../hooks/useRepoInsights';
 import LoadingOverlay from '../LoadingOverlay/LoadingOverlay';
-import { Card } from '@heroui/react';
+import { Card } from '../ui-bridge';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 import { useMetaDescription } from '../../hooks/useMetaDescription';
 
@@ -32,7 +32,7 @@ export default function RepoMetrics() {
         ]}
       />
     );
-  if (error) return <div className="text-danger mb-6">{error}</div>;
+  if (error) return <div className="text-destructive mb-6">{error}</div>;
   if (!data) return null;
 
   return (
@@ -86,7 +86,7 @@ function MetricCard({
   value: React.ReactNode;
 }) {
   return (
-    <Card className="p-4 rounded-lg border border-divider shadow-md">
+    <Card className="p-4 rounded-lg border shadow-md">
       <h3 className="text-lg font-semibold mb-2">{title}</h3>
       <span className="text-base font-bold text-foreground">{value}</span>
     </Card>

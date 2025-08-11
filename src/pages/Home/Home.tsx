@@ -6,7 +6,7 @@ import {
   UserGroupIcon,
   ArrowsRightLeftIcon,
 } from '@heroicons/react/24/solid';
-import { Card } from '@heroui/react';
+import { Card } from '../../components/ui-bridge';
 
 export default function Home() {
   useDocumentTitle('PR-ism Home');
@@ -17,6 +17,7 @@ export default function Home() {
         as="a"
         href="/insights"
         className="p-8 w-full max-w-sm hover:shadow-xl transition-shadow"
+        isHoverable
       >
         <div className="flex items-center gap-2 mb-2">
           <ArrowsRightLeftIcon width={20} height={20} />
@@ -31,6 +32,7 @@ export default function Home() {
         as="a"
         href="/developer"
         className="p-8 w-full max-w-sm hover:shadow-xl transition-shadow"
+        isHoverable
       >
         <div className="flex items-center gap-2 mb-2">
           <UserGroupIcon width={20} height={20} />
@@ -45,6 +47,7 @@ export default function Home() {
         as="a"
         href="/repo"
         className="p-8 w-full max-w-sm hover:shadow-xl transition-shadow"
+        isHoverable
       >
         <div className="flex items-center gap-2 mb-2">
           <FolderIcon width={20} height={20} />

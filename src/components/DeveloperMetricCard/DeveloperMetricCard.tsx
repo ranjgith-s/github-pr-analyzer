@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Badge } from '@heroui/react';
+import { Card, Badge } from '../ui-bridge';
 
 interface Props {
   name: string;
@@ -24,24 +24,26 @@ export default function DeveloperMetricCard({
     score === null
       ? 'default'
       : score < 3
-        ? 'danger'
+        ? 'destructive'
         : score <= 8
           ? 'warning'
           : 'success';
+  // Map to badge variant
+  const badgeVariant = color === 'default' ? 'secondary' : color;
   return (
-    <Card className="p-4 rounded-lg border border-divider">
-      <h3 className="flex justify-between items-center text-lg mb-2">
+    <Card className="p-4 rounded-lg border border-divider space-y-2">
+      <h3 className="flex justify-between items-center text-lg">
         {name}
         {typeof score === 'number' && (
-          <Badge color={color} variant="flat" className="ml-2">
+          <Badge variant={badgeVariant as any} className="ml-2">
             {score}
           </Badge>
         )}
       </h3>
-      <span className="text-base">{brief}</span>
-      <p className="mt-2 text-foreground/60 text-xs">{details}</p>
-      <p className="mt-2 text-xs">
-        <Badge color={color} variant="flat" className="mr-1">
+      <span className="text-base block">{brief}</span>
+      <p className="text-foreground/60 text-xs">{details}</p>
+      <p className="text-xs flex items-center gap-1">
+        <Badge variant={badgeVariant as any}>
           {format ? format(value) : value}
         </Badge>
         {valueDesc}

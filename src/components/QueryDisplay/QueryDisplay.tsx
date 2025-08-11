@@ -1,16 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import {
-  Card,
-  CardBody,
-  CardHeader,
-  Button,
-  Textarea,
-  Spinner,
-  Link,
-  Switch,
-  Divider,
-} from '@heroui/react';
+import { Card, CardBody, CardHeader, Button, Switch } from '../ui-bridge';
+import { Spinner } from '../ui-bridge';
+import { Divider } from '@heroui/react'; // TODO: replace with local divider
+import { Textarea } from '../ui-bridge';
+import { Link } from '@heroui/react'; // pending replacement
 import {
   MagnifyingGlassIcon,
   ExclamationCircleIcon,
@@ -139,10 +133,12 @@ export function QueryDisplay({
   };
 
   // Autocomplete handlers
-  const handleTextareaChange = async (value: string) => {
+  const handleTextareaChange = async (
+    e: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
     if (!textareaRef.current) return;
 
-    const newValue = value;
+    const newValue = e.target.value;
     const cursorPosition = textareaRef.current.selectionStart;
 
     setEditValue(newValue);
@@ -262,14 +258,13 @@ export function QueryDisplay({
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-default-500">Visual</span>
                     <Switch
-                      size="sm"
-                      color="primary"
-                      isSelected={editMode === 'advanced'}
-                      onChange={() =>
+                      checked={editMode === 'advanced'}
+                      onCheckedChange={() =>
                         setEditMode((prev) =>
                           prev === 'advanced' ? 'visual' : 'advanced'
                         )
                       }
+                      aria-label="Toggle advanced mode"
                     />
                     <span className="text-xs text-default-500">Advanced</span>
                   </div>
@@ -350,17 +345,15 @@ export function QueryDisplay({
                 <Textarea
                   ref={textareaRef}
                   value={editValue}
-                  onValueChange={handleTextareaChange}
+                  onChange={handleTextareaChange}
                   onKeyDown={handleKeyDown}
                   placeholder="Enter GitHub search query..."
-                  minRows={2}
-                  maxRows={6}
-                  classNames={{
-                    input: 'font-mono text-sm',
-                    inputWrapper: validationResult.isValid
-                      ? 'border-success'
-                      : 'border-danger',
-                  }}
+                  rows={Math.min(Math.max(editValue.split('\n').length, 2), 6)}
+                  className={
+                    validationResult.isValid
+                      ? 'font-mono text-sm border-success'
+                      : 'font-mono text-sm border-destructive'
+                  }
                   aria-label="Edit search query"
                 />
 

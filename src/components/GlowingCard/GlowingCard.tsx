@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card } from '@heroui/react';
+import { Card } from '../ui-bridge';
 
 interface Props {
   children: React.ReactNode;

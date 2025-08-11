@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ArrowLeftStartOnRectangleIcon } from '@heroicons/react/24/solid';
 import { Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext/AuthContext';
-import { Avatar, Breadcrumbs, BreadcrumbItem, Button } from '@heroui/react';
+import { Avatar, Button, BreadcrumbItem, Breadcrumbs } from '../ui-bridge';
 import { ChevronUpIcon } from 'lucide-react';
 import { getAuthenticatedUserProfile } from '../../utils/services/githubService';
 

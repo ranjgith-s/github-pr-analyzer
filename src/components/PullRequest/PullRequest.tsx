@@ -3,7 +3,8 @@ import { useParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext/AuthContext';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 import { useMetaDescription } from '../../hooks/useMetaDescription';
-import { Card, Button, Breadcrumbs, BreadcrumbItem } from '@heroui/react';
+import { Card, Button } from '../ui-bridge';
+import { Breadcrumbs, BreadcrumbItem } from '../ui-bridge';
 import { fetchPullRequestDetails } from '../../utils/services/githubService';
 
 interface TimelineEntry {
@@ -74,14 +75,14 @@ export default function PullRequestPage() {
         <h2 className="text-xl font-bold mb-2 text-foreground">{title}</h2>
         <div className="mb-4">
           {events && (
-            <ol className="relative border-s border-divider pl-6">
+            <ol className="relative border-s border-border pl-6">
               {events.map((e) => (
                 <li
                   key={`${e.label}-${e.date}`}
                   className="mb-6 last:mb-0 flex items-start"
                 >
                   <span
-                    className="flex-shrink-0 w-3 h-3 mt-1.5 rounded-full bg-primary border-2 border-content1 shadow"
+                    className="flex-shrink-0 w-3 h-3 mt-1.5 rounded-full bg-primary border-2 border-background shadow"
                     aria-hidden="true"
                   ></span>
                   <div className="ml-4">

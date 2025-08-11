@@ -1,5 +1,5 @@
 import React from 'react';
-import { Switch } from '@heroui/react';
+import { Switch } from '../ui-bridge';
 import { useThemeMode } from '../../contexts/ThemeModeContext/ThemeModeContext';
 
 const ColorModeToggle: React.FC = () => {
@@ -7,13 +7,11 @@ const ColorModeToggle: React.FC = () => {
   const isNight = colorMode === 'night';
   return (
     <Switch
-      isSelected={isNight}
-      onChange={toggleColorMode}
+      checked={isNight}
+      onCheckedChange={() => toggleColorMode()}
       aria-label={isNight ? 'Switch to light mode' : 'Switch to dark mode'}
-      className="px-3 py-2 rounded border border-divider"
-    >
-      {isNight ? '🌙 Night' : '☀️ Day'}
-    </Switch>
+      className="px-3 py-2 border border-border"
+    />
   );
 };
 
