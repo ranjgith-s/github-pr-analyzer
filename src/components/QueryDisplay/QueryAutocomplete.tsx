@@ -1,12 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 // Replaced direct HeroUI imports with bridge components
-import {
-  Card,
-  CardBody,
-  Kbd,
-  Divider,
-  ScrollShadow,
-} from '../../components/ui-bridge';
+import { Card, CardBody } from '../ui';
+import { ScrollShadow, Kbd, Divider } from '../ui';
 import {
   MagnifyingGlassIcon,
   UserIcon,

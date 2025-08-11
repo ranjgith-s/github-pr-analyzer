@@ -1,7 +1,8 @@
-import React from 'react';
-import clsx from 'clsx';
+import * as React from 'react';
+import { X } from 'lucide-react';
+import { cn } from '../../lib/utils';
 
-interface ChipProps {
+export interface ChipProps {
   children: React.ReactNode;
   onClose?: () => void;
   variant?: 'flat' | 'solid' | 'bordered';
@@ -10,7 +11,7 @@ interface ChipProps {
   className?: string;
 }
 
-const colorMap: Record<string, string> = {
+const solid: Record<string, string> = {
   primary: 'bg-primary text-primary-foreground',
   secondary: 'bg-secondary text-secondary-foreground',
   success: 'bg-success text-success-foreground',
@@ -18,7 +19,7 @@ const colorMap: Record<string, string> = {
   default: 'bg-muted text-muted-foreground',
 };
 
-const flatOverlay: Record<string, string> = {
+const flat: Record<string, string> = {
   primary: 'bg-primary/15 text-primary',
   secondary: 'bg-secondary/30 text-foreground',
   success: 'bg-success/15 text-success',
@@ -43,14 +44,14 @@ export const Chip: React.FC<ChipProps> = ({
   const base = 'inline-flex items-center rounded-full font-medium gap-1';
   const variantClasses =
     variant === 'bordered'
-      ? 'border border-default-300 bg-background'
+      ? 'border border-border bg-background'
       : variant === 'solid'
-        ? colorMap[color]
-        : flatOverlay[color];
+        ? solid[color]
+        : flat[color];
 
   return (
     <span
-      className={clsx(base, sizeClasses, variantClasses, className)}
+      className={cn(base, sizeClasses, variantClasses, className)}
       data-testid="chip"
     >
       {children}
@@ -61,21 +62,10 @@ export const Chip: React.FC<ChipProps> = ({
           className="cursor-pointer outline-none focus:ring-2 focus:ring-primary/50 rounded-full p-0.5 hover:opacity-80"
           aria-label="Remove"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="w-3.5 h-3.5"
-          >
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
+          <X className="w-3.5 h-3.5" />
         </button>
       )}
     </span>
   );
 };
+Chip.displayName = 'Chip';

@@ -1,10 +1,11 @@
+/* eslint-disable */
 import * as React from 'react';
 import { cn } from '../../lib/utils';
 
-interface TableContextValue {
+interface TableCtx {
   isStriped?: boolean;
 }
-const TableContext = React.createContext<TableContextValue>({});
+const TableContext = React.createContext<TableCtx>({});
 
 export interface TableProps extends React.HTMLAttributes<HTMLDivElement> {
   isStriped?: boolean;
@@ -16,41 +17,42 @@ export const Table: React.FC<TableProps> = ({
   isStriped,
   children,
   ...rest
-}) => {
-  return (
-    <TableContext.Provider value={{ isStriped }}>
-      <div
-        className={cn('w-full overflow-x-auto rounded-md border', className)}
-        {...rest}
-      >
-        <table className="w-full caption-bottom text-sm">{children}</table>
-      </div>
-    </TableContext.Provider>
-  );
-};
+}) => (
+  <TableContext.Provider value={{ isStriped }}>
+    <div
+      className={cn('w-full overflow-x-auto rounded-md border', className)}
+      {...rest}
+    >
+      <table className="w-full caption-bottom text-sm">{children}</table>
+    </div>
+  </TableContext.Provider>
+);
 Table.displayName = 'Table';
 
-/* eslint-disable react/prop-types */
-export const TableHeader: React.FC<
-  { children: React.ReactNode } & React.HTMLAttributes<HTMLTableSectionElement>
-> = ({ children, className, ...rest }) => (
+export const TableHeader = ({
+  children,
+  className,
+  ...rest
+}: React.HTMLAttributes<HTMLTableSectionElement>) => (
   <thead className={cn('[&_tr]:border-b bg-muted/40', className)} {...rest}>
     <tr>{children}</tr>
   </thead>
 );
 TableHeader.displayName = 'TableHeader';
 
-export const TableColumn: React.FC<
-  React.ThHTMLAttributes<HTMLTableCellElement>
-> = ({ className, ...rest }) => (
-  <th
-    className={cn(
-      'h-10 px-3 text-left align-middle font-medium text-muted-foreground whitespace-nowrap',
-      className
-    )}
-    {...rest}
-  />
-);
+type TableColumnProps = React.ThHTMLAttributes<HTMLTableCellElement>;
+export function TableColumn(props: TableColumnProps) {
+  const { className, ...rest } = props;
+  return (
+    <th
+      className={cn(
+        'h-10 px-3 text-left align-middle font-medium text-muted-foreground whitespace-nowrap',
+        className
+      )}
+      {...rest}
+    />
+  );
+}
 TableColumn.displayName = 'TableColumn';
 
 export interface TableBodyProps<T = any>
@@ -68,7 +70,6 @@ export function TableBody<T>({
   ...rest
 }: TableBodyProps<T>) {
   const { isStriped } = React.useContext(TableContext);
-
   const renderRows = () => {
     if (items && typeof children === 'function') {
       if (items.length === 0) {
@@ -85,23 +86,16 @@ export function TableBody<T>({
       }
       return items.map((item, idx) => children(item, idx));
     }
-    return children;
+    return children as any;
   };
-
   const rows = renderRows();
-
   return (
     <tbody className={cn('[&_tr:last-child]:border-0', className)} {...rest}>
       {React.Children.map(rows as any, (child: any, idx: number) => {
         if (!React.isValidElement(child)) return child;
-        const stripedClass = isStriped
-          ? idx % 2 === 1
-            ? 'bg-muted/30'
-            : ''
-          : '';
-        const existingClass = (child.props as any)?.className;
+        const striped = isStriped ? (idx % 2 === 1 ? 'bg-muted/30' : '') : '';
         return React.cloneElement(child as React.ReactElement<any>, {
-          className: cn(existingClass, stripedClass),
+          className: cn((child.props as any).className, striped),
         });
       })}
     </tbody>
@@ -109,10 +103,10 @@ export function TableBody<T>({
 }
 TableBody.displayName = 'TableBody';
 
-export const TableRow: React.FC<React.HTMLAttributes<HTMLTableRowElement>> = ({
+export const TableRow = ({
   className,
   ...rest
-}) => (
+}: React.HTMLAttributes<HTMLTableRowElement>) => (
   <tr
     className={cn(
       'border-b transition-colors hover:bg-muted cursor-pointer',
@@ -123,16 +117,17 @@ export const TableRow: React.FC<React.HTMLAttributes<HTMLTableRowElement>> = ({
 );
 TableRow.displayName = 'TableRow';
 
-export const TableCell: React.FC<
-  React.TdHTMLAttributes<HTMLTableCellElement>
-> = ({ className, ...rest }) => (
-  <td
-    className={cn(
-      'p-3 align-middle [&:has([role=checkbox])]:pr-0 text-sm',
-      className
-    )}
-    {...rest}
-  />
-);
-/* eslint-enable react/prop-types */
+type TableCellProps = React.TdHTMLAttributes<HTMLTableCellElement>;
+export function TableCell(props: TableCellProps) {
+  const { className, ...rest } = props;
+  return (
+    <td
+      className={cn(
+        'p-3 align-middle [&:has([role=checkbox])]:pr-0 text-sm',
+        className
+      )}
+      {...rest}
+    />
+  );
+}
 TableCell.displayName = 'TableCell';

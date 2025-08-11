@@ -1,8 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Card, CardBody, CardHeader } from '../ui';
-import { Button, Switch, Spinner, Textarea } from '../ui-bridge';
-import { Divider, Link } from '../ui';
+import {
+  Card,
+  CardBody,
+  CardHeader,
+  Button,
+  Switch,
+  Spinner,
+  Textarea,
+  Divider,
+  Link,
+} from '../ui';
 import {
   MagnifyingGlassIcon,
   ExclamationCircleIcon,

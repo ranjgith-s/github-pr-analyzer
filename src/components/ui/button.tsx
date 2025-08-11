@@ -34,21 +34,150 @@ const buttonVariants = cva(
   }
 );
 
+// Extended props to absorb legacy bridge Button API for smoother migration.
+type BaseVariant = NonNullable<VariantProps<typeof buttonVariants>['variant']>;
+type LegacyVariant =
+  | 'flat'
+  | 'bordered'
+  | 'light'
+  | 'ghost'
+  | 'solid'
+  | 'default';
+type ExtendedVariant = BaseVariant | LegacyVariant;
+
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
+  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'color'>,
+    Omit<VariantProps<typeof buttonVariants>, 'variant'> {
   asChild?: boolean;
+  variant?: ExtendedVariant;
+  // Legacy convenience props
+  color?:
+    | 'primary'
+    | 'secondary'
+    | 'success'
+    | 'warning'
+    | 'danger'
+    | 'destructive'
+    | 'default';
+  startContent?: React.ReactNode;
+  endContent?: React.ReactNode;
+  onPress?: React.ButtonHTMLAttributes<HTMLButtonElement>['onClick'];
+  isDisabled?: boolean;
+  href?: string;
+  as?: 'a' | 'button';
+}
+
+function mapVariant(variant?: ExtendedVariant): BaseVariant | undefined {
+  switch (variant) {
+    case 'bordered':
+      return 'outline';
+    case 'flat':
+    case 'light':
+      return 'ghost';
+    case 'solid':
+    case 'default':
+      return 'default';
+    default:
+      return variant as BaseVariant | undefined;
+  }
+}
+
+function legacyTintClasses(
+  variant?: ExtendedVariant,
+  color?: ButtonProps['color']
+): string {
+  if (variant !== 'flat' && variant !== 'light') return '';
+  const base =
+    variant === 'flat'
+      ? {
+          primary: 'text-primary bg-primary/15 hover:bg-primary/25',
+          secondary: 'text-secondary bg-secondary/15 hover:bg-secondary/25',
+          success: 'text-success bg-success/15 hover:bg-success/25',
+          warning: 'text-warning bg-warning/15 hover:bg-warning/25',
+          danger: 'text-destructive bg-destructive/15 hover:bg-destructive/25',
+          destructive:
+            'text-destructive bg-destructive/15 hover:bg-destructive/25',
+          default: 'text-foreground bg-muted/30 hover:bg-muted/50',
+        }
+      : {
+          primary: 'text-primary hover:bg-primary/15',
+          secondary: 'text-secondary hover:bg-secondary/15',
+          success: 'text-success hover:bg-success/15',
+          warning: 'text-warning hover:bg-warning/15',
+          danger: 'text-destructive hover:bg-destructive/15',
+          destructive: 'text-destructive hover:bg-destructive/15',
+          default: 'text-foreground hover:bg-muted/40',
+        };
+  return (base as any)[color || 'primary'] || '';
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
-    const Comp = asChild ? Slot : 'button';
+  (
+    {
+      className,
+      variant,
+      size,
+      asChild = false,
+      color = 'primary',
+      startContent,
+      endContent,
+      onPress,
+      isDisabled,
+      href,
+      as,
+      children,
+      ...props
+    },
+    ref
+  ) => {
+    const mappedVariant = mapVariant(variant);
+    const Comp: any = asChild ? Slot : href || as === 'a' ? 'a' : 'button';
+
+    const extraColorClasses = cn(
+      // Outline primary coloring when mapped
+      color === 'primary' &&
+        mappedVariant === 'outline' &&
+        'border-primary text-primary',
+      // Ghost primary explicit color when not using tinted flat/light styles
+      color === 'primary' &&
+        mappedVariant === 'ghost' &&
+        !['flat', 'light'].includes(String(variant)) &&
+        'text-primary',
+      // Danger/destructive default background mapping if coming from solid/default
+      (color === 'danger' || color === 'destructive') &&
+        mappedVariant === 'default' &&
+        'bg-destructive text-destructive-foreground hover:bg-destructive/90'
+    );
+
     return (
       <Comp
-        className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
+        href={href}
+        disabled={isDisabled || (props as any).disabled}
+        onClick={onPress || (props as any).onClick}
+        data-color={color}
+        className={cn(
+          buttonVariants({ variant: mappedVariant, size, className }),
+          legacyTintClasses(variant, color),
+          extraColorClasses,
+          startContent || endContent ? 'inline-flex items-center gap-2' : null
+        )}
         {...props}
-      />
+      >
+        {startContent && (
+          <span className="inline-flex items-center">{startContent}</span>
+        )}
+        <span
+          className={
+            startContent || endContent ? 'inline-flex items-center' : undefined
+          }
+        >
+          {children}
+        </span>
+        {endContent && (
+          <span className="inline-flex items-center">{endContent}</span>
+        )}
+      </Comp>
     );
   }
 );

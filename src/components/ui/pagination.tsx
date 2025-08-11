@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { cn } from '../../lib/utils';
-import { Button } from './button';
 
 export interface PaginationProps {
   total: number; // total pages
@@ -33,23 +32,27 @@ export const Pagination: React.FC<PaginationProps> = ({
 
   const buttonCls = (active: boolean) =>
     cn(
-      'h-8 min-w-[2rem] rounded-md border bg-background text-sm flex items-center justify-center px-2',
+      'h-8 min-w-[2rem] rounded-md border bg-background text-sm flex items-center justify-center px-2 transition-colors',
       active && 'bg-primary text-primary-foreground'
     );
 
-  const controlSize = size === 'sm' ? 'sm' : 'default';
+  const small = size === 'sm';
+  const controlCls = cn(
+    'inline-flex items-center justify-center rounded-md border bg-background hover:bg-muted text-sm font-medium disabled:opacity-50 disabled:pointer-events-none h-8 px-2',
+    small && 'h-7 text-xs'
+  );
 
   return (
     <nav className={cn('flex items-center gap-1', className)} {...rest}>
-      <Button
-        variant="ghost"
-        size={controlSize as any}
+      <button
+        type="button"
+        className={controlCls}
         disabled={page === 1}
         onClick={() => onChange?.(page - 1)}
         aria-label="Previous page"
       >
         ‹
-      </Button>
+      </button>
       {start > 1 && (
         <button
           type="button"
@@ -81,15 +84,15 @@ export const Pagination: React.FC<PaginationProps> = ({
           {total}
         </button>
       )}
-      <Button
-        variant="ghost"
-        size={controlSize as any}
+      <button
+        type="button"
+        className={controlCls}
         disabled={page === total}
         onClick={() => onChange?.(page + 1)}
         aria-label="Next page"
       >
         ›
-      </Button>
+      </button>
     </nav>
   );
 };

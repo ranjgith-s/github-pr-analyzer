@@ -7,7 +7,7 @@ import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 import { useMetaDescription } from '../../hooks/useMetaDescription';
 import LoadingOverlay from '../../components/LoadingOverlay/LoadingOverlay';
 import DeveloperMetricCard from '../../components/DeveloperMetricCard/DeveloperMetricCard';
-import { Card } from '../../components/ui-bridge';
+import { Card } from '../../components/ui';
 import { DeveloperMetrics } from 'src/types';
 
 const METRIC_INFO = [

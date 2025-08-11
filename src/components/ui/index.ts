@@ -1,6 +1,5 @@
 // Central export barrel for shadcn-based UI primitives.
-// New components should be added here and consumers should migrate imports
-// from '../ui-bridge' to this module. Remaining bridge exists for legacy prop compat.
+// All legacy ui-bridge components have been migrated; import solely from here.
 export * from './button';
 export * from './badge';
 export * from './avatar';
@@ -13,3 +12,13 @@ export * from './spinner';
 export * from './breadcrumbs';
 export * from './divider';
 export * from './link';
+export * from './kbd';
+export * from './chip';
+export * from './button-group';
+export * from './snippet';
+export * from './pagination';
+export * from './scroll-shadow';
+export * from './select';
+export * from './autocomplete';
+export * from './table';
+export * from './dropdown';

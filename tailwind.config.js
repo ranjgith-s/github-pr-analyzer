@@ -6,7 +6,6 @@ export default {
   content: [
     './src/**/*.{js,ts,jsx,tsx}',
     './index.html',
-    './src/components/ui-bridge/**/*.{ts,tsx}',
     './src/components/ui/**/*.{ts,tsx}',
   ],
   theme: {

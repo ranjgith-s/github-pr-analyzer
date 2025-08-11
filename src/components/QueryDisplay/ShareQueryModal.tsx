@@ -1,19 +1,20 @@
 import React, { useState } from 'react';
 import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
   Button,
   Input,
   Textarea,
   Card,
   CardBody,
-  Snippet,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
   Divider,
+  Snippet,
   ButtonGroup,
-} from '../../components/ui-bridge';
+} from '../ui';
 import {
   ShareIcon,
   ClipboardIcon,
@@ -81,16 +82,26 @@ export function ShareQueryModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="lg">
-      <ModalContent>
-        <ModalHeader className="flex items-center gap-2">
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
+      <DialogContent className="space-y-6">
+        <DialogHeader className="flex items-center gap-2">
           <ShareIcon className="h-5 w-5" />
-          Share Query
-        </ModalHeader>
+          <div className="flex flex-col gap-1 text-left">
+            <DialogTitle>Share Query</DialogTitle>
+            <DialogDescription>
+              Customize and share this query URL or send via social channels.
+            </DialogDescription>
+          </div>
+        </DialogHeader>
 
-        <ModalBody className="space-y-4">
+        <div className="space-y-4">
           {/* Query Preview */}
-          <Card shadow="sm">
+          <Card>
             <CardBody className="p-4">
               <div className="text-sm text-muted-foreground mb-2">Query:</div>
               <code className="text-sm bg-muted/30 p-2 rounded block break-all">
@@ -132,7 +143,7 @@ export function ShareQueryModal({
                 {shareUrl}
               </Snippet>
               <Button
-                size="md"
+                size="default"
                 variant="bordered"
                 aria-label="Copy share URL"
                 onPress={handleCopyUrl}
@@ -195,14 +206,14 @@ export function ShareQueryModal({
               </Button>
             </ButtonGroup>
           </div>
-        </ModalBody>
+        </div>
 
-        <ModalFooter>
+        <DialogFooter>
           <Button variant="light" onPress={onClose}>
             Close
           </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

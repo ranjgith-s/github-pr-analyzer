@@ -11,14 +11,14 @@ import {
   TableColumn,
   TableRow,
   TableCell,
-  Button,
-  Pagination,
   Dropdown,
   DropdownTrigger,
   DropdownMenu,
   DropdownItem,
+  Pagination,
+  Button,
   Input,
-} from '../ui-bridge';
+} from '../ui';
 import { Settings2Icon } from 'lucide-react';
 
 export function formatDuration(start?: string | null, end?: string | null) {
@@ -62,6 +62,7 @@ export default function MetricsTable(props: MetricsTableProps) {
     (queryParams?.order as 'asc' | 'desc') || 'desc'
   );
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
 
   useEffect(() => {
     if (queryParams) {
@@ -72,19 +73,28 @@ export default function MetricsTable(props: MetricsTableProps) {
     }
   }, [queryParams]);
 
+  // Reset page when filters change (must be before any early return to keep hook order stable)
+  useEffect(() => {
+    setPageIndex(1);
+  }, [repoFilter, authorFilter]);
+
+  // Initialize visible columns immediately after columns can be derived, before any early returns
+  useEffect(() => {
+    setVisibleColumns((prev) => (prev.length ? prev : []));
+  }, []);
+
+  // Defer early returns until after all hooks to satisfy rules-of-hooks
+  const loadingOverlay = (
+    <LoadingOverlay
+      show={true}
+      messages={[
+        'Loading pull requests...',
+        'Crunching numbers...',
+        'Preparing table...',
+      ]}
+    />
+  );
   if (error) console.error('Failed to load pull request metrics:', error); // eslint-disable-line
-  if (loading) {
-    return (
-      <LoadingOverlay
-        show={true}
-        messages={[
-          'Loading pull requests...',
-          'Crunching numbers...',
-          'Preparing table...',
-        ]}
-      />
-    );
-  }
 
   // Derived data
   const repos = [...new Set(items.map((i) => i.repo))].sort();
@@ -103,10 +113,6 @@ export default function MetricsTable(props: MetricsTableProps) {
       (!authorFilter || it.author === authorFilter)
     );
   });
-
-  useEffect(() => {
-    setPageIndex(1); // reset page when filters change
-  }, [repoFilter, authorFilter]);
 
   // Column definitions
   const columns = [
@@ -196,22 +202,52 @@ export default function MetricsTable(props: MetricsTableProps) {
       cell: (row: PRItem) => {
         const created = row.created_at ? new Date(row.created_at) : null;
         const published = row.published_at ? new Date(row.published_at) : null;
-        const firstReview = row.first_review_at ? new Date(row.first_review_at) : null;
+        const firstReview = row.first_review_at
+          ? new Date(row.first_review_at)
+          : null;
         const closed = row.closed_at ? new Date(row.closed_at) : null;
-        const draftMs = created && published ? published.getTime() - created.getTime() : null;
-        const reviewMs = published && firstReview ? firstReview.getTime() - published.getTime() : null;
-        const activeMs = firstReview && closed ? closed.getTime() - firstReview.getTime() : null;
-        const a = draftMs ?? 0; const b = reviewMs ?? 0; const d = activeMs ?? 0; const total = (a + b + d) || 1; const pct = (x:number)=> (x/ total) * 100;
-        const fmt = (ms: number | null) => (ms == null ? 'N/A' : `${Math.floor(ms/36e5)}h`);
-        const draftLabel = fmt(draftMs); const reviewLabel = fmt(reviewMs); const activeLabel = fmt(activeMs);
+        const draftMs =
+          created && published ? published.getTime() - created.getTime() : null;
+        const reviewMs =
+          published && firstReview
+            ? firstReview.getTime() - published.getTime()
+            : null;
+        const activeMs =
+          firstReview && closed
+            ? closed.getTime() - firstReview.getTime()
+            : null;
+        const a = draftMs ?? 0;
+        const b = reviewMs ?? 0;
+        const d = activeMs ?? 0;
+        const total = a + b + d || 1;
+        const pct = (x: number) => (x / total) * 100;
+        const fmt = (ms: number | null) =>
+          ms == null ? 'N/A' : `${Math.floor(ms / 36e5)}h`;
+        const draftLabel = fmt(draftMs);
+        const reviewLabel = fmt(reviewMs);
+        const activeLabel = fmt(activeMs);
         return (
-          <div className="flex flex-col items-start w-32" aria-label={`Draft: ${draftLabel} Review: ${reviewLabel} Active: ${activeLabel}`}>
+          <div
+            className="flex flex-col items-start w-32"
+            aria-label={`Draft: ${draftLabel} Review: ${reviewLabel} Active: ${activeLabel}`}
+          >
             <div className="flex w-full gap-0.5 items-center">
-              <div className="h-2 rounded-l bg-success" style={{ width: `${pct(a)}%` }} />
+              <div
+                className="h-2 rounded-l bg-success"
+                style={{ width: `${pct(a)}%` }}
+              />
               <div className="h-2 bg-warning" style={{ width: `${pct(b)}%` }} />
-              <div className="h-2 rounded-r bg-primary" style={{ width: `${pct(d)}%` }} />
+              <div
+                className="h-2 rounded-r bg-primary"
+                style={{ width: `${pct(d)}%` }}
+              />
             </div>
-            <div className="text-[10px] mt-1 whitespace-nowrap" aria-hidden="true">{draftLabel} | {reviewLabel} | {activeLabel}</div>
+            <div
+              className="text-[10px] mt-1 whitespace-nowrap"
+              aria-hidden="true"
+            >
+              {draftLabel} | {reviewLabel} | {activeLabel}
+            </div>
           </div>
         );
       },
@@ -228,9 +264,11 @@ export default function MetricsTable(props: MetricsTableProps) {
     },
   ];
 
-  const [visibleColumns, setVisibleColumns] = useState<string[]>(
-    columns.map((c) => c.id)
-  );
+  // Initialize visibleColumns once columns are defined
+  useEffect(() => {
+    setVisibleColumns(columns.map((c) => c.id));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const firstKey = (keys: any): string => {
     if (!keys) return '';
@@ -249,6 +287,8 @@ export default function MetricsTable(props: MetricsTableProps) {
   };
 
   const totalPages = Math.max(1, Math.ceil(effectiveTotal / pageSize));
+
+  if (loading) return loadingOverlay;
 
   return (
     <div style={{ width: '100%' }}>
@@ -297,7 +337,10 @@ export default function MetricsTable(props: MetricsTableProps) {
                   itemKey={r || 'all-repos'}
                   data-testid={`repo-option-${r}`}
                   role="menuitem"
-                  onClick={() => { setRepoFilter(r); setAuthorFilter(''); }}
+                  onClick={() => {
+                    setRepoFilter(r);
+                    setAuthorFilter('');
+                  }}
                 >
                   {r}
                 </DropdownItem>
@@ -340,7 +383,10 @@ export default function MetricsTable(props: MetricsTableProps) {
                   itemKey={a || 'all-authors'}
                   data-testid={`author-option-${a}`}
                   role="menuitem"
-                  onClick={() => { setAuthorFilter(a); setRepoFilter(''); }}
+                  onClick={() => {
+                    setAuthorFilter(a);
+                    setRepoFilter('');
+                  }}
                 >
                   {a}
                 </DropdownItem>
@@ -363,27 +409,40 @@ export default function MetricsTable(props: MetricsTableProps) {
             aria-label="Select sort field"
             selectionMode="single"
             selectedKeys={new Set([sort])}
-            onSelectionChange={(keys: any) => { const s = firstKey(keys); setSort(s); props.onSortChange?.(s); }}
+            onSelectionChange={(keys: any) => {
+              const s = firstKey(keys);
+              setSort(s);
+              props.onSortChange?.(s);
+            }}
           >
             <>
               <DropdownItem
                 itemKey="updated"
                 role="menuitem"
-                onClick={() => { setSort('updated'); props.onSortChange?.('updated'); }}
+                onClick={() => {
+                  setSort('updated');
+                  props.onSortChange?.('updated');
+                }}
               >
                 updated
               </DropdownItem>
               <DropdownItem
                 itemKey="created"
                 role="menuitem"
-                onClick={() => { setSort('created'); props.onSortChange?.('created'); }}
+                onClick={() => {
+                  setSort('created');
+                  props.onSortChange?.('created');
+                }}
               >
                 created
               </DropdownItem>
               <DropdownItem
                 itemKey="comments"
                 role="menuitem"
-                onClick={() => { setSort('comments'); props.onSortChange?.('comments'); }}
+                onClick={() => {
+                  setSort('comments');
+                  props.onSortChange?.('comments');
+                }}
               >
                 comments
               </DropdownItem>
@@ -405,20 +464,30 @@ export default function MetricsTable(props: MetricsTableProps) {
             aria-label="Select order"
             selectionMode="single"
             selectedKeys={new Set([order])}
-            onSelectionChange={(keys: any) => { const o = firstKey(keys) as 'asc' | 'desc'; setOrder(o); props.onOrderChange?.(o); }}
+            onSelectionChange={(keys: any) => {
+              const o = firstKey(keys) as 'asc' | 'desc';
+              setOrder(o);
+              props.onOrderChange?.(o);
+            }}
           >
             <>
               <DropdownItem
                 itemKey="desc"
                 role="menuitem"
-                onClick={() => { setOrder('desc'); props.onOrderChange?.('desc'); }}
+                onClick={() => {
+                  setOrder('desc');
+                  props.onOrderChange?.('desc');
+                }}
               >
                 desc
               </DropdownItem>
               <DropdownItem
                 itemKey="asc"
                 role="menuitem"
-                onClick={() => { setOrder('asc'); props.onOrderChange?.('asc'); }}
+                onClick={() => {
+                  setOrder('asc');
+                  props.onOrderChange?.('asc');
+                }}
               >
                 asc
               </DropdownItem>
@@ -442,7 +511,11 @@ export default function MetricsTable(props: MetricsTableProps) {
             selectedKeys={new Set([String(pageSize)])}
             onSelectionChange={(keys: any) => {
               const v = Number(firstKey(keys));
-              if (v) { setPageSize(v); setPageIndex(1); props.onPerPageChange?.(v); }
+              if (v) {
+                setPageSize(v);
+                setPageIndex(1);
+                props.onPerPageChange?.(v);
+              }
             }}
           >
             <>
@@ -451,7 +524,11 @@ export default function MetricsTable(props: MetricsTableProps) {
                   key={n}
                   itemKey={String(n)}
                   role="menuitem"
-                  onClick={() => { setPageSize(n); setPageIndex(1); props.onPerPageChange?.(n); }}
+                  onClick={() => {
+                    setPageSize(n);
+                    setPageIndex(1);
+                    props.onPerPageChange?.(n);
+                  }}
                 >
                   {n}
                 </DropdownItem>
@@ -563,7 +640,10 @@ export default function MetricsTable(props: MetricsTableProps) {
         </TableBody>
       </Table>
       {/* Pagination */}
-      <div className="flex flex-col items-center gap-2 mt-4" aria-label="Pagination">
+      <div
+        className="flex flex-col items-center gap-2 mt-4"
+        aria-label="Pagination"
+      >
         <div
           className="text-xs text-muted-foreground"
           aria-label="pagination-summary"

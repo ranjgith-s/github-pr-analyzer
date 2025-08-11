@@ -1,16 +1,15 @@
 import * as React from 'react';
 import { cn } from '../../lib/utils';
 
-// Temporary Snippet bridge to replace HeroUI Snippet.
-// Adds optional copy capability via copyValue / onCopy props.
-export interface SnippetProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onCopy'> {
-  symbol?: string;
+export type SnippetProps = Omit<
+  React.HTMLAttributes<HTMLDivElement>,
+  'onCopy'
+> & {
   variant?: 'bordered' | 'flat';
-  copyValue?: string; // value to copy (falls back to children textContent)
-  onCopied?: (value: string) => void; // callback after successful copy
+  copyValue?: string;
+  onCopied?: (value: string) => void;
   hideCopyButton?: boolean;
-}
+};
 
 export const Snippet: React.FC<SnippetProps> = ({
   className,
@@ -30,7 +29,7 @@ export const Snippet: React.FC<SnippetProps> = ({
       if (!value) return;
       await navigator.clipboard.writeText(value);
       setCopied(true);
-      if (onCopied) onCopied(value);
+      onCopied?.(value);
       setTimeout(() => setCopied(false), 1500);
     } catch (e) {
       if (process.env.NODE_ENV !== 'test') {

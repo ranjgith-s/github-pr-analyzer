@@ -1,13 +1,6 @@
 import React, { useEffect } from 'react';
-import {
-  Card,
-  CardBody,
-  Select,
-  SelectItem,
-  Chip,
-  Autocomplete,
-  AutocompleteItem,
-} from '../ui-bridge';
+import { Chip, Card, CardBody } from '../ui';
+import { Select, SelectItem, Autocomplete, AutocompleteItem } from '../ui';
 import {
   parseGitHubQuery,
   buildGitHubQuery,
@@ -118,10 +111,10 @@ export function VisualFilterBuilder({
         placeholder={placeholder}
         variant="bordered"
         size="sm"
-        onSelectionChange={(value) => {
+        onSelect={(value) => {
           if (value) addStringArrayItem(filterKey, value.toString());
         }}
-        isDisabled={isLoading}
+        disabled={isLoading}
         className="w-full"
         classNames={{
           base: 'min-h-[36px]',
@@ -130,7 +123,7 @@ export function VisualFilterBuilder({
         data-testid={testId}
       >
         {suggestions.map((item) => (
-          <AutocompleteItem key={item} className="text-sm">
+          <AutocompleteItem key={item} value={item}>
             {item}
           </AutocompleteItem>
         ))}
@@ -232,7 +225,7 @@ export function VisualFilterBuilder({
       {/* Main Filter Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* People Filters Group */}
-        <Card shadow="sm" className="border border-default-200">
+        <Card className="border border-default-200">
           <CardBody className="p-4 space-y-4">
             <h3 className="text-sm font-semibold text-default-700 border-b border-default-200 pb-2">
               👥 People Filters
@@ -286,7 +279,7 @@ export function VisualFilterBuilder({
         </Card>
 
         {/* Repository & Content Group */}
-        <Card shadow="sm" className="border border-default-200">
+        <Card className="border border-default-200">
           <CardBody className="p-4 space-y-4">
             <h3 className="text-sm font-semibold text-default-700 border-b border-default-200 pb-2">
               📂 Repository & Content
@@ -318,7 +311,7 @@ export function VisualFilterBuilder({
       {/* Status & Dates Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Status Group */}
-        <Card shadow="sm" className="border border-default-200">
+        <Card className="border border-default-200">
           <CardBody className="p-4 space-y-4">
             <h3 className="text-sm font-semibold text-default-700 border-b border-default-200 pb-2">
               🏷️ Status & State
@@ -330,22 +323,21 @@ export function VisualFilterBuilder({
                 placeholder="Select state"
                 variant="bordered"
                 size="sm"
-                selectedKeys={[filters.state]}
-                onSelectionChange={(keys) => {
-                  const state = Array.from(keys)[0] as FilterState['state'];
-                  updateFilter('state', state);
+                selectedKey={filters.state}
+                onChange={(value) => {
+                  updateFilter('state', value as FilterState['state']);
                 }}
-                isDisabled={isLoading}
+                disabled={isLoading}
                 classNames={{
                   trigger: 'min-h-[36px] h-9',
                   label: 'text-xs',
                   value: 'text-sm',
                 }}
               >
-                <SelectItem key="all">All States</SelectItem>
-                <SelectItem key="open">Open</SelectItem>
-                <SelectItem key="closed">Closed</SelectItem>
-                <SelectItem key="merged">Merged</SelectItem>
+                <SelectItem value="all">All States</SelectItem>
+                <SelectItem value="open">Open</SelectItem>
+                <SelectItem value="closed">Closed</SelectItem>
+                <SelectItem value="merged">Merged</SelectItem>
               </Select>
 
               <Select
@@ -353,31 +345,36 @@ export function VisualFilterBuilder({
                 placeholder="Select draft status"
                 variant="bordered"
                 size="sm"
-                selectedKeys={[filters.isDraft?.toString() || 'all']}
-                onSelectionChange={(keys) => {
-                  const value = Array.from(keys)[0] as string;
+                selectedKey={
+                  filters.isDraft === null
+                    ? 'all'
+                    : filters.isDraft
+                      ? 'true'
+                      : 'false'
+                }
+                onChange={(value) => {
                   updateFilter(
                     'isDraft',
                     value === 'true' ? true : value === 'false' ? false : null
                   );
                 }}
-                isDisabled={isLoading}
+                disabled={isLoading}
                 classNames={{
                   trigger: 'min-h-[36px] h-9',
                   label: 'text-xs',
                   value: 'text-sm',
                 }}
               >
-                <SelectItem key="all">All</SelectItem>
-                <SelectItem key="false">Ready for Review</SelectItem>
-                <SelectItem key="true">Draft</SelectItem>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="false">Ready for Review</SelectItem>
+                <SelectItem value="true">Draft</SelectItem>
               </Select>
             </div>
           </CardBody>
         </Card>
 
         {/* Date Ranges Group */}
-        <Card shadow="sm" className="border border-default-200">
+        <Card className="border border-default-200">
           <CardBody className="p-4 space-y-4">
             <h3 className="text-sm font-semibold text-default-700 border-b border-default-200 pb-2">
               📅 Date Ranges
