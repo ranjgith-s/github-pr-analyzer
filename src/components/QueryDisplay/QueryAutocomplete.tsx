@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 // Replaced direct HeroUI imports with bridge components
-import { Card, CardBody } from '../ui';
-import { ScrollShadow, Kbd, Divider } from '../ui';
+import { Card, CardContent } from '../ui';
+import { ScrollShadow, Kbd, ShadSeparator } from '../ui';
 import {
   MagnifyingGlassIcon,
   UserIcon,
@@ -138,13 +138,13 @@ export function QueryAutocomplete({
 
   return (
     <Card className="absolute z-50 w-80 max-h-64 overflow-hidden shadow-lg border">
-      <CardBody className="p-0">
+      <CardContent className="p-0">
         <ScrollShadow className="max-h-64">
           <div ref={listRef}>
             {Object.entries(groupedSuggestions).map(
               ([category, categoryItems], groupIndex) => (
                 <div key={category}>
-                  {groupIndex > 0 && <Divider />}
+                  {groupIndex > 0 && <ShadSeparator />}
                   <div className="px-2 py-1 text-xs font-semibold text-default-500 bg-default-50">
                     {category}
                   </div>
@@ -198,7 +198,7 @@ export function QueryAutocomplete({
             <span>Close</span>
           </div>
         </div>
-      </CardBody>
+      </CardContent>
     </Card>
   );
 }

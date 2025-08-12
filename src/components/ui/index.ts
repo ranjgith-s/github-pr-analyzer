@@ -9,8 +9,18 @@ export * from './textarea';
 export * from './switch';
 export * from './dialog';
 export * from './spinner';
-export * from './breadcrumbs';
-export * from './divider';
+// Legacy Breadcrumbs/Divider removed in favor of shadcn primitives below
+// New shadcn breadcrumb & separator primitives
+export {
+  Breadcrumb as ShadBreadcrumb,
+  BreadcrumbList as ShadBreadcrumbList,
+  BreadcrumbItem as ShadBreadcrumbItem,
+  BreadcrumbLink as ShadBreadcrumbLink,
+  BreadcrumbPage as ShadBreadcrumbPage,
+  BreadcrumbSeparator as ShadBreadcrumbSeparator,
+  BreadcrumbEllipsis as ShadBreadcrumbEllipsis,
+} from './breadcrumb';
+export { Separator as ShadSeparator } from './separator';
 export * from './link';
 export * from './kbd';
 export * from './chip';

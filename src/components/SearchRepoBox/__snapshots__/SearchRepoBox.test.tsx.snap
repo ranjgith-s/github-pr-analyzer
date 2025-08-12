@@ -4,18 +4,14 @@ exports[`SearchRepoBox matches snapshot 1`] = `
 <div
   class="relative w-full max-w-xl"
 >
+  <input
+    aria-label="Search GitHub repositories"
+    class="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm w-full"
+    placeholder="Search GitHub repositories (owner/repo or URL)"
+    value=""
+  />
   <div
-    class="relative pr-6"
-  >
-    <input
-      aria-label="Search GitHub repositories"
-      class="flex h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full"
-      placeholder="Search GitHub repositories (owner/repo or URL)"
-      value=""
-    />
-  </div>
-  <div
-    class="rounded-lg border bg-card text-card-foreground shadow-sm absolute w-full mt-1 z-10 p-0"
+    class="rounded-xl border bg-card text-card-foreground shadow absolute w-full mt-1 z-10 p-0"
   >
     <div
       class="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-muted/40 border-b last:border-b-0 border-border"

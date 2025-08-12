@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Chip, Card, CardBody } from '../ui';
+import { Chip, Card, CardContent } from '../ui';
 import { Select, SelectItem, Autocomplete, AutocompleteItem } from '../ui';
 import {
   parseGitHubQuery,
@@ -226,7 +226,7 @@ export function VisualFilterBuilder({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* People Filters Group */}
         <Card className="border border-default-200">
-          <CardBody className="p-4 space-y-4">
+          <CardContent className="p-4 space-y-4">
             <h3 className="text-sm font-semibold text-default-700 border-b border-default-200 pb-2">
               👥 People Filters
             </h3>
@@ -275,12 +275,12 @@ export function VisualFilterBuilder({
                 )}
               </div>
             </div>
-          </CardBody>
+          </CardContent>
         </Card>
 
         {/* Repository & Content Group */}
         <Card className="border border-default-200">
-          <CardBody className="p-4 space-y-4">
+          <CardContent className="p-4 space-y-4">
             <h3 className="text-sm font-semibold text-default-700 border-b border-default-200 pb-2">
               📂 Repository & Content
             </h3>
@@ -304,7 +304,7 @@ export function VisualFilterBuilder({
                 'warning'
               )}
             </div>
-          </CardBody>
+          </CardContent>
         </Card>
       </div>
 
@@ -312,7 +312,7 @@ export function VisualFilterBuilder({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Status Group */}
         <Card className="border border-default-200">
-          <CardBody className="p-4 space-y-4">
+          <CardContent className="p-4 space-y-4">
             <h3 className="text-sm font-semibold text-default-700 border-b border-default-200 pb-2">
               🏷️ Status & State
             </h3>
@@ -370,12 +370,12 @@ export function VisualFilterBuilder({
                 <SelectItem value="true">Draft</SelectItem>
               </Select>
             </div>
-          </CardBody>
+          </CardContent>
         </Card>
 
         {/* Date Ranges Group */}
         <Card className="border border-default-200">
-          <CardBody className="p-4 space-y-4">
+          <CardContent className="p-4 space-y-4">
             <h3 className="text-sm font-semibold text-default-700 border-b border-default-200 pb-2">
               📅 Date Ranges
             </h3>
@@ -497,7 +497,7 @@ export function VisualFilterBuilder({
                 </div>
               </div>
             </div>
-          </CardBody>
+          </CardContent>
         </Card>
       </div>
     </div>

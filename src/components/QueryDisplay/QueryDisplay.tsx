@@ -2,14 +2,14 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   Card,
-  CardBody,
   CardHeader,
   Button,
   Switch,
   Spinner,
   Textarea,
-  Divider,
+  ShadSeparator,
   Link,
+  CardContent,
 } from '../ui';
 import {
   MagnifyingGlassIcon,
@@ -274,7 +274,7 @@ export function QueryDisplay({
                     />
                     <span className="text-xs text-default-500">Advanced</span>
                   </div>
-                  <Divider orientation="vertical" className="h-6" />
+                  <ShadSeparator orientation="vertical" className="h-6" />
                 </>
               )}
 
@@ -283,9 +283,9 @@ export function QueryDisplay({
                   <Button
                     size="sm"
                     color="success"
-                    variant="flat"
+                    variant="ghost"
                     startContent={<CheckIcon className="h-4 w-4" />}
-                    onPress={handleEditSave}
+                    onClick={handleEditSave}
                     isDisabled={!validationResult.isValid}
                   >
                     Apply
@@ -293,9 +293,9 @@ export function QueryDisplay({
                   <Button
                     size="sm"
                     color="default"
-                    variant="flat"
+                    variant="ghost"
                     startContent={<XMarkIcon className="h-4 w-4" />}
-                    onPress={handleEditCancel}
+                    onClick={handleEditCancel}
                   >
                     Cancel
                   </Button>
@@ -305,27 +305,27 @@ export function QueryDisplay({
                   <Button
                     size="sm"
                     color="primary"
-                    variant="flat"
+                    variant="ghost"
                     startContent={<PencilIcon className="h-4 w-4" />}
-                    onPress={handleEditStart}
+                    onClick={handleEditStart}
                   >
                     Edit Query
                   </Button>
                   <Button
                     size="sm"
                     color="default"
-                    variant="flat"
+                    variant="ghost"
                     startContent={<ShareIcon className="h-4 w-4" />}
-                    onPress={() => setShowShareModal(true)}
+                    onClick={() => setShowShareModal(true)}
                   >
                     Share
                   </Button>
                   <Button
                     size="sm"
                     color="default"
-                    variant="flat"
+                    variant="ghost"
                     startContent={<BookmarkIcon className="h-4 w-4" />}
-                    onPress={handleBookmarkQuery}
+                    onClick={handleBookmarkQuery}
                   >
                     Bookmark
                   </Button>
@@ -336,7 +336,7 @@ export function QueryDisplay({
         </div>
       </CardHeader>
 
-      <CardBody className="pt-0">
+      <CardContent className="pt-0">
         {isEditing ? (
           <div className="space-y-4">
             {editMode === 'visual' ? (
@@ -428,7 +428,7 @@ export function QueryDisplay({
             </Link>
           </div>
         )}
-      </CardBody>
+      </CardContent>
 
       {/* Share Modal */}
       <ShareQueryModal

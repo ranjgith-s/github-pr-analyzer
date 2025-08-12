@@ -1,6 +1,13 @@
 import React, { useState } from 'react';
 import { ChevronUpIcon } from '@heroicons/react/24/solid';
-import { Card, CardHeader, CardBody, CardFooter, Button, Input } from '../ui';
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  CardFooter,
+  Button,
+  Input,
+} from '../ui';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext/AuthContext';
 import { validateToken } from '../../utils/services/auth';
@@ -44,7 +51,7 @@ export default function Login() {
             </div>
           </div>
         </CardHeader>
-        <CardBody>
+        <CardContent>
           <form onSubmit={handleSubmit} className="w-full flex flex-col gap-3">
             <label htmlFor="token-input" className="block font-medium">
               Personal access token
@@ -100,7 +107,7 @@ export default function Login() {
               )}
             </CardFooter>
           </form>
-        </CardBody>
+        </CardContent>
       </Card>
     </div>
   );

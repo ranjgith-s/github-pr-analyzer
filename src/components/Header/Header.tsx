@@ -2,7 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { ArrowLeftStartOnRectangleIcon } from '@heroicons/react/24/solid';
 import { Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext/AuthContext';
-import { Avatar, BreadcrumbItem, Breadcrumbs, Button } from '../ui';
+import { Avatar, Button } from '../ui';
+import {
+  ShadBreadcrumb as Breadcrumb,
+  ShadBreadcrumbList as BreadcrumbList,
+  ShadBreadcrumbItem as BreadcrumbItem,
+  ShadBreadcrumbSeparator as BreadcrumbSeparator,
+  ShadBreadcrumbLink as BreadcrumbLink,
+  ShadBreadcrumbPage as BreadcrumbPage,
+} from '../ui';
 import { ChevronUpIcon } from 'lucide-react';
 import { getAuthenticatedUserProfile } from '../../utils/services/githubService';
 
@@ -39,45 +47,61 @@ export default function Header({ breadcrumbs }: HeaderProps) {
   }, [token]);
 
   return (
-    <header className="w-full px-6 py-3 border-divider bg-background/80 backdrop-blur-md flex items-center justify-between">
+    <header className="w-full px-6 py-3 border-border bg-background/80 backdrop-blur-md flex items-center justify-between">
       <div className="flex items-center gap-4 min-w-0">
-        <Breadcrumbs size="md" className="font-bold">
-          {/* Explicit key to avoid implicit index key collision */}
-          <BreadcrumbItem key="root">
-            <RouterLink to="/" className="flex items-center gap-1">
-              <ChevronUpIcon />
-              PR-ism
-            </RouterLink>
-          </BreadcrumbItem>
-          {breadcrumbs &&
-            breadcrumbs.map((bc, i) => (
-              <BreadcrumbItem
-                // Use stable unique key derived from path+label
-                key={`${bc.to || 'nolink'}::${bc.label}`}
-                color={i === breadcrumbs.length - 1 ? 'foreground' : undefined}
-                isCurrent={i === breadcrumbs.length - 1}
-              >
-                {bc.to ? (
-                  <RouterLink to={bc.to}>{bc.label}</RouterLink>
-                ) : (
-                  bc.label
-                )}
-              </BreadcrumbItem>
-            ))}
-        </Breadcrumbs>
+        <Breadcrumb className="font-bold">
+          <BreadcrumbList>
+            <BreadcrumbItem key="root">
+              <BreadcrumbLink asChild>
+                <RouterLink to="/" className="flex items-center gap-1">
+                  <ChevronUpIcon />
+                  PR-ism
+                </RouterLink>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            {breadcrumbs && breadcrumbs.length > 0 && <BreadcrumbSeparator />}
+            {breadcrumbs &&
+              breadcrumbs.map((bc, i) => (
+                <React.Fragment key={`${bc.to || 'nolink'}::${bc.label}`}>
+                  <BreadcrumbItem
+                    aria-current={
+                      i === breadcrumbs.length - 1 ? 'page' : undefined
+                    }
+                  >
+                    {i === breadcrumbs.length - 1 ? (
+                      <BreadcrumbPage>{bc.label}</BreadcrumbPage>
+                    ) : bc.to ? (
+                      <BreadcrumbLink asChild>
+                        <RouterLink to={bc.to}>{bc.label}</RouterLink>
+                      </BreadcrumbLink>
+                    ) : (
+                      <BreadcrumbLink>{bc.label}</BreadcrumbLink>
+                    )}
+                  </BreadcrumbItem>
+                  {i < breadcrumbs.length - 1 && <BreadcrumbSeparator />}
+                </React.Fragment>
+              ))}
+          </BreadcrumbList>
+        </Breadcrumb>
       </div>
       {user && (
         <div className="flex items-center gap-2">
-          <Avatar src={user.avatar_url} alt="avatar" className="h-8 w-8" />
+          <Avatar className="h-8 w-8">
+            <img
+              src={user.avatar_url}
+              alt="avatar"
+              className="h-full w-full object-cover"
+              referrerPolicy="no-referrer"
+            />
+          </Avatar>
           <span className="font-mono text-sm px-2">{user.login}</span>
           <Button
-            variant="bordered"
-            color="primary"
             size="sm"
-            endContent={<ArrowLeftStartOnRectangleIcon className="w-5 h-5" />}
-            onPress={logout}
+            variant="outline"
+            onClick={logout}
+            className="gap-1"
           >
-            Logout
+            <ArrowLeftStartOnRectangleIcon className="w-4 h-4" /> Logout
           </Button>
         </div>
       )}

@@ -1,9 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext/AuthContext';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 import { useMetaDescription } from '../../hooks/useMetaDescription';
-import { Card, Breadcrumbs, BreadcrumbItem, Button } from '../ui';
+import { Card, Button } from '../ui';
+import {
+  ShadBreadcrumb as Breadcrumb,
+  ShadBreadcrumbList as BreadcrumbList,
+  ShadBreadcrumbItem as BreadcrumbItem,
+  ShadBreadcrumbSeparator as BreadcrumbSeparator,
+  ShadBreadcrumbLink as BreadcrumbLink,
+  ShadBreadcrumbPage as BreadcrumbPage,
+} from '../ui';
 import { fetchPullRequestDetails } from '../../utils/services/githubService';
 
 interface TimelineEntry {
@@ -14,6 +22,7 @@ export default function PullRequestPage() {
   const { token } = useAuth();
   const { owner, repo, number } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const [events, setEvents] = useState<TimelineEntry[] | null>(null);
   const [title, setTitle] = useState<string>(location.state?.title || '');
   const [loading, setLoading] = useState<boolean>(true);
@@ -66,10 +75,17 @@ export default function PullRequestPage() {
 
   return (
     <div className="p-6">
-      <Breadcrumbs className="mb-4">
-        <BreadcrumbItem href="/insights">Insights</BreadcrumbItem>
-        <BreadcrumbItem isCurrent>{title}</BreadcrumbItem>
-      </Breadcrumbs>
+      <Breadcrumb className="mb-4">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/insights">Insights</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>{title}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
       <Card className="mb-6 p-4">
         <h2 className="text-xl font-bold mb-2 text-foreground">{title}</h2>
         <div className="mb-4">
@@ -97,7 +113,7 @@ export default function PullRequestPage() {
             </ol>
           )}
         </div>
-        <Button as="a" href="/insights" color="primary" variant="flat">
+        <Button variant="ghost" onClick={() => navigate('/insights')}>
           Back to Insights
         </Button>
       </Card>

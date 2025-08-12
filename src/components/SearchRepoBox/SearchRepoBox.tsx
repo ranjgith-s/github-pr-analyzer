@@ -28,7 +28,6 @@ export default function SearchRepoBox({
         onChange={(e) => onQueryChange(e.target.value)}
         className="w-full"
         aria-label="Search GitHub repositories"
-        clearable
       />
       {options.length > 0 && (
         <Card className="absolute w-full mt-1 z-10 p-0">

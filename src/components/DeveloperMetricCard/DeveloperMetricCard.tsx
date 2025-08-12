@@ -31,7 +31,7 @@ export default function DeveloperMetricCard({
   // Map to badge variant
   const badgeVariant = color === 'default' ? 'secondary' : color;
   return (
-    <Card className="p-4 rounded-lg border border-divider space-y-2">
+    <Card className="p-4 rounded-lg border border-border space-y-2">
       <h3 className="flex justify-between items-center text-lg">
         {name}
         {typeof score === 'number' && (

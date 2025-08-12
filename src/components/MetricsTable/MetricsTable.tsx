@@ -295,7 +295,6 @@ export default function MetricsTable(props: MetricsTableProps) {
       {/* Controls */}
       <div className="flex mb-6 gap-3 items-center flex-wrap">
         <Input
-          clearable
           placeholder="Search..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -306,7 +305,7 @@ export default function MetricsTable(props: MetricsTableProps) {
         <Dropdown>
           <DropdownTrigger>
             <Button
-              variant="flat"
+              variant="ghost"
               className="min-w-[160px]"
               aria-label="Repository filter"
             >
@@ -352,7 +351,7 @@ export default function MetricsTable(props: MetricsTableProps) {
         <Dropdown>
           <DropdownTrigger>
             <Button
-              variant="flat"
+              variant="ghost"
               className="min-w-[160px]"
               aria-label="Author filter"
             >
@@ -398,7 +397,7 @@ export default function MetricsTable(props: MetricsTableProps) {
         <Dropdown>
           <DropdownTrigger>
             <Button
-              variant="flat"
+              variant="ghost"
               className="min-w-[120px]"
               aria-label="Sort field"
             >
@@ -453,7 +452,7 @@ export default function MetricsTable(props: MetricsTableProps) {
         <Dropdown>
           <DropdownTrigger>
             <Button
-              variant="flat"
+              variant="ghost"
               className="min-w-[100px]"
               aria-label="Sort order"
             >
@@ -498,7 +497,7 @@ export default function MetricsTable(props: MetricsTableProps) {
         <Dropdown>
           <DropdownTrigger>
             <Button
-              variant="flat"
+              variant="ghost"
               className="min-w-[120px]"
               aria-label="Items per page"
             >
@@ -539,7 +538,7 @@ export default function MetricsTable(props: MetricsTableProps) {
         {/* Column chooser */}
         <Dropdown>
           <DropdownTrigger>
-            <Button variant="light" aria-label="Choose columns">
+            <Button variant="ghost" aria-label="Choose columns">
               <Settings2Icon size={18} />
             </Button>
           </DropdownTrigger>

@@ -9,7 +9,7 @@ exports[`Home matches snapshot 1`] = `
     href="/insights"
   >
     <div
-      class="rounded-lg border bg-card text-card-foreground shadow-sm p-8 w-full hover:shadow-xl transition-shadow cursor-pointer"
+      class="rounded-xl border bg-card text-card-foreground shadow p-8 w-full hover:shadow-xl transition-shadow cursor-pointer"
     >
       <div
         class="flex items-center gap-2 mb-2"
@@ -47,7 +47,7 @@ exports[`Home matches snapshot 1`] = `
     href="/developer"
   >
     <div
-      class="rounded-lg border bg-card text-card-foreground shadow-sm p-8 w-full hover:shadow-xl transition-shadow cursor-pointer"
+      class="rounded-xl border bg-card text-card-foreground shadow p-8 w-full hover:shadow-xl transition-shadow cursor-pointer"
     >
       <div
         class="flex items-center gap-2 mb-2"
@@ -88,7 +88,7 @@ exports[`Home matches snapshot 1`] = `
     href="/repo"
   >
     <div
-      class="rounded-lg border bg-card text-card-foreground shadow-sm p-8 w-full hover:shadow-xl transition-shadow cursor-pointer"
+      class="rounded-xl border bg-card text-card-foreground shadow p-8 w-full hover:shadow-xl transition-shadow cursor-pointer"
     >
       <div
         class="flex items-center gap-2 mb-2"
