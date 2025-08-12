@@ -1,5 +1,7 @@
 # PR-ism
 
+Line coverage: 95.06%
+
 PR-ism is a React + TypeScript application for exploring GitHub pull request and repository metrics with data‑driven insights. It provides comprehensive analysis of development workflows, reviewer activity, and DevOps performance metrics. The UI features a modern design (currently migrating from HeroUI to shadcn/ui) with GitHub‑like aesthetics. Sign in with your GitHub personal access token (classic or fine‑grained) to get started.
 
 ## Table of Contents
@@ -135,9 +137,8 @@ No server component: all calls go directly to the GitHub API from the browser us
 
 1. Create a PAT:
 
-- Classic: <https://github.com/settings/tokens> (scopes: `repo` if you need private repos, else `public_repo` only)
-- Fine‑grained: <https://github.com/settings/personal-access-tokens/new> (select repositories, read‑only)
-
+   - Classic: <https://github.com/settings/tokens> (scopes: `repo` if you need private repos, else `public_repo` only)
+   - Fine‑grained: <https://github.com/settings/personal-access-tokens/new> (select repositories, read‑only)
 2. Launch the app (`npm run dev`).
 3. Paste the token into the login screen; it is stored in `localStorage` under key `token` until you logout.
 4. Clear it anytime via the logout button or by clearing site data.
@@ -167,7 +168,7 @@ To update the coverage badge in the README after running tests:
 node scripts/updateReadmeCoverage.js
 ```
 
-This script replaces the placeholder text `Line coverage: 0%` with the latest percentage using `coverage/coverage-summary.json` (ensure tests were run with coverage first).
+This script replaces the placeholder text `Line coverage: 95.06%` with the latest percentage using `coverage/coverage-summary.json` (ensure tests were run with coverage first).
 
 ### Linting
 
@@ -355,4 +356,3 @@ Coding Guidelines:
 ## License
 
 MIT License. See [LICENSE](LICENSE).
-

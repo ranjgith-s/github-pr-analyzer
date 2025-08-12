@@ -2,6 +2,7 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
+  coverageReporters: ['text', 'json-summary', 'lcov'],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
     '!src/main.tsx',
@@ -20,7 +21,7 @@ module.exports = {
   ],
   coverageThreshold: {
     global: {
-      lines: 50,
+      lines: 90,
     },
   },
 };
