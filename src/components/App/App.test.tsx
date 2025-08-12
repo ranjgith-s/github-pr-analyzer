@@ -60,13 +60,13 @@ test('shows home card when authenticated', async () => {
     </MemoryRouter>
   );
   expect(
-    screen.getByText((content) => /pull request insights/i.test(content))
+    screen.getByRole('heading', { name: /pull request insights/i })
   ).toBeInTheDocument();
   expect(
-    screen.getByText((content) => /developer insights/i.test(content))
+    screen.getByRole('heading', { name: /developer insights/i })
   ).toBeInTheDocument();
   expect(
-    screen.getByText((content) => /repository insights/i.test(content))
+    screen.getByRole('heading', { name: /repository insights/i })
   ).toBeInTheDocument();
   expect(screen.getByText(/PR-ism/i)).toBeInTheDocument();
 });

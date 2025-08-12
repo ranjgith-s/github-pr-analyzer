@@ -5,6 +5,7 @@ module.exports = {
   coverageReporters: ['text', 'json-summary', 'lcov'],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
+    '!src/**/*.test.{ts,tsx}',
     '!src/main.tsx',
     '!src/setupTests.ts',
     '!src/**/__tests__/**',
