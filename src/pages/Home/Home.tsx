@@ -51,7 +51,9 @@ const FeatureCard = ({
         <h3 className="text-lg font-semibold">{title}</h3>
       </div>
     </div>
-    <p className="mt-3 text-sm text-muted-foreground">{description}</p>
+    <p className="mt-3 text-sm text-left text-muted-foreground">
+      {description}
+    </p>
     <div className="mt-auto pt-4 inline-flex items-center gap-1 text-primary transition-all group-hover:gap-1.5">
       <span className="text-sm font-medium">{cta}</span>
       <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />
@@ -98,7 +100,7 @@ export default function Home() {
   return (
     <main className="px-4">
       <section className="container mx-auto max-w-6xl flex flex-col items-center gap-2 py-8 text-center md:py-16 lg:py-20 xl:gap-4">
-        <h1 className="text-primary leading-tight text-4xl font-semibold tracking-tight text-balance lg:leading-[1.1] xl:text-5xl xl:tracking-tighter max-w-4xl">
+        <h1 className="inline-block leading-tight text-4xl font-semibold tracking-tight text-balance lg:leading-[1.1] xl:text-5xl xl:tracking-tighter max-w-4xl bg-gradient-to-r from-blue-500 via-violet-500 to-fuchsia-500 bg-clip-text text-transparent">
           Unlock actionable GitHub PR and DevOps metrics for data-driven
           engineering excellence
         </h1>

@@ -12,17 +12,24 @@ interface DropdownCtx {
 }
 const DropdownContext = React.createContext<DropdownCtx | null>(null);
 
-export const Dropdown: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ children, ...rest }) => {
+export const Dropdown: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
+  children,
+  ...rest
+}) => {
   const [open, setOpen] = React.useState(false);
   return (
     <div className="relative inline-block" {...rest}>
-      <DropdownContext.Provider value={{ open, setOpen }}>{children}</DropdownContext.Provider>
+      <DropdownContext.Provider value={{ open, setOpen }}>
+        {children}
+      </DropdownContext.Provider>
     </div>
   );
 };
 Dropdown.displayName = 'Dropdown';
 
-export const DropdownTrigger: React.FC<{ children: React.ReactElement<any> }> = ({ children }) => {
+export const DropdownTrigger: React.FC<{
+  children: React.ReactElement<any>;
+}> = ({ children }) => {
   const ctx = React.useContext(DropdownContext)!;
   const child = children as React.ReactElement<any>;
   const handleClick = (e: any) => {
@@ -37,7 +44,8 @@ export const DropdownTrigger: React.FC<{ children: React.ReactElement<any> }> = 
 };
 DropdownTrigger.displayName = 'DropdownTrigger';
 
-export interface DropdownMenuProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface DropdownMenuProps
+  extends React.HTMLAttributes<HTMLDivElement> {
   selectionMode?: 'single' | 'multiple';
   selectedKeys?: Set<string>;
   onSelectionChange?: (keys: Set<string>) => void;
@@ -79,7 +87,8 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({
 };
 DropdownMenu.displayName = 'DropdownMenu';
 
-export interface DropdownItemProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface DropdownItemProps
+  extends React.HTMLAttributes<HTMLDivElement> {
   itemKey: string;
   closeOnSelect?: boolean;
   role?: string;
@@ -112,7 +121,8 @@ export const DropdownItem: React.FC<DropdownItemProps> = ({
           ctx.onSelectionChange?.(set);
         } else if (ctx.selectionMode === 'multiple') {
           const set = new Set(ctx.selectedKeys || []);
-            if (set.has(itemKey)) set.delete(itemKey); else set.add(itemKey);
+          if (set.has(itemKey)) set.delete(itemKey);
+          else set.add(itemKey);
           ctx.onSelectionChange?.(set);
         }
         if (ctx.closeOnSelect !== false) ctx.setOpen(false);

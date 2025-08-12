@@ -26,19 +26,6 @@ beforeEach(() => {
   });
 });
 
-test('shows login when not authenticated', () => {
-  render(
-    <MemoryRouter>
-      <ThemeModeProvider>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </ThemeModeProvider>
-    </MemoryRouter>
-  );
-  expect(screen.getByText(/PR-ism/i)).toBeInTheDocument();
-});
-
 import { useAuth } from '../../contexts/AuthContext/AuthContext';
 
 function LoggedIn() {

@@ -88,7 +88,7 @@ export default function Header({ breadcrumbs }: HeaderProps) {
       <div className="flex items-center gap-2">
         {user && (
           <>
-            <Avatar className="h-8 w-8">
+            <Avatar className="h-6 w-6">
               <img
                 src={user.avatar_url}
                 alt="avatar"
@@ -96,13 +96,16 @@ export default function Header({ breadcrumbs }: HeaderProps) {
                 referrerPolicy="no-referrer"
               />
             </Avatar>
+            <span className="text-sm font-medium font-mono text-muted-foreground">
+              {user.login}
+            </span>
             <Button
               size="sm"
-              variant="outline"
+              variant="ghost"
               onClick={logout}
               className="gap-1"
             >
-              <ArrowLeftStartOnRectangleIcon className="w-4 h-4" /> Logout
+              <ArrowLeftStartOnRectangleIcon className="w-4 h-4" />
             </Button>
           </>
         )}
