@@ -1,5 +1,7 @@
 # PR-ism
 
+CI: ![CI](https://github.com/ranjgith-s/github-pr-analyzer/actions/workflows/ci.yml/badge.svg)
+
 Line coverage: 95.06%
 
 PR-ism is a React + TypeScript application for exploring GitHub pull request and repository metrics with data‑driven insights. It provides comprehensive analysis of development workflows, reviewer activity, and DevOps performance metrics. The UI features a modern design (currently migrating from HeroUI to shadcn/ui) with GitHub‑like aesthetics. Sign in with your GitHub personal access token (classic or fine‑grained) to get started.
@@ -162,13 +164,19 @@ Run unit tests with coverage:
 npm test
 ```
 
-To update the coverage badge in the README after running tests:
+To update the coverage badge in the README after running tests, use the following command:
 
 ```bash
 node scripts/updateReadmeCoverage.js
 ```
 
 This script replaces the placeholder text `Line coverage: 95.06%` with the latest percentage using `coverage/coverage-summary.json` (ensure tests were run with coverage first).
+
+One-shot local quality gate:
+
+```bash
+npm run check
+```
 
 ### Linting
 
