@@ -13,6 +13,7 @@ import {
 } from '../ui';
 import { ChevronUpIcon } from 'lucide-react';
 import { getAuthenticatedUserProfile } from '../../utils/services/githubService';
+import ThemeSwitcher from '../ThemeSwitcher/ThemeSwitcher';
 
 interface GitHubUser {
   login: string;
@@ -84,27 +85,29 @@ export default function Header({ breadcrumbs }: HeaderProps) {
           </BreadcrumbList>
         </Breadcrumb>
       </div>
-      {user && (
-        <div className="flex items-center gap-2">
-          <Avatar className="h-8 w-8">
-            <img
-              src={user.avatar_url}
-              alt="avatar"
-              className="h-full w-full object-cover"
-              referrerPolicy="no-referrer"
-            />
-          </Avatar>
-          <span className="font-mono text-sm px-2">{user.login}</span>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={logout}
-            className="gap-1"
-          >
-            <ArrowLeftStartOnRectangleIcon className="w-4 h-4" /> Logout
-          </Button>
-        </div>
-      )}
+      <div className="flex items-center gap-2">
+        {user && (
+          <>
+            <Avatar className="h-8 w-8">
+              <img
+                src={user.avatar_url}
+                alt="avatar"
+                className="h-full w-full object-cover"
+                referrerPolicy="no-referrer"
+              />
+            </Avatar>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={logout}
+              className="gap-1"
+            >
+              <ArrowLeftStartOnRectangleIcon className="w-4 h-4" /> Logout
+            </Button>
+          </>
+        )}
+        <ThemeSwitcher />
+      </div>
     </header>
   );
 }

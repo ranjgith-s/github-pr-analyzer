@@ -7,6 +7,21 @@ if (!HTMLElement.prototype.scrollIntoView) {
   HTMLElement.prototype.scrollIntoView = function () {};
 }
 
+// Polyfill matchMedia for components that read prefers-color-scheme
+if (typeof window !== 'undefined' && !window.matchMedia) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).matchMedia = (query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: () => {},
+    removeListener: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => false,
+  });
+}
+
 // Always mock fetch to return a resolved minimal Response-like object to avoid TypeError: reading 'then'
 // Individual tests can override as needed.
 const defaultFetch = jest.fn().mockResolvedValue({

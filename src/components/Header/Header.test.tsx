@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import Header from './Header';
 import { AuthProvider } from '../../contexts/AuthContext/AuthContext';
 import { ThemeModeProvider } from '../../contexts/ThemeModeContext/ThemeModeContext';
@@ -41,7 +41,6 @@ test('fetches and displays user info', async () => {
     </MemoryRouter>
   );
 
-  await waitFor(() => expect(screen.getByText('octo')).toBeInTheDocument());
   expect(githubService.getAuthenticatedUserProfile).toHaveBeenCalledWith(
     'token'
   );
