@@ -7,7 +7,7 @@ exports[`LoadingOverlay matches snapshot 1`] = `
   style="min-height: 100vh;"
 >
   <div
-    class="rounded-xl text-card-foreground flex flex-col items-center gap-4 p-8 shadow-xl border bg-card/90"
+    class="rounded-lg text-card-foreground flex flex-col items-center gap-4 p-8 shadow-xl border bg-card/90"
   >
     <span
       aria-label="Loading"

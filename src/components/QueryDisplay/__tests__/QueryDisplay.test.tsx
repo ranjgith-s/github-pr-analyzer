@@ -395,7 +395,7 @@ describe('QueryDisplay additional coverage', () => {
     await act(async () => editBtn.click());
     const toggle = screen.getByRole('switch');
     await act(async () => toggle.click());
-    expect(await screen.findByText('👥 People Filters')).toBeInTheDocument();
+    expect(await screen.findByText('Filters')).toBeInTheDocument();
   });
 
   it('handles autocomplete suggestions and selection', async () => {
@@ -583,7 +583,7 @@ describe('QueryDisplay edge branch coverage', () => {
     );
     const toggle = screen.getByRole('switch');
     await act(async () => toggle.click());
-    expect(await screen.findByText('👥 People Filters')).toBeInTheDocument();
+    expect(await screen.findByText('Filters')).toBeInTheDocument();
     await act(async () => toggle.click());
     const textarea = screen.getByLabelText(
       'Edit search query'

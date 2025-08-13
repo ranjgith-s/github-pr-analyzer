@@ -31,7 +31,7 @@ const FeatureCard = ({
   <Link
     to={to}
     aria-label={ariaLabel}
-    className="group relative flex h-full min-h-56 flex-col overflow-hidden rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm p-6 transition duration-200 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ring-offset-background"
+    className="group relative flex h-full min-h-56 flex-col overflow-hidden rounded-lg border border-border/60 bg-card/60 backdrop-blur-sm p-6 transition duration-200 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ring-offset-background"
   >
     <div
       className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100"
