@@ -9,6 +9,7 @@ export interface AutocompleteProps {
   variant?: 'bordered' | 'flat';
   disabled?: boolean;
   onSelect?: (value: string) => void;
+  onInputChange?: (value: string) => void;
   className?: string;
   classNames?: { base?: string; listbox?: string };
   'data-testid'?: string;
@@ -28,6 +29,7 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
   variant = 'bordered',
   disabled,
   onSelect,
+  onInputChange,
   className,
   classNames,
   'data-testid': testId,
@@ -82,6 +84,7 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
         onBlur={() => setTimeout(() => setOpen(false), 100)}
         onChange={(e) => {
           setInputValue(e.target.value);
+          onInputChange?.(e.target.value);
           setOpen(true);
         }}
         className={cn(

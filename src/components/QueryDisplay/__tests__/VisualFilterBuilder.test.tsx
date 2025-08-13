@@ -3,6 +3,18 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { VisualFilterBuilder } from '../VisualFilterBuilder';
 import * as queryBuilder from '../../../utils/queryBuilder';
+import * as githubService from '../../../utils/services/githubService';
+
+// Mock Auth context to supply a token for dynamic user search
+jest.mock('../../../contexts/AuthContext/AuthContext', () => ({
+  useAuth: () => ({ token: 'fake-token' }),
+}));
+
+// Mock githubService for dynamic user suggestions
+jest.mock('../../../utils/services/githubService', () => ({
+  ...jest.requireActual('../../../utils/services/githubService'),
+  searchUsers: jest.fn(),
+}));
 
 // Mock the queryBuilder utility
 jest.mock('../../../utils/queryBuilder', () => ({
@@ -38,6 +50,64 @@ describe('VisualFilterBuilder (ungrouped grid + presets)', () => {
       involves: [],
     });
     mockBuildGitHubQuery.mockReturnValue('is:pr author:john');
+  });
+
+  it('populates dynamic user suggestions as you type (Authors)', async () => {
+    const user = userEvent.setup();
+    const onQueryChange = jest.fn();
+    (githubService.searchUsers as jest.Mock).mockResolvedValue([
+      { login: 'alice', avatar_url: 'x' },
+      { login: 'albert', avatar_url: 'y' },
+    ]);
+
+    render(
+      <VisualFilterBuilder
+        {...defaultProps}
+        onQueryChange={onQueryChange}
+        query="is:pr"
+      />
+    );
+
+    const authorInputs = screen.getAllByPlaceholderText('Add author...');
+    const input = authorInputs.find((e) => e.tagName === 'INPUT');
+    await user.click(input!);
+    await user.type(input!, 'al');
+
+    await waitFor(() =>
+      expect(githubService.searchUsers).toHaveBeenCalledWith('fake-token', 'al')
+    );
+
+    // Dynamic results should appear
+    const items = screen.getAllByTestId('autocomplete-item');
+    expect(items.some((i) => i.textContent === 'alice')).toBe(true);
+    expect(items.some((i) => i.textContent === 'albert')).toBe(true);
+
+    // Select a dynamic suggestion triggers query change
+    await user.click(items.find((i) => i.textContent === 'alice')!);
+    await waitFor(() => expect(onQueryChange).toHaveBeenCalled());
+  });
+
+  it('falls back to static user suggestions when input is cleared', async () => {
+    const user = userEvent.setup();
+    (githubService.searchUsers as jest.Mock).mockResolvedValue([
+      { login: 'alice', avatar_url: 'x' },
+    ]);
+
+    render(<VisualFilterBuilder {...defaultProps} query="is:pr" />);
+
+    const authorInputs = screen.getAllByPlaceholderText('Add author...');
+    const input = authorInputs.find((e) => e.tagName === 'INPUT');
+    await user.click(input!);
+    await user.type(input!, 'ali');
+
+    await waitFor(() => expect(githubService.searchUsers).toHaveBeenCalled());
+
+    // Clear input -> should show static default suggestions
+    await user.clear(input!);
+    const items = screen.getAllByTestId('autocomplete-item');
+    expect(items.some((i) => i.textContent === 'john')).toBe(true);
+    expect(items.some((i) => i.textContent === 'jane')).toBe(true);
+    expect(items.some((i) => i.textContent === 'bob')).toBe(true);
   });
 
   it('renders first row only by default and toggles more filters', async () => {

@@ -6,6 +6,9 @@ import {
   buildGitHubQuery,
   FilterState,
 } from '../../utils/queryBuilder';
+import { useAuth } from '../../contexts/AuthContext/AuthContext';
+import { searchUsers } from '../../utils/services/githubService';
+import { useDebounce } from '../../hooks/useDebounce';
 
 export interface VisualFilterBuilderProps {
   query: string;
@@ -24,11 +27,25 @@ export function VisualFilterBuilder({
   isLoading = false,
   suggestions = { users: [], repositories: [], labels: [] },
 }: VisualFilterBuilderProps) {
+  const { token } = useAuth();
   const [filters, setFilters] = React.useState<FilterState>(() =>
     parseGitHubQuery(query)
   );
   const [showAllFilters, setShowAllFilters] = React.useState(false);
   const [initialVisibleCount, setInitialVisibleCount] = React.useState(3);
+  // Dynamic user suggestion inputs and results
+  const [authorInput, setAuthorInput] = React.useState('');
+  const [reviewerInput, setReviewerInput] = React.useState('');
+  const [assigneeInput, setAssigneeInput] = React.useState('');
+  const [involvesInput, setInvolvesInput] = React.useState('');
+  const [authorOptions, setAuthorOptions] = React.useState<string[]>([]);
+  const [reviewerOptions, setReviewerOptions] = React.useState<string[]>([]);
+  const [assigneeOptions, setAssigneeOptions] = React.useState<string[]>([]);
+  const [involvesOptions, setInvolvesOptions] = React.useState<string[]>([]);
+  const debouncedAuthor = useDebounce(authorInput, 200);
+  const debouncedReviewer = useDebounce(reviewerInput, 200);
+  const debouncedAssignee = useDebounce(assigneeInput, 200);
+  const debouncedInvolves = useDebounce(involvesInput, 200);
   // Local state to keep track of preset selections for date ranges
   const [createdPreset, setCreatedPreset] = React.useState<
     | 'none'
@@ -99,6 +116,97 @@ export function VisualFilterBuilder({
     const isSm = window.matchMedia('(min-width: 640px)').matches;
     setInitialVisibleCount(isLg ? 3 : isSm ? 2 : 1);
   }, []);
+
+  // Utility to ensure '@me' is available at top and no duplicates
+  const addMe = (list: string[]) => {
+    const dedup = Array.from(new Set(list));
+    return dedup.includes('@me') ? dedup : ['@me', ...dedup];
+  };
+
+  // Fetch dynamic user suggestions per field
+  useEffect(() => {
+    if (!token) return;
+    let cancel = false;
+    async function load() {
+      if (!debouncedAuthor) {
+        setAuthorOptions([]);
+        return;
+      }
+      try {
+        const res = await searchUsers(token!, debouncedAuthor);
+        if (!cancel) setAuthorOptions(addMe(res.map((u: any) => u.login)));
+      } catch {
+        if (!cancel) setAuthorOptions([]);
+      }
+    }
+    load();
+    return () => {
+      cancel = true;
+    };
+  }, [debouncedAuthor, token]);
+
+  useEffect(() => {
+    if (!token) return;
+    let cancel = false;
+    async function load() {
+      if (!debouncedReviewer) {
+        setReviewerOptions([]);
+        return;
+      }
+      try {
+        const res = await searchUsers(token!, debouncedReviewer);
+        if (!cancel) setReviewerOptions(addMe(res.map((u: any) => u.login)));
+      } catch {
+        if (!cancel) setReviewerOptions([]);
+      }
+    }
+    load();
+    return () => {
+      cancel = true;
+    };
+  }, [debouncedReviewer, token]);
+
+  useEffect(() => {
+    if (!token) return;
+    let cancel = false;
+    async function load() {
+      if (!debouncedAssignee) {
+        setAssigneeOptions([]);
+        return;
+      }
+      try {
+        const res = await searchUsers(token!, debouncedAssignee);
+        if (!cancel) setAssigneeOptions(addMe(res.map((u: any) => u.login)));
+      } catch {
+        if (!cancel) setAssigneeOptions([]);
+      }
+    }
+    load();
+    return () => {
+      cancel = true;
+    };
+  }, [debouncedAssignee, token]);
+
+  useEffect(() => {
+    if (!token) return;
+    let cancel = false;
+    async function load() {
+      if (!debouncedInvolves) {
+        setInvolvesOptions([]);
+        return;
+      }
+      try {
+        const res = await searchUsers(token!, debouncedInvolves);
+        if (!cancel) setInvolvesOptions(addMe(res.map((u: any) => u.login)));
+      } catch {
+        if (!cancel) setInvolvesOptions([]);
+      }
+    }
+    load();
+    return () => {
+      cancel = true;
+    };
+  }, [debouncedInvolves, token]);
 
   // Date preset utilities
   type DatePreset =
@@ -173,7 +281,8 @@ export function VisualFilterBuilder({
       | 'success'
       | 'warning'
       | 'default' = 'default',
-    testId?: string
+    testId?: string,
+    onInputChange?: (value: string) => void
   ) => (
     <div className="space-y-2">
       <label className="text-xs font-medium text-default-600">{label}</label>
@@ -184,6 +293,7 @@ export function VisualFilterBuilder({
         onSelect={(value) => {
           if (value) addStringArrayItem(filterKey, value.toString());
         }}
+        onInputChange={onInputChange}
         disabled={isLoading}
         className="w-full"
         classNames={{
@@ -313,8 +423,12 @@ export function VisualFilterBuilder({
                 'Authors',
                 'Add author...',
                 'authors',
-                suggestions.users,
-                'primary'
+                authorInput && authorOptions.length > 0
+                  ? authorOptions
+                  : suggestions.users,
+                'primary',
+                undefined,
+                setAuthorInput
               )}
             </CardContent>
           </Card>,
@@ -324,8 +438,12 @@ export function VisualFilterBuilder({
                 'Reviewers',
                 'Add reviewer...',
                 'reviewers',
-                suggestions.users,
-                'secondary'
+                reviewerInput && reviewerOptions.length > 0
+                  ? reviewerOptions
+                  : suggestions.users,
+                'secondary',
+                undefined,
+                setReviewerInput
               )}
             </CardContent>
           </Card>,
@@ -335,8 +453,12 @@ export function VisualFilterBuilder({
                 'Assignees',
                 'Add assignee...',
                 'assignees',
-                suggestions.users,
-                'default'
+                assigneeInput && assigneeOptions.length > 0
+                  ? assigneeOptions
+                  : suggestions.users,
+                'default',
+                undefined,
+                setAssigneeInput
               )}
             </CardContent>
           </Card>,
@@ -346,9 +468,12 @@ export function VisualFilterBuilder({
                 'Involves',
                 'Add user...',
                 'involves',
-                suggestions.users,
+                involvesInput && involvesOptions.length > 0
+                  ? involvesOptions
+                  : suggestions.users,
                 'primary',
-                'involves-autocomplete'
+                'involves-autocomplete',
+                setInvolvesInput
               )}
             </CardContent>
           </Card>,
