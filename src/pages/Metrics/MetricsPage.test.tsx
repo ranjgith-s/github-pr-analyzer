@@ -251,6 +251,89 @@ describe('MetricsPage (minimal UI)', () => {
     expect(joined).toMatch(/order=asc/);
   });
 
+  test('sorting by a non-legacy column id updates URL and resets page to 1', () => {
+    MetricsTableMock.mockImplementationOnce((props: any) => (
+      <button onClick={() => props.onSortChange('author')}>SortHeader</button>
+    ));
+
+    usePullRequestMetricsMock.mockReturnValue({
+      items: [
+        {
+          id: '1',
+          owner: 'o',
+          repo_name: 'r',
+          repo: 'o/r',
+          number: 1,
+          title: 'PR',
+          url: '',
+          author: 'tester',
+          state: 'open',
+          created_at: new Date().toISOString(),
+          reviewers: [],
+          changes_requested: 0,
+          additions: 0,
+          deletions: 0,
+          comment_count: 0,
+          timeline: [],
+        },
+      ],
+      loading: false,
+      error: null,
+      totalCount: 1,
+      rateLimit: null,
+    });
+
+    renderPage(['/insights?q=is:pr&page=3&sort=updated&order=desc']);
+    fireEvent.click(screen.getByText('SortHeader'));
+
+    const last = navigateMock.mock.calls.pop()?.[0] as string;
+    expect(last).toMatch(/sort=author/);
+    // page=1 is omitted by buildQueryString; ensure previous page param was cleared
+    expect(last).not.toMatch(/page=/);
+  });
+
+  test('changing order resets page to 1 and updates URL', () => {
+    MetricsTableMock.mockImplementationOnce((props: any) => (
+      <button onClick={() => props.onOrderChange('desc')}>OrderToggle</button>
+    ));
+
+    usePullRequestMetricsMock.mockReturnValue({
+      items: [
+        {
+          id: '1',
+          owner: 'o',
+          repo_name: 'r',
+          repo: 'o/r',
+          number: 1,
+          title: 'PR',
+          url: '',
+          author: 'tester',
+          state: 'open',
+          created_at: new Date().toISOString(),
+          reviewers: [],
+          changes_requested: 0,
+          additions: 0,
+          deletions: 0,
+          comment_count: 0,
+          timeline: [],
+        },
+      ],
+      loading: false,
+      error: null,
+      totalCount: 1,
+      rateLimit: null,
+    });
+
+    renderPage(['/insights?q=is:pr&page=2&order=asc']);
+    fireEvent.click(screen.getByText('OrderToggle'));
+
+    const last = navigateMock.mock.calls.pop()?.[0] as string;
+    // order=desc is omitted by buildQueryString; ensure order param removed
+    expect(last).not.toMatch(/order=/);
+    // page=1 is omitted as default; ensure page param removed
+    expect(last).not.toMatch(/page=/);
+  });
+
   test('renders em dash when median metrics unavailable', () => {
     usePullRequestMetricsMock.mockReturnValue({
       items: [

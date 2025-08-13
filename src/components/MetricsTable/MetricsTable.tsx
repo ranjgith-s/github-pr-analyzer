@@ -114,6 +114,111 @@ export default function MetricsTable(props: MetricsTableProps) {
     );
   });
 
+  // Sorting helpers (client-side for displayed data)
+  type SortKey =
+    | 'repo'
+    | 'title'
+    | 'author'
+    | 'reviewers'
+    | 'changes_requested'
+    | 'diff'
+    | 'comment_count'
+    | 'timeline'
+    | 'lead_time'
+    | 'state'
+    | 'created'
+    | 'updated';
+
+  const toTime = (d?: string | null) => (d ? new Date(d).getTime() : 0);
+  const cmpNum = (a: number, b: number) => a - b;
+  const cmpStr = (a: string, b: string) => a.localeCompare(b);
+  const getTimelineTotal = (row: PRItem) => {
+    const created = row.created_at ? new Date(row.created_at) : null;
+    const published = row.published_at ? new Date(row.published_at) : null;
+    const firstReview = row.first_review_at
+      ? new Date(row.first_review_at)
+      : null;
+    const closed = row.closed_at ? new Date(row.closed_at) : null;
+    const draftMs =
+      created && published ? published.getTime() - created.getTime() : 0;
+    const reviewMs =
+      published && firstReview
+        ? firstReview.getTime() - published.getTime()
+        : 0;
+    const activeMs =
+      firstReview && closed ? closed.getTime() - firstReview.getTime() : 0;
+    return draftMs + reviewMs + activeMs;
+  };
+  const getLeadTime = (row: PRItem) => {
+    const s = row.first_commit_at ? new Date(row.first_commit_at) : null;
+    const e = row.closed_at ? new Date(row.closed_at) : null;
+    return s && e ? e.getTime() - s.getTime() : 0;
+  };
+  const sorted = React.useMemo(() => {
+    // Accept existing values for `sort` including dropdown legacy values ('updated'|'created'|'comments').
+    let key: SortKey | null = null;
+    if (['updated', 'created'].includes(sort)) key = sort as SortKey;
+    else if (sort === 'comments') key = 'comment_count';
+    else if (
+      [
+        'repo',
+        'title',
+        'author',
+        'reviewers',
+        'changes_requested',
+        'diff',
+        'comment_count',
+        'timeline',
+        'lead_time',
+        'state',
+      ].includes(sort)
+    ) {
+      key = sort as SortKey;
+    }
+    if (!key) return filtered;
+    const copy = filtered.slice();
+    const getSortValue = (row: PRItem): number | string => {
+      switch (key as SortKey) {
+        case 'repo':
+          return row.repo;
+        case 'title':
+          return row.title;
+        case 'author':
+          return row.author;
+        case 'reviewers':
+          return row.reviewers.length;
+        case 'changes_requested':
+          return row.changes_requested;
+        case 'diff':
+          return row.additions + row.deletions;
+        case 'comment_count':
+          return row.comment_count;
+        case 'timeline':
+          return getTimelineTotal(row);
+        case 'lead_time':
+          return getLeadTime(row);
+        case 'state':
+          return row.state;
+        case 'created':
+          return toTime(row.created_at);
+        case 'updated':
+          return toTime(row.closed_at || row.published_at || row.created_at);
+        default:
+          return '';
+      }
+    };
+    copy.sort((a, b) => {
+      const av = getSortValue(a);
+      const bv = getSortValue(b);
+      if (typeof av === 'number' && typeof bv === 'number')
+        return order === 'asc' ? cmpNum(av, bv) : cmpNum(bv, av);
+      return order === 'asc'
+        ? cmpStr(String(av), String(bv))
+        : cmpStr(String(bv), String(av));
+    });
+    return copy;
+  }, [filtered, sort, order]);
+
   // Column definitions
   const columns = [
     {
@@ -608,13 +713,29 @@ export default function MetricsTable(props: MetricsTableProps) {
           {columns
             .filter((c) => visibleColumns.includes(c.id))
             .map((c) => (
-              <TableColumn key={c.id}>
+              <TableColumn
+                key={c.id}
+                sortable={c.id !== 'select'}
+                sortDirection={sort === c.id ? order : null}
+                onSort={() => {
+                  if (sort === c.id) {
+                    setOrder((o) => {
+                      const next: 'asc' | 'desc' = o === 'asc' ? 'desc' : 'asc';
+                      props.onOrderChange?.(next);
+                      return next;
+                    });
+                  } else {
+                    setSort(c.id);
+                    props.onSortChange?.(c.id);
+                  }
+                }}
+              >
                 {c.header ? String(c.header).toUpperCase() : ''}
               </TableColumn>
             ))}
         </TableHeader>
         <TableBody
-          items={filtered}
+          items={sorted}
           emptyContent={<span>No pull requests found.</span>}
         >
           {(row: PRItem) => (
