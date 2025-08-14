@@ -33,6 +33,16 @@ const supabase = {
       };
       return { data: { subscription } } as any;
     }),
+    exchangeCodeForSession: fn().mockImplementation(async () => {
+      // Simulate exchanging an OAuth code from the URL for a Supabase session
+      // For tests, reuse the current mockSession or create a default provider token
+      if (!mockSession) {
+        mockSession = { provider_token: 'tokenFromCode' };
+      }
+      // Notify listeners that we are signed in
+      authCallbacks.forEach((cb) => cb('SIGNED_IN', { session: mockSession }));
+      return { data: { session: mockSession }, error: null } as any;
+    }),
     // Testing helpers to manipulate session
     __setSession: (s: any) => {
       mockSession = s;
@@ -40,6 +50,13 @@ const supabase = {
       authCallbacks.forEach((cb) => cb('UPDATED', mockSession));
     },
     signOut: fn().mockResolvedValue({ data: {}, error: null }),
+    __reset: () => {
+      mockSession = null;
+      authCallbacks = [];
+    },
+    __emitAuthEvent: (event: any, session: any) => {
+      authCallbacks.forEach((cb) => cb(event, session));
+    },
   },
 };
 

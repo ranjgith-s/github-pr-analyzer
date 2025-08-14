@@ -81,23 +81,25 @@ export default function Login() {
 
   return (
     <main className="px-4">
-      <header className="mb-4">
-        <div className="flex flex-col items-center gap-2 w-full">
-          <div className="flex items-center gap-2 text-4xl font-bold">
-            <ChevronUpIcon className="h-8 w-8" />
-            PR-ism
+      <div>
+        <header className="mb-4">
+          <div className="flex flex-col items-center gap-2 w-full">
+            <div className="flex items-center gap-2 text-8xl font-bold pt-8">
+              <ChevronUpIcon className="h-32 w-32" />
+              PR-ism
+            </div>
           </div>
-        </div>
-      </header>
-      <section className="container mx-auto max-w-6xl flex flex-col items-center gap-2 py-8 text-center md:py-16 lg:py-20 xl:gap-4">
-        <h1 className="inline-block leading-tight text-4xl font-semibold tracking-tight text-balance lg:leading-[1.1] xl:text-5xl xl:tracking-tighter max-w-4xl bg-gradient-to-r from-blue-500 via-violet-500 to-fuchsia-500 bg-clip-text text-transparent">
-          Actionable PR & DevOps metrics
-        </h1>
-        <p className="text-foreground/80 max-w-3xl text-base text-balance sm:text-lg">
-          Track lead time, review time, deploy frequency, failure rate, and
-          more. Start fast; tailor to your workflow.
-        </p>
-      </section>
+        </header>
+        <section className="container mx-auto max-w-6xl flex flex-col items-center gap-2 py-4 text-center md:py-4 lg:py-8 xl:gap-4">
+          <h1 className="inline-block leading-tight text-4xl font-semibold tracking-tight text-balance lg:leading-[1.1] xl:text-5xl xl:tracking-tighter max-w-4xl bg-gradient-to-r from-blue-500 via-violet-500 to-fuchsia-500 bg-clip-text text-transparent">
+            Actionable PR & DevOps metrics
+          </h1>
+          <p className="text-foreground/80 max-w-3xl text-base text-balance sm:text-lg">
+            Track lead time, review time, deploy frequency, failure rate, and
+            more. Start fast; tailor to your workflow.
+          </p>
+        </section>
+      </div>
       <div className="flex items-center justify-center pb-12">
         <Button
           onClick={handleGithubSignIn}
