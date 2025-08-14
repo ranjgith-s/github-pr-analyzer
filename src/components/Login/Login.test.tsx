@@ -5,43 +5,51 @@ import Login from './Login';
 import { AuthProvider, useAuth } from '../../contexts/AuthContext/AuthContext';
 import { ThemeModeProvider } from '../../contexts/ThemeModeContext/ThemeModeContext';
 import { MemoryRouter } from 'react-router-dom';
-import * as authService from '../../utils/services/auth';
 
-jest.mock('../../utils/services/auth');
+jest.mock('@/lib/supabaseClient');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const supabase = require('@/lib/supabaseClient').default;
 
-test('login submits provided token', async () => {
-  (authService.validateToken as jest.Mock).mockResolvedValue({
-    login: 'me',
-    avatar_url: 'img',
-  });
+beforeEach(() => {
+  supabase.auth.__setSession(null);
+  localStorage.clear();
+});
 
-  let ctx: ReturnType<typeof useAuth> | undefined;
-  function Wrapper() {
-    ctx = useAuth();
-    return <Login />;
-  }
+test('clicking Continue with GitHub triggers OAuth and token is picked from session', async () => {
+  const TokenProbe = () => {
+    const { token } = useAuth();
+    return <div data-testid="tok">{token}</div>;
+  };
   render(
     <MemoryRouter
       future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
     >
       <ThemeModeProvider>
         <AuthProvider>
-          <Wrapper />
+          <Login />
+          <TokenProbe />
         </AuthProvider>
       </ThemeModeProvider>
     </MemoryRouter>
   );
-  const input = screen.getByLabelText(/personal access token/i);
+
   const user = userEvent.setup();
   await act(async () => {
-    await user.type(input, 'token123');
-    await user.click(screen.getByRole('button', { name: /sign in/i }));
+    await user.click(
+      screen.getByRole('button', { name: /continue with github/i })
+    );
   });
-  await waitFor(() => expect(ctx!.token).toBe('token123'));
+  expect(supabase.auth.signInWithOAuth).toHaveBeenCalled();
+  await waitFor(() => {
+    expect(screen.getByTestId('tok').textContent).toBe('token123');
+  });
 });
 
-test('shows error when token is invalid', async () => {
-  (authService.validateToken as jest.Mock).mockRejectedValue(new Error('bad'));
+test('shows error when OAuth fails', async () => {
+  (supabase.auth.signInWithOAuth as jest.Mock).mockResolvedValueOnce({
+    data: {},
+    error: { message: 'oops' },
+  });
 
   render(
     <MemoryRouter
@@ -56,10 +64,9 @@ test('shows error when token is invalid', async () => {
   );
   const user = userEvent.setup();
   await act(async () => {
-    await user.type(screen.getByLabelText(/personal access token/i), 'bad');
-    await user.click(screen.getByRole('button', { name: /sign in/i }));
+    await user.click(
+      screen.getByRole('button', { name: /continue with github/i })
+    );
   });
-  await waitFor(() =>
-    expect(screen.getByText(/invalid token/i)).toBeInTheDocument()
-  );
+  await waitFor(() => expect(screen.getByText('oops')).toBeInTheDocument());
 });

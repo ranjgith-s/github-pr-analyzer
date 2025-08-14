@@ -2,7 +2,7 @@
 
 CI: ![CI](https://github.com/ranjgith-s/github-pr-analyzer/actions/workflows/ci.yml/badge.svg)
 
-Line coverage: 95.06%
+Line coverage: 92.64%
 
 PR-ism is a React + TypeScript application for exploring GitHub pull request and repository metrics with data‑driven insights. It provides comprehensive analysis of development workflows, reviewer activity, and DevOps performance metrics. The UI features a modern design (currently migrating from HeroUI to shadcn/ui) with GitHub‑like aesthetics. Sign in with GitHub via Supabase OAuth to get started.
 
@@ -120,7 +120,7 @@ The codebase follows clean architecture principles. Domain logic is separated fr
 
 ### High-Level Data Flow
 
-1. User authenticates with a personal access token (stored locally) via `AuthContext`.
+1. User authenticates with GitHub via Supabase OAuth; the provider token is extracted and stored locally by `AuthContext` for GitHub API calls.
 2. Hooks (`usePullRequestMetrics`, `useDeveloperMetrics`, `useRepoInsights`) orchestrate fetches through `githubService`.
 3. `githubService` wraps Octokit REST + GraphQL calls, performs batching & transformations, applies caching, and surfaces rate limit info.
 4. Components/pages render metrics, charts, and tables; query editing state is synchronized with the URL for shareability.
@@ -290,7 +290,7 @@ Enter any GitHub repository URL or use the format `owner/repository` to explore 
 The app employs multiple layers to remain responsive while respecting GitHub rate limits:
 
 - In-memory caches (user, repo, PR commit lists) via lightweight cache objects.
-- LocalStorage persistence for query history & bookmarks (no API secrets beyond the PAT itself).
+- LocalStorage persistence for query history & bookmarks (no API secrets beyond the GitHub provider token itself).
 - Search result caching (5 min TTL) keyed by normalized query + pagination params.
 - Batched GraphQL queries reduce round trips (20 PRs per batch) followed by controlled concurrency when enriching with commits.
 - Rate limit data (core resource) fetched after each metrics load and surfaced through `usePullRequestMetrics` (UI surfacing WIP per roadmap).

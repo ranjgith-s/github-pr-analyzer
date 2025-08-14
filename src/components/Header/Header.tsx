@@ -36,7 +36,10 @@ export default function Header({ breadcrumbs }: HeaderProps) {
 
   useEffect(() => {
     async function fetchUser() {
-      if (!token) return;
+      if (!token) {
+        setUser(null);
+        return;
+      }
       try {
         const userData = await getAuthenticatedUserProfile(token);
         setUser(userData);
@@ -91,14 +94,12 @@ export default function Header({ breadcrumbs }: HeaderProps) {
             <Avatar className="h-6 w-6">
               <img
                 src={user.avatar_url}
+                title={`${user.login} (you)`}
                 alt="avatar"
                 className="h-full w-full object-cover"
                 referrerPolicy="no-referrer"
               />
             </Avatar>
-            <span className="text-sm font-medium font-mono text-muted-foreground">
-              {user.login}
-            </span>
             <Button
               size="sm"
               variant="ghost"
