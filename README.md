@@ -4,7 +4,7 @@ CI: ![CI](https://github.com/ranjgith-s/github-pr-analyzer/actions/workflows/ci.
 
 Line coverage: 95.06%
 
-PR-ism is a React + TypeScript application for exploring GitHub pull request and repository metrics with data‑driven insights. It provides comprehensive analysis of development workflows, reviewer activity, and DevOps performance metrics. The UI features a modern design (currently migrating from HeroUI to shadcn/ui) with GitHub‑like aesthetics. Sign in with your GitHub personal access token (classic or fine‑grained) to get started.
+PR-ism is a React + TypeScript application for exploring GitHub pull request and repository metrics with data‑driven insights. It provides comprehensive analysis of development workflows, reviewer activity, and DevOps performance metrics. The UI features a modern design (currently migrating from HeroUI to shadcn/ui) with GitHub‑like aesthetics. Sign in with GitHub via Supabase OAuth to get started.
 
 ## Table of Contents
 
@@ -61,8 +61,8 @@ Supporting utilities: in‑memory + localStorage caching, query validator, sugge
 
 ### 🔐 Authentication & Security
 
-- Secure GitHub personal access token authentication (read-only repository access)
-- Token validation and session management
+- Sign in with GitHub using Supabase Auth (OAuth)
+- Session management with Supabase; the provider token is stored locally for GitHub API calls
 - Protected routes with automatic redirection
 
 ### 📊 Pull Request Analytics
@@ -131,19 +131,22 @@ The codebase follows clean architecture principles. Domain logic is separated fr
 ### Prerequisites
 
 - Node.js 18+ (recommended LTS)
-- A GitHub Personal Access Token with at least `public_repo` scope (classic) OR a fine‑grained token granting read access to the specific repositories you want to analyze.
+- A Supabase project with GitHub provider enabled (Settings → Authentication → Providers → GitHub)
+- Configure the GitHub OAuth app callback URL to your app origin (e.g., `http://localhost:5173` for local dev)
 
 ### Configuration
 
-No server component: all calls go directly to the GitHub API from the browser using your token.
+Copy `.env.example` to `.env.local` and set your Supabase credentials:
 
-1. Create a PAT:
+```bash
+VITE_SUPABASE_URL=your-supabase-project-url
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+```
 
-   - Classic: <https://github.com/settings/tokens> (scopes: `repo` if you need private repos, else `public_repo` only)
-   - Fine‑grained: <https://github.com/settings/personal-access-tokens/new> (select repositories, read‑only)
-2. Launch the app (`npm run dev`).
-3. Paste the token into the login screen; it is stored in `localStorage` under key `token` until you logout.
-4. Clear it anytime via the logout button or by clearing site data.
+Notes:
+
+- In Supabase, enable the GitHub provider and ensure the redirect/callback URL matches your app origin.
+- The app requests minimal scopes (`read:user repo`) to read PRs and repo data.
 
 ### Development
 
@@ -154,7 +157,7 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173) and enter your GitHub personal access token.
+Open [http://localhost:5173](http://localhost:5173) and click “Continue with GitHub”.
 
 ### Testing
 
@@ -296,10 +299,10 @@ If you experience silent failures when limits exhaust, refresh after the reset t
 
 ## Security Considerations
 
-- PAT is stored client‑side in `localStorage` (key: `token`). Anyone with local machine/browser access could read it—use a low‑scope token.
-- All requests are direct browser → GitHub API; no intermediate server retains credentials.
-- Logout clears local storage token; always logout on shared machines.
-- No write operations are performed; the application is read‑only.
+- The GitHub provider token from Supabase is stored client‑side in `localStorage` (key: `token`) to authenticate GitHub API requests. Anyone with local machine/browser access could read it—avoid shared machines and use least‑privileged scopes.
+- All requests are direct browser → GitHub API; no server retains credentials.
+- Logout clears the local token and also signs out of Supabase.
+- The application performs read‑only operations.
 - Avoid granting unnecessary scopes (private repo access only if required).
 
 ## Testing Strategy

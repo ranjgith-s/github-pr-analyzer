@@ -12,6 +12,7 @@ module.exports = {
   ],
   moduleNameMapper: {
     '\\.(css|less|scss)$': 'identity-obj-proxy',
+    '^@/lib/supabaseClient$': '<rootDir>/__mocks__/supabaseClient.ts',
     '^@/(.*)$': '<rootDir>/src/$1',
     '^framer-motion$': '<rootDir>/__mocks__/framer-motion.js',
     '^@headlessui/react$': '<rootDir>/__mocks__/@headlessui/react.js',
