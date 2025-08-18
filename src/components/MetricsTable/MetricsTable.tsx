@@ -1,5 +1,5 @@
 // Clean minimal, syntactically valid MetricsTable rebuilt after corruption.
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PRItem } from '../../types';
 import { QueryParams } from '../../utils/queryUtils';
@@ -11,15 +11,18 @@ import {
   TableColumn,
   TableRow,
   TableCell,
+  Pagination,
   Dropdown,
   DropdownTrigger,
   DropdownMenu,
   DropdownItem,
-  Pagination,
   Button,
-  Input,
 } from '../ui';
 import { Settings2Icon } from 'lucide-react';
+import TimelineBar from './TimelineBar';
+import DiffCell from './DiffCell';
+import FiltersBar from './FiltersBar';
+import ActionBar from './ActionBar';
 
 export function formatDuration(start?: string | null, end?: string | null) {
   if (!start || !end) return 'N/A';
@@ -33,6 +36,54 @@ export function formatDuration(start?: string | null, end?: string | null) {
   }
   return `${rem}h`;
 }
+
+// Local types and pure helpers to keep UI logic simple and testable
+type SortKey =
+  | 'repo'
+  | 'title'
+  | 'author'
+  | 'reviewers'
+  | 'changes_requested'
+  | 'diff'
+  | 'comment_count'
+  | 'timeline'
+  | 'lead_time'
+  | 'state'
+  | 'created'
+  | 'updated';
+
+interface ColumnDef<Row> {
+  id: string;
+  header: string | React.ReactNode;
+  accessorKey?: keyof Row & string;
+  cell?: (row: Row) => React.ReactNode;
+}
+
+const toTime = (d?: string | null) => (d ? new Date(d).getTime() : 0);
+const cmpNum = (a: number, b: number) => a - b;
+const cmpStr = (a: string, b: string) => a.localeCompare(b);
+
+const getTimelineTotal = (row: PRItem) => {
+  const created = row.created_at ? new Date(row.created_at) : null;
+  const published = row.published_at ? new Date(row.published_at) : null;
+  const firstReview = row.first_review_at
+    ? new Date(row.first_review_at)
+    : null;
+  const closed = row.closed_at ? new Date(row.closed_at) : null;
+  const draftMs =
+    created && published ? published.getTime() - created.getTime() : 0;
+  const reviewMs =
+    published && firstReview ? firstReview.getTime() - published.getTime() : 0;
+  const activeMs =
+    firstReview && closed ? closed.getTime() - firstReview.getTime() : 0;
+  return draftMs + reviewMs + activeMs;
+};
+
+const getLeadTime = (row: PRItem) => {
+  const s = row.first_commit_at ? new Date(row.first_commit_at) : null;
+  const e = row.closed_at ? new Date(row.closed_at) : null;
+  return s && e ? e.getTime() - s.getTime() : 0;
+};
 
 interface MetricsTableProps {
   queryParams?: QueryParams;
@@ -78,11 +129,6 @@ export default function MetricsTable(props: MetricsTableProps) {
     setPageIndex(1);
   }, [repoFilter, authorFilter]);
 
-  // Initialize visible columns immediately after columns can be derived, before any early returns
-  useEffect(() => {
-    setVisibleColumns((prev) => (prev.length ? prev : []));
-  }, []);
-
   // Defer early returns until after all hooks to satisfy rules-of-hooks
   const loadingOverlay = (
     <LoadingOverlay
@@ -97,63 +143,32 @@ export default function MetricsTable(props: MetricsTableProps) {
   if (error) console.error('Failed to load pull request metrics:', error); // eslint-disable-line
 
   // Derived data
-  const repos = [...new Set(items.map((i) => i.repo))].sort();
-  const authors = [...new Set(items.map((i) => i.author))].sort();
-  const filtered = items.filter((it) => {
-    const q = search.toLowerCase();
-    const matchTitle = it.title.toLowerCase().includes(q);
-    const matchRepo = it.repo.toLowerCase().includes(q);
-    const matchAuthor = it.author.toLowerCase().includes(q);
-    const matchReviewer = it.reviewers.some((r) => r.toLowerCase().includes(q));
-    const searchOK =
-      !q || matchTitle || matchRepo || matchAuthor || matchReviewer;
-    return (
-      searchOK &&
-      (!repoFilter || it.repo === repoFilter) &&
-      (!authorFilter || it.author === authorFilter)
-    );
-  });
+  const repos = useMemo(
+    () => [...new Set(items.map((i) => i.repo))].sort(),
+    [items]
+  );
+  const authors = useMemo(
+    () => [...new Set(items.map((i) => i.author))].sort(),
+    [items]
+  );
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return items.filter((it) => {
+      const matchTitle = it.title.toLowerCase().includes(q);
+      const matchRepo = it.repo.toLowerCase().includes(q);
+      const matchAuthor = it.author.toLowerCase().includes(q);
+      const matchReviewer = it.reviewers.some((r) =>
+        r.toLowerCase().includes(q)
+      );
+      const searchOK =
+        !q || matchTitle || matchRepo || matchAuthor || matchReviewer;
+      const repoOK = !repoFilter || it.repo === repoFilter;
+      const authorOK = !authorFilter || it.author === authorFilter;
+      return searchOK && repoOK && authorOK;
+    });
+  }, [items, search, repoFilter, authorFilter]);
 
   // Sorting helpers (client-side for displayed data)
-  type SortKey =
-    | 'repo'
-    | 'title'
-    | 'author'
-    | 'reviewers'
-    | 'changes_requested'
-    | 'diff'
-    | 'comment_count'
-    | 'timeline'
-    | 'lead_time'
-    | 'state'
-    | 'created'
-    | 'updated';
-
-  const toTime = (d?: string | null) => (d ? new Date(d).getTime() : 0);
-  const cmpNum = (a: number, b: number) => a - b;
-  const cmpStr = (a: string, b: string) => a.localeCompare(b);
-  const getTimelineTotal = (row: PRItem) => {
-    const created = row.created_at ? new Date(row.created_at) : null;
-    const published = row.published_at ? new Date(row.published_at) : null;
-    const firstReview = row.first_review_at
-      ? new Date(row.first_review_at)
-      : null;
-    const closed = row.closed_at ? new Date(row.closed_at) : null;
-    const draftMs =
-      created && published ? published.getTime() - created.getTime() : 0;
-    const reviewMs =
-      published && firstReview
-        ? firstReview.getTime() - published.getTime()
-        : 0;
-    const activeMs =
-      firstReview && closed ? closed.getTime() - firstReview.getTime() : 0;
-    return draftMs + reviewMs + activeMs;
-  };
-  const getLeadTime = (row: PRItem) => {
-    const s = row.first_commit_at ? new Date(row.first_commit_at) : null;
-    const e = row.closed_at ? new Date(row.closed_at) : null;
-    return s && e ? e.getTime() - s.getTime() : 0;
-  };
   const sorted = React.useMemo(() => {
     // Accept existing values for `sort` including dropdown legacy values ('updated'|'created'|'comments').
     let key: SortKey | null = null;
@@ -219,177 +234,185 @@ export default function MetricsTable(props: MetricsTableProps) {
     return copy;
   }, [filtered, sort, order]);
 
-  // Column definitions
-  const columns = [
-    {
-      id: 'select',
-      header: '',
-      cell: (row: PRItem) => (
-        <input
-          type="checkbox"
-          aria-label={`Select PR ${row.id}`}
-          checked={selectedIds.includes(row.id)}
-          onClick={(e) => e.stopPropagation()}
-          onChange={(e) => {
-            e.stopPropagation();
-            toggleSelect(row.id);
-          }}
-        />
-      ),
-    },
-    { id: 'repo', header: 'Repository', accessorKey: 'repo' },
-    {
-      id: 'title',
-      header: 'Title',
-      cell: (row: PRItem) => (
-        <a
-          href={row.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ textDecoration: 'none', color: 'inherit' }}
-        >
-          {row.title}
-        </a>
-      ),
-    },
-    {
-      id: 'author',
-      header: 'Author',
-      cell: (row: PRItem) => (
-        <a
-          href={`https://github.com/${row.author}`}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {row.author}
-        </a>
-      ),
-    },
-    {
-      id: 'reviewers',
-      header: 'Reviewers',
-      cell: (row: PRItem) => (
-        <span>
-          {row.reviewers.map((n, i) => (
-            <React.Fragment key={n}>
-              <a
-                href={`https://github.com/${n}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {n}
-              </a>
-              {i < row.reviewers.length - 1 && ', '}
-            </React.Fragment>
-          ))}
-        </span>
-      ),
-    },
-    {
-      id: 'changes_requested',
-      header: 'Changes Requested',
-      accessorKey: 'changes_requested',
-    },
-    {
-      id: 'diff',
-      header: 'Diff',
-      cell: (row: PRItem) => (
-        <span>
-          <span style={{ color: 'green' }}>+{row.additions}</span>{' '}
-          <span style={{ color: 'red' }}>-{row.deletions}</span>
-        </span>
-      ),
-    },
-    { id: 'comment_count', header: 'Comments', accessorKey: 'comment_count' },
-    {
-      id: 'timeline',
-      header: 'Timeline',
-      cell: (row: PRItem) => {
-        const created = row.created_at ? new Date(row.created_at) : null;
-        const published = row.published_at ? new Date(row.published_at) : null;
-        const firstReview = row.first_review_at
-          ? new Date(row.first_review_at)
-          : null;
-        const closed = row.closed_at ? new Date(row.closed_at) : null;
-        const draftMs =
-          created && published ? published.getTime() - created.getTime() : null;
-        const reviewMs =
-          published && firstReview
-            ? firstReview.getTime() - published.getTime()
-            : null;
-        const activeMs =
-          firstReview && closed
-            ? closed.getTime() - firstReview.getTime()
-            : null;
-        const a = draftMs ?? 0;
-        const b = reviewMs ?? 0;
-        const d = activeMs ?? 0;
-        const total = a + b + d || 1;
-        const pct = (x: number) => (x / total) * 100;
-        const fmt = (ms: number | null) =>
-          ms == null ? 'N/A' : `${Math.floor(ms / 36e5)}h`;
-        const draftLabel = fmt(draftMs);
-        const reviewLabel = fmt(reviewMs);
-        const activeLabel = fmt(activeMs);
-        return (
-          <div
-            className="flex flex-col items-start w-32"
-            aria-label={`Draft: ${draftLabel} Review: ${reviewLabel} Active: ${activeLabel}`}
-          >
-            <div className="flex w-full gap-0.5 items-center">
-              <div
-                className="h-2 rounded-l bg-success"
-                style={{ width: `${pct(a)}%` }}
-              />
-              <div className="h-2 bg-warning" style={{ width: `${pct(b)}%` }} />
-              <div
-                className="h-2 rounded-r bg-primary"
-                style={{ width: `${pct(d)}%` }}
-              />
-            </div>
-            <div
-              className="text-[10px] mt-1 whitespace-nowrap"
-              aria-hidden="true"
-            >
-              {draftLabel} | {reviewLabel} | {activeLabel}
-            </div>
-          </div>
-        );
-      },
-    },
-    {
-      id: 'lead_time',
-      header: 'Lead Time',
-      cell: (row: PRItem) => formatDuration(row.first_commit_at, row.closed_at),
-    },
-    {
-      id: 'state',
-      header: 'State',
-      cell: (row: PRItem) => <span>{row.state}</span>,
-    },
-  ];
-
-  // Initialize visibleColumns once columns are defined
-  useEffect(() => {
-    setVisibleColumns(columns.map((c) => c.id));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const firstKey = (keys: any): string => {
-    if (!keys) return '';
-    if (typeof keys === 'string') return keys;
-    if (Array.isArray(keys)) return keys[0];
-    if (keys instanceof Set) return Array.from(keys)[0] as string;
-    if (typeof keys === 'object' && 'currentKey' in keys)
-      return (keys as any).currentKey;
-    return '';
-  };
-
-  const toggleSelect = (id: string) => {
+  // Selection toggle is stable and side-effect free
+  const toggleSelect = useCallback((id: string) => {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
-  };
+  }, []);
+
+  // Column definitions (memoized)
+  const columns = useMemo<ColumnDef<PRItem>[]>(
+    () => [
+      {
+        id: 'select',
+        header: '',
+        cell: (row: PRItem) => (
+          <input
+            type="checkbox"
+            aria-label={`Select PR ${row.id}`}
+            checked={selectedIds.includes(row.id)}
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) => {
+              e.stopPropagation();
+              toggleSelect(row.id);
+            }}
+          />
+        ),
+      },
+      { id: 'repo', header: 'Repository', accessorKey: 'repo' },
+      {
+        id: 'title',
+        header: 'Title',
+        cell: (row: PRItem) => (
+          <a
+            href={row.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ textDecoration: 'none', color: 'inherit' }}
+          >
+            {row.title}
+          </a>
+        ),
+      },
+      {
+        id: 'author',
+        header: 'Author',
+        cell: (row: PRItem) => (
+          <a
+            href={`https://github.com/${row.author}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {row.author}
+          </a>
+        ),
+      },
+      {
+        id: 'reviewers',
+        header: 'Reviewers',
+        cell: (row: PRItem) => (
+          <span>
+            {row.reviewers.map((n, i) => (
+              <React.Fragment key={n}>
+                <a
+                  href={`https://github.com/${n}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {n}
+                </a>
+                {i < row.reviewers.length - 1 && ', '}
+              </React.Fragment>
+            ))}
+          </span>
+        ),
+      },
+      {
+        id: 'changes_requested',
+        header: 'Changes Requested',
+        accessorKey: 'changes_requested',
+      },
+      {
+        id: 'diff',
+        header: 'Diff',
+        cell: (row: PRItem) => (
+          <DiffCell additions={row.additions} deletions={row.deletions} />
+        ),
+      },
+      { id: 'comment_count', header: 'Comments', accessorKey: 'comment_count' },
+      {
+        id: 'timeline',
+        header: 'Timeline',
+        cell: (row: PRItem) => {
+          const created = row.created_at ? new Date(row.created_at) : null;
+          const published = row.published_at
+            ? new Date(row.published_at)
+            : null;
+          const firstReview = row.first_review_at
+            ? new Date(row.first_review_at)
+            : null;
+          const closed = row.closed_at ? new Date(row.closed_at) : null;
+          const draftMs =
+            created && published
+              ? published.getTime() - created.getTime()
+              : null;
+          const reviewMs =
+            published && firstReview
+              ? firstReview.getTime() - published.getTime()
+              : null;
+          const activeMs =
+            firstReview && closed
+              ? closed.getTime() - firstReview.getTime()
+              : null;
+          return (
+            <TimelineBar
+              draftMs={draftMs}
+              reviewMs={reviewMs}
+              activeMs={activeMs}
+            />
+          );
+        },
+      },
+      {
+        id: 'lead_time',
+        header: 'Lead Time',
+        cell: (row: PRItem) =>
+          formatDuration(row.first_commit_at, row.closed_at),
+      },
+      {
+        id: 'state',
+        header: 'State',
+        cell: (row: PRItem) => <span>{row.state}</span>,
+      },
+    ],
+    [selectedIds, toggleSelect]
+  );
+
+  // Initialize visible columns once (and on first columns change if empty)
+  useEffect(() => {
+    if (!visibleColumns.length) setVisibleColumns(columns.map((c) => c.id));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [columns, visibleColumns.length]);
+
+  // helper moved into FiltersBar
+
+  // Centralized control handlers (reduce duplication)
+  const handleRepoChange = useCallback((r: string) => {
+    setRepoFilter(r);
+    if (r) setAuthorFilter('');
+  }, []);
+
+  const handleAuthorChange = useCallback((a: string) => {
+    setAuthorFilter(a);
+    if (a) setRepoFilter('');
+  }, []);
+
+  const handleSortChange = useCallback(
+    (s: string) => {
+      setSort(s);
+      props.onSortChange?.(s);
+    },
+    [props]
+  );
+
+  const handleOrderChange = useCallback(
+    (o: 'asc' | 'desc') => {
+      setOrder(o);
+      props.onOrderChange?.(o);
+    },
+    [props]
+  );
+
+  const handlePerPageChange = useCallback(
+    (v: number) => {
+      if (!v) return;
+      setPageSize(v);
+      setPageIndex(1);
+      props.onPerPageChange?.(v);
+    },
+    [props]
+  );
 
   const totalPages = Math.max(1, Math.ceil(effectiveTotal / pageSize));
 
@@ -397,249 +420,26 @@ export default function MetricsTable(props: MetricsTableProps) {
 
   return (
     <div style={{ width: '100%' }}>
-      {/* Controls */}
+      {/* Filters */}
+      <FiltersBar
+        search={search}
+        onSearch={(v) => setSearch(v)}
+        repoFilter={repoFilter}
+        onRepoChange={handleRepoChange}
+        authorFilter={authorFilter}
+        onAuthorChange={handleAuthorChange}
+        repos={repos}
+        authors={authors}
+        sort={sort}
+        onSortChange={handleSortChange}
+        order={order}
+        onOrderChange={handleOrderChange}
+        pageSize={pageSize}
+        onPerPageChange={handlePerPageChange}
+      />
+
+      {/* Controls: Column chooser + total */}
       <div className="flex mb-6 gap-3 items-center flex-wrap">
-        <Input
-          placeholder="Search..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="min-w-[220px]"
-          aria-label="Search pull requests"
-        />
-        {/* Repository filter */}
-        <Dropdown>
-          <DropdownTrigger>
-            <Button
-              variant="ghost"
-              className="min-w-[160px]"
-              aria-label="Repository filter"
-            >
-              {repoFilter || 'Repository'}
-            </Button>
-          </DropdownTrigger>
-          <DropdownMenu
-            aria-label="Select repository"
-            selectionMode="single"
-            selectedKeys={repoFilter ? new Set([repoFilter]) : new Set()}
-            onSelectionChange={(keys: any) => {
-              const r = firstKey(keys);
-              setRepoFilter(r);
-              if (r) setAuthorFilter('');
-            }}
-          >
-            <>
-              <DropdownItem
-                itemKey=""
-                role="menuitem"
-                onClick={() => setRepoFilter('')}
-              >
-                All
-              </DropdownItem>
-              {repos.map((r) => (
-                <DropdownItem
-                  key={r || 'all-repos'}
-                  itemKey={r || 'all-repos'}
-                  data-testid={`repo-option-${r}`}
-                  role="menuitem"
-                  onClick={() => {
-                    setRepoFilter(r);
-                    setAuthorFilter('');
-                  }}
-                >
-                  {r}
-                </DropdownItem>
-              ))}
-            </>
-          </DropdownMenu>
-        </Dropdown>
-        {/* Author filter */}
-        <Dropdown>
-          <DropdownTrigger>
-            <Button
-              variant="ghost"
-              className="min-w-[160px]"
-              aria-label="Author filter"
-            >
-              {authorFilter || 'Author'}
-            </Button>
-          </DropdownTrigger>
-          <DropdownMenu
-            aria-label="Select author"
-            selectionMode="single"
-            selectedKeys={authorFilter ? new Set([authorFilter]) : new Set()}
-            onSelectionChange={(keys: any) => {
-              const a = firstKey(keys);
-              setAuthorFilter(a);
-              if (a) setRepoFilter('');
-            }}
-          >
-            <>
-              <DropdownItem
-                itemKey=""
-                role="menuitem"
-                onClick={() => setAuthorFilter('')}
-              >
-                All
-              </DropdownItem>
-              {authors.map((a) => (
-                <DropdownItem
-                  key={a || 'all-authors'}
-                  itemKey={a || 'all-authors'}
-                  data-testid={`author-option-${a}`}
-                  role="menuitem"
-                  onClick={() => {
-                    setAuthorFilter(a);
-                    setRepoFilter('');
-                  }}
-                >
-                  {a}
-                </DropdownItem>
-              ))}
-            </>
-          </DropdownMenu>
-        </Dropdown>
-        {/* Sort field */}
-        <Dropdown>
-          <DropdownTrigger>
-            <Button
-              variant="ghost"
-              className="min-w-[120px]"
-              aria-label="Sort field"
-            >
-              Sort: {sort}
-            </Button>
-          </DropdownTrigger>
-          <DropdownMenu
-            aria-label="Select sort field"
-            selectionMode="single"
-            selectedKeys={new Set([sort])}
-            onSelectionChange={(keys: any) => {
-              const s = firstKey(keys);
-              setSort(s);
-              props.onSortChange?.(s);
-            }}
-          >
-            <>
-              <DropdownItem
-                itemKey="updated"
-                role="menuitem"
-                onClick={() => {
-                  setSort('updated');
-                  props.onSortChange?.('updated');
-                }}
-              >
-                updated
-              </DropdownItem>
-              <DropdownItem
-                itemKey="created"
-                role="menuitem"
-                onClick={() => {
-                  setSort('created');
-                  props.onSortChange?.('created');
-                }}
-              >
-                created
-              </DropdownItem>
-              <DropdownItem
-                itemKey="comments"
-                role="menuitem"
-                onClick={() => {
-                  setSort('comments');
-                  props.onSortChange?.('comments');
-                }}
-              >
-                comments
-              </DropdownItem>
-            </>
-          </DropdownMenu>
-        </Dropdown>
-        {/* Order */}
-        <Dropdown>
-          <DropdownTrigger>
-            <Button
-              variant="ghost"
-              className="min-w-[100px]"
-              aria-label="Sort order"
-            >
-              Order: {order}
-            </Button>
-          </DropdownTrigger>
-          <DropdownMenu
-            aria-label="Select order"
-            selectionMode="single"
-            selectedKeys={new Set([order])}
-            onSelectionChange={(keys: any) => {
-              const o = firstKey(keys) as 'asc' | 'desc';
-              setOrder(o);
-              props.onOrderChange?.(o);
-            }}
-          >
-            <>
-              <DropdownItem
-                itemKey="desc"
-                role="menuitem"
-                onClick={() => {
-                  setOrder('desc');
-                  props.onOrderChange?.('desc');
-                }}
-              >
-                desc
-              </DropdownItem>
-              <DropdownItem
-                itemKey="asc"
-                role="menuitem"
-                onClick={() => {
-                  setOrder('asc');
-                  props.onOrderChange?.('asc');
-                }}
-              >
-                asc
-              </DropdownItem>
-            </>
-          </DropdownMenu>
-        </Dropdown>
-        {/* Page size */}
-        <Dropdown>
-          <DropdownTrigger>
-            <Button
-              variant="ghost"
-              className="min-w-[120px]"
-              aria-label="Items per page"
-            >
-              Per page: {pageSize}
-            </Button>
-          </DropdownTrigger>
-          <DropdownMenu
-            aria-label="Select per page"
-            selectionMode="single"
-            selectedKeys={new Set([String(pageSize)])}
-            onSelectionChange={(keys: any) => {
-              const v = Number(firstKey(keys));
-              if (v) {
-                setPageSize(v);
-                setPageIndex(1);
-                props.onPerPageChange?.(v);
-              }
-            }}
-          >
-            <>
-              {[10, 20, 30, 40, 50].map((n) => (
-                <DropdownItem
-                  key={n}
-                  itemKey={String(n)}
-                  role="menuitem"
-                  onClick={() => {
-                    setPageSize(n);
-                    setPageIndex(1);
-                    props.onPerPageChange?.(n);
-                  }}
-                >
-                  {n}
-                </DropdownItem>
-              ))}
-            </>
-          </DropdownMenu>
-        </Dropdown>
         {/* Column chooser */}
         <Dropdown>
           <DropdownTrigger>
@@ -684,25 +484,19 @@ export default function MetricsTable(props: MetricsTableProps) {
         </div>
       </div>
       {/* Action bar */}
-      <div style={{ marginBottom: 16 }}>
-        <Button
-          variant="solid"
-          isDisabled={selectedIds.length !== 1}
-          aria-label="View pull request"
-          onClick={() => {
-            const selectedItem = items.find((i) => selectedIds.includes(i.id));
-            if (!selectedItem) return;
-            navigate(
-              `/pr/${selectedItem.owner}/${selectedItem.repo_name}/${selectedItem.number}`,
-              {
-                state: selectedItem,
-              }
-            );
-          }}
-        >
-          View pull request
-        </Button>
-      </div>
+      <ActionBar
+        disabled={selectedIds.length !== 1}
+        onView={() => {
+          const selectedItem = items.find((i) => selectedIds.includes(i.id));
+          if (!selectedItem) return;
+          navigate(
+            `/pr/${selectedItem.owner}/${selectedItem.repo_name}/${selectedItem.number}`,
+            {
+              state: selectedItem,
+            }
+          );
+        }}
+      />
       {/* Table */}
       <Table
         aria-label="PR Metrics Table"
