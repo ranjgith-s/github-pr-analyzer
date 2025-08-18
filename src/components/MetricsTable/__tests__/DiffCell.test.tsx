@@ -8,10 +8,10 @@ describe('DiffCell', () => {
 
     const text = screen.getByText('+123');
     expect(text).toBeInTheDocument();
-    expect(text).toHaveClass('text-success');
+    expect(text).toHaveClass('text-green-600');
 
     const del = screen.getByText('-45');
     expect(del).toBeInTheDocument();
-    expect(del).toHaveClass('text-danger');
+    expect(del).toHaveClass('text-red-600');
   });
 });
