@@ -11,11 +11,10 @@ import {
   TableColumn,
   TableRow,
   TableCell,
-  Pagination,
-  Dropdown,
-  DropdownTrigger,
   DropdownMenu,
-  DropdownItem,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
   Button,
 } from '../ui';
 import { Settings2Icon } from 'lucide-react';
@@ -23,6 +22,17 @@ import TimelineBar from './TimelineBar';
 import DiffCell from './DiffCell';
 import FiltersBar from './FiltersBar';
 import ActionBar from './ActionBar';
+import TableFooter from './TableFooter';
+import {
+  ColumnDef as RTColumnDef,
+  SortingState,
+  ColumnFiltersState,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getSortedRowModel,
+  getPaginationRowModel,
+  useReactTable,
+} from '@tanstack/react-table';
 
 export function formatDuration(start?: string | null, end?: string | null) {
   if (!start || !end) return 'N/A';
@@ -52,7 +62,8 @@ type SortKey =
   | 'created'
   | 'updated';
 
-interface ColumnDef<Row> {
+// UI column definition (distinct from TanStack's ColumnDef)
+interface UIColumnDef<Row> {
   id: string;
   header: string | React.ReactNode;
   accessorKey?: keyof Row & string;
@@ -60,8 +71,7 @@ interface ColumnDef<Row> {
 }
 
 const toTime = (d?: string | null) => (d ? new Date(d).getTime() : 0);
-const cmpNum = (a: number, b: number) => a - b;
-const cmpStr = (a: string, b: string) => a.localeCompare(b);
+// Local compare helpers no longer used (sorting handled by TanStack)
 
 const getTimelineTotal = (row: PRItem) => {
   const created = row.created_at ? new Date(row.created_at) : null;
@@ -104,8 +114,6 @@ export default function MetricsTable(props: MetricsTableProps) {
 
   // State (mirrors prior design to keep tests stable)
   const [search, setSearch] = useState('');
-  const [repoFilter, setRepoFilter] = useState('');
-  const [authorFilter, setAuthorFilter] = useState('');
   const [pageIndex, setPageIndex] = useState(queryParams?.page || 1);
   const [pageSize, setPageSize] = useState(queryParams?.per_page || 20);
   const [sort, setSort] = useState(queryParams?.sort || 'updated');
@@ -114,6 +122,17 @@ export default function MetricsTable(props: MetricsTableProps) {
   );
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
+  const [columnsMenuOpen, setColumnsMenuOpen] = useState(false);
+  // Repo/Author filters expected by tests
+  const [repoFilter, setRepoFilter] = useState<string | undefined>(undefined);
+  const [authorFilter, setAuthorFilter] = useState<string | undefined>(
+    undefined
+  );
+  const [repoMenuOpen, setRepoMenuOpen] = useState(false);
+  const [authorMenuOpen, setAuthorMenuOpen] = useState(false);
+  // Sort/Order dropdowns
+  const [sortMenuOpen, setSortMenuOpen] = useState(false);
+  const [orderMenuOpen, setOrderMenuOpen] = useState(false);
 
   useEffect(() => {
     if (queryParams) {
@@ -123,11 +142,6 @@ export default function MetricsTable(props: MetricsTableProps) {
       setOrder((queryParams.order as 'asc' | 'desc') || 'desc');
     }
   }, [queryParams]);
-
-  // Reset page when filters change (must be before any early return to keep hook order stable)
-  useEffect(() => {
-    setPageIndex(1);
-  }, [repoFilter, authorFilter]);
 
   // Defer early returns until after all hooks to satisfy rules-of-hooks
   const loadingOverlay = (
@@ -140,17 +154,7 @@ export default function MetricsTable(props: MetricsTableProps) {
       ]}
     />
   );
-  if (error) console.error('Failed to load pull request metrics:', error); // eslint-disable-line
-
-  // Derived data
-  const repos = useMemo(
-    () => [...new Set(items.map((i) => i.repo))].sort(),
-    [items]
-  );
-  const authors = useMemo(
-    () => [...new Set(items.map((i) => i.author))].sort(),
-    [items]
-  );
+  if (error) console.error('Failed to load pull request metrics:', error);
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return items.filter((it) => {
@@ -168,71 +172,7 @@ export default function MetricsTable(props: MetricsTableProps) {
     });
   }, [items, search, repoFilter, authorFilter]);
 
-  // Sorting helpers (client-side for displayed data)
-  const sorted = React.useMemo(() => {
-    // Accept existing values for `sort` including dropdown legacy values ('updated'|'created'|'comments').
-    let key: SortKey | null = null;
-    if (['updated', 'created'].includes(sort)) key = sort as SortKey;
-    else if (sort === 'comments') key = 'comment_count';
-    else if (
-      [
-        'repo',
-        'title',
-        'author',
-        'reviewers',
-        'changes_requested',
-        'diff',
-        'comment_count',
-        'timeline',
-        'lead_time',
-        'state',
-      ].includes(sort)
-    ) {
-      key = sort as SortKey;
-    }
-    if (!key) return filtered;
-    const copy = filtered.slice();
-    const getSortValue = (row: PRItem): number | string => {
-      switch (key as SortKey) {
-        case 'repo':
-          return row.repo;
-        case 'title':
-          return row.title;
-        case 'author':
-          return row.author;
-        case 'reviewers':
-          return row.reviewers.length;
-        case 'changes_requested':
-          return row.changes_requested;
-        case 'diff':
-          return row.additions + row.deletions;
-        case 'comment_count':
-          return row.comment_count;
-        case 'timeline':
-          return getTimelineTotal(row);
-        case 'lead_time':
-          return getLeadTime(row);
-        case 'state':
-          return row.state;
-        case 'created':
-          return toTime(row.created_at);
-        case 'updated':
-          return toTime(row.closed_at || row.published_at || row.created_at);
-        default:
-          return '';
-      }
-    };
-    copy.sort((a, b) => {
-      const av = getSortValue(a);
-      const bv = getSortValue(b);
-      if (typeof av === 'number' && typeof bv === 'number')
-        return order === 'asc' ? cmpNum(av, bv) : cmpNum(bv, av);
-      return order === 'asc'
-        ? cmpStr(String(av), String(bv))
-        : cmpStr(String(bv), String(av));
-    });
-    return copy;
-  }, [filtered, sort, order]);
+  // Sorting moved to TanStack Table; client-side derivation is handled there.
 
   // Selection toggle is stable and side-effect free
   const toggleSelect = useCallback((id: string) => {
@@ -242,7 +182,7 @@ export default function MetricsTable(props: MetricsTableProps) {
   }, []);
 
   // Column definitions (memoized)
-  const columns = useMemo<ColumnDef<PRItem>[]>(
+  const columns = useMemo<UIColumnDef<PRItem>[]>(
     () => [
       {
         id: 'select',
@@ -377,33 +317,6 @@ export default function MetricsTable(props: MetricsTableProps) {
 
   // helper moved into FiltersBar
 
-  // Centralized control handlers (reduce duplication)
-  const handleRepoChange = useCallback((r: string) => {
-    setRepoFilter(r);
-    if (r) setAuthorFilter('');
-  }, []);
-
-  const handleAuthorChange = useCallback((a: string) => {
-    setAuthorFilter(a);
-    if (a) setRepoFilter('');
-  }, []);
-
-  const handleSortChange = useCallback(
-    (s: string) => {
-      setSort(s);
-      props.onSortChange?.(s);
-    },
-    [props]
-  );
-
-  const handleOrderChange = useCallback(
-    (o: 'asc' | 'desc') => {
-      setOrder(o);
-      props.onOrderChange?.(o);
-    },
-    [props]
-  );
-
   const handlePerPageChange = useCallback(
     (v: number) => {
       if (!v) return;
@@ -416,87 +329,281 @@ export default function MetricsTable(props: MetricsTableProps) {
 
   const totalPages = Math.max(1, Math.ceil(effectiveTotal / pageSize));
 
+  const sortKeyToColumnId = useCallback((s: string): SortKey | null => {
+    if (s === 'comments') return 'comment_count';
+    if (
+      [
+        'repo',
+        'title',
+        'author',
+        'reviewers',
+        'changes_requested',
+        'diff',
+        'comment_count',
+        'timeline',
+        'lead_time',
+        'state',
+        'created',
+        'updated',
+      ].includes(s)
+    )
+      return s as SortKey;
+    return null;
+  }, []);
+
+  const [sorting, setSorting] = useState<SortingState>(() => {
+    const id = sortKeyToColumnId(sort);
+    return id ? [{ id, desc: order === 'desc' }] : [];
+  });
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+
+  useEffect(() => {
+    const id = sortKeyToColumnId(sort);
+    setSorting(id ? [{ id, desc: order === 'desc' }] : []);
+  }, [sort, order, sortKeyToColumnId]);
+
+  const rtColumns = useMemo<RTColumnDef<PRItem>[]>(
+    () => [
+      // Support both visible and virtual columns (created/updated)
+      { id: 'repo', accessorFn: (r: PRItem) => r.repo },
+      { id: 'title', accessorFn: (r: PRItem) => r.title },
+      { id: 'author', accessorFn: (r: PRItem) => r.author },
+      { id: 'state', accessorFn: (r: PRItem) => r.state },
+      {
+        id: 'changes_requested',
+        accessorFn: (r: PRItem) => r.changes_requested,
+      },
+      { id: 'comment_count', accessorFn: (r: PRItem) => r.comment_count },
+      { id: 'diff', accessorFn: (r: PRItem) => r.additions + r.deletions },
+      { id: 'timeline', accessorFn: (r: PRItem) => getTimelineTotal(r) },
+      { id: 'lead_time', accessorFn: (r: PRItem) => getLeadTime(r) },
+      { id: 'created', accessorFn: (r: PRItem) => toTime(r.created_at) },
+      {
+        id: 'updated',
+        accessorFn: (r: PRItem) =>
+          toTime(r.closed_at || r.published_at || r.created_at),
+      },
+    ],
+    []
+  );
+
+  const table = useReactTable({
+    data: filtered,
+    columns: rtColumns,
+    state: {
+      sorting,
+      columnFilters,
+      pagination: { pageIndex: Math.max(0, pageIndex - 1), pageSize },
+    },
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+  });
+
+  // Extract paginated, sorted, and filtered rows for rendering
+  const currentRows = table.getRowModel().rows;
+  const currentItems = currentRows.map((r: any) => r.original as PRItem);
+
   if (loading) return loadingOverlay;
 
   return (
-    <div style={{ width: '100%' }}>
-      {/* Filters */}
-      <FiltersBar
-        search={search}
-        onSearch={(v) => setSearch(v)}
-        repoFilter={repoFilter}
-        onRepoChange={handleRepoChange}
-        authorFilter={authorFilter}
-        onAuthorChange={handleAuthorChange}
-        repos={repos}
-        authors={authors}
-        sort={sort}
-        onSortChange={handleSortChange}
-        order={order}
-        onOrderChange={handleOrderChange}
-        pageSize={pageSize}
-        onPerPageChange={handlePerPageChange}
-      />
-
-      {/* Controls: Column chooser + total */}
-      <div className="flex mb-6 gap-3 items-center flex-wrap">
-        {/* Column chooser */}
-        <Dropdown>
-          <DropdownTrigger>
-            <Button variant="ghost" aria-label="Choose columns">
-              <Settings2Icon size={18} />
-            </Button>
-          </DropdownTrigger>
-          <DropdownMenu
-            aria-label="Select columns"
-            closeOnSelect={false}
-            selectionMode="multiple"
-            selectedKeys={new Set(visibleColumns)}
-            onSelectionChange={(keys: any) =>
-              setVisibleColumns(Array.from(keys as Set<string>))
-            }
-          >
-            <>
-              {columns.map((col) => (
-                <DropdownItem
-                  key={col.id}
-                  itemKey={col.id}
-                  role="menuitem"
-                  onClick={() => {
-                    setVisibleColumns((prev) =>
-                      prev.includes(col.id)
-                        ? prev.filter((c) => c !== col.id)
-                        : [...prev, col.id]
-                    );
-                  }}
+    <div className="flex flex-col w-full">
+      <div className="flex w-full justify-between">
+        <ActionBar
+          disabled={selectedIds.length !== 1}
+          onView={() => {
+            const selectedItem = items.find((i) => selectedIds.includes(i.id));
+            if (!selectedItem) return;
+            navigate(
+              `/pr/${selectedItem.owner}/${selectedItem.repo_name}/${selectedItem.number}`,
+              {
+                state: selectedItem,
+              }
+            );
+          }}
+        />
+        <FiltersBar
+          search={search}
+          onSearch={(v: string) => setSearch(v)}
+          leftContent={
+            <div className="flex items-center gap-2">
+              {/* Repository filter */}
+              <DropdownMenu open={repoMenuOpen} onOpenChange={setRepoMenuOpen}>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    aria-label="Repository filter"
+                    onClick={() => setRepoMenuOpen((v) => !v)}
+                  >
+                    {repoFilter || 'Repository'}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent aria-label="Repository options">
+                  {Array.from(new Set(items.map((i) => i.repo))).map((r) => (
+                    <DropdownMenuItem
+                      key={r}
+                      role="menuitem"
+                      onClick={() => {
+                        setRepoFilter(r);
+                        setAuthorFilter(undefined);
+                        setPageIndex(1);
+                        props.onPageChange?.(1);
+                        setRepoMenuOpen(false);
+                      }}
+                    >
+                      {r}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              {/* Author filter */}
+              <DropdownMenu
+                open={authorMenuOpen}
+                onOpenChange={setAuthorMenuOpen}
+              >
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    aria-label="Author filter"
+                    onClick={() => setAuthorMenuOpen((v) => !v)}
+                  >
+                    {authorFilter || 'Author'}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent aria-label="Author options">
+                  {Array.from(new Set(items.map((i) => i.author))).map((a) => (
+                    <DropdownMenuItem
+                      key={a}
+                      role="menuitem"
+                      onClick={() => {
+                        setAuthorFilter(a);
+                        // selecting author clears repo per tests
+                        setRepoFilter(undefined);
+                        setPageIndex(1);
+                        props.onPageChange?.(1);
+                        setAuthorMenuOpen(false);
+                      }}
+                    >
+                      {a}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              {/* Sort field */}
+              <DropdownMenu open={sortMenuOpen} onOpenChange={setSortMenuOpen}>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    aria-label="Sort field"
+                    onClick={() => setSortMenuOpen((v) => !v)}
+                  >
+                    {sort}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent aria-label="Sort field options">
+                  {(['updated', 'created'] as SortKey[]).map((s) => (
+                    <DropdownMenuItem
+                      key={s}
+                      role="menuitem"
+                      onClick={() => {
+                        setSort(s);
+                        props.onSortChange?.(s);
+                        const colId = sortKeyToColumnId(s);
+                        if (colId)
+                          setSorting([{ id: colId, desc: order === 'desc' }]);
+                        setSortMenuOpen(false);
+                      }}
+                    >
+                      {s}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              {/* Sort order */}
+              <DropdownMenu
+                open={orderMenuOpen}
+                onOpenChange={setOrderMenuOpen}
+              >
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    aria-label="Sort order"
+                    onClick={() => setOrderMenuOpen((v) => !v)}
+                  >
+                    {order}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent aria-label="Sort order options">
+                  {(['asc', 'desc'] as const).map((o) => (
+                    <DropdownMenuItem
+                      key={o}
+                      role="menuitem"
+                      onClick={() => {
+                        setOrder(o);
+                        props.onOrderChange?.(o);
+                        const colId = sortKeyToColumnId(sort);
+                        if (colId)
+                          setSorting([{ id: colId, desc: o === 'desc' }]);
+                        setOrderMenuOpen(false);
+                      }}
+                    >
+                      {o}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          }
+          rightContent={
+            <DropdownMenu
+              open={columnsMenuOpen}
+              onOpenChange={setColumnsMenuOpen}
+            >
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  aria-label="Choose columns"
+                  onClick={() => setColumnsMenuOpen((v) => !v)}
                 >
-                  {col.header || '(select)'}
-                </DropdownItem>
-              ))}
-            </>
-          </DropdownMenu>
-        </Dropdown>
-        <div
-          className="text-sm text-default-500 ml-auto"
-          data-testid="total-count"
-        >
-          Total: {effectiveTotal}
-        </div>
+                  <Settings2Icon size={18} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent aria-label="Select columns">
+                {columns.map((col) => (
+                  <DropdownMenuItem
+                    key={col.id}
+                    onClick={() => {
+                      setVisibleColumns((prev) =>
+                        prev.includes(col.id)
+                          ? prev.filter((c) => c !== col.id)
+                          : [...prev, col.id]
+                      );
+                    }}
+                    data-selected={visibleColumns.includes(col.id) || undefined}
+                    className={
+                      visibleColumns.includes(col.id)
+                        ? 'data-[selected]:bg-accent/60'
+                        : undefined
+                    }
+                  >
+                    {col.header || '(select)'}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          }
+        />
       </div>
-      {/* Action bar */}
-      <ActionBar
-        disabled={selectedIds.length !== 1}
-        onView={() => {
-          const selectedItem = items.find((i) => selectedIds.includes(i.id));
-          if (!selectedItem) return;
-          navigate(
-            `/pr/${selectedItem.owner}/${selectedItem.repo_name}/${selectedItem.number}`,
-            {
-              state: selectedItem,
-            }
-          );
-        }}
-      />
+      {/* Summary strip expected by tests */}
+      <div className="mt-2 text-sm text-muted-foreground flex flex-wrap gap-4">
+        <span>Sort: {sort}</span>
+        <span>Order: {order}</span>
+        <span>Per page: {pageSize}</span>
+        <span>Total: {effectiveTotal}</span>
+      </div>
       {/* Table */}
       <Table
         aria-label="PR Metrics Table"
@@ -516,20 +623,28 @@ export default function MetricsTable(props: MetricsTableProps) {
                     setOrder((o) => {
                       const next: 'asc' | 'desc' = o === 'asc' ? 'desc' : 'asc';
                       props.onOrderChange?.(next);
+                      const colId = sortKeyToColumnId(c.id);
+                      if (colId)
+                        setSorting([{ id: colId, desc: next === 'desc' }]);
                       return next;
                     });
                   } else {
                     setSort(c.id);
                     props.onSortChange?.(c.id);
+                    const colId = sortKeyToColumnId(c.id);
+                    if (colId)
+                      setSorting([{ id: colId, desc: order === 'desc' }]);
                   }
                 }}
               >
-                {c.header ? String(c.header).toUpperCase() : ''}
+                <div className="flex flex-col gap-1">
+                  <span>{c.header ? String(c.header).toUpperCase() : ''}</span>
+                </div>
               </TableColumn>
             ))}
         </TableHeader>
         <TableBody
-          items={sorted}
+          items={currentItems}
           emptyContent={<span>No pull requests found.</span>}
         >
           {(row: PRItem) => (
@@ -554,31 +669,16 @@ export default function MetricsTable(props: MetricsTableProps) {
         </TableBody>
       </Table>
       {/* Pagination */}
-      <div
-        className="flex flex-col items-center gap-2 mt-4"
-        aria-label="Pagination"
-      >
-        <div
-          className="text-xs text-muted-foreground"
-          aria-label="pagination-summary"
-        >
-          Page {pageIndex} of {totalPages}
-        </div>
-        {totalPages > 1 && (
-          <Pagination
-            data-testid="pagination"
-            aria-label="Pagination"
-            total={totalPages}
-            page={pageIndex}
-            onChange={(p) => {
-              setPageIndex(p);
-              props.onPageChange?.(p);
-            }}
-            size="sm"
-            className="mt-0"
-          />
-        )}
-      </div>
+      <TableFooter
+        pageSize={pageSize}
+        totalPages={totalPages}
+        pageIndex={pageIndex}
+        onPerPageChange={handlePerPageChange}
+        onPageChange={(p) => {
+          setPageIndex(p);
+          props.onPageChange?.(p);
+        }}
+      />
     </div>
   );
 }

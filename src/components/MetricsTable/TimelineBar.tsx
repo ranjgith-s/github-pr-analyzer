@@ -21,25 +21,30 @@ export default function TimelineBar({
   const draftLabel = fmt(draftMs);
   const reviewLabel = fmt(reviewMs);
   const activeLabel = fmt(activeMs);
+  const infomation = `Draft: ${draftLabel} Review: ${reviewLabel} Active: ${activeLabel}`;
 
   return (
     <div
       className="flex flex-col items-start w-32"
-      aria-label={`Draft: ${draftLabel} Review: ${reviewLabel} Active: ${activeLabel}`}
+      aria-label={infomation}
+      title={infomation}
     >
-      <div className="flex w-full gap-0.5 items-center">
+      <div className="flex w-full items-center">
         <div
-          className="h-2 rounded-l bg-success"
+          className="h-2 rounded-full bg-success"
           style={{ width: `${pct(a)}%` }}
         />
-        <div className="h-2 bg-warning" style={{ width: `${pct(b)}%` }} />
         <div
-          className="h-2 rounded-r bg-primary"
+          className="h-2 bg-warning rounded-full"
+          style={{ width: `${pct(b)}%` }}
+        />
+        <div
+          className="h-2 rounded-full bg-primary"
           style={{ width: `${pct(d)}%` }}
         />
       </div>
-      <div className="text-[10px] mt-1 whitespace-nowrap" aria-hidden="true">
-        {draftLabel} | {reviewLabel} | {activeLabel}
+      <div className="text-xs mt-1" aria-hidden="true">
+        {infomation}
       </div>
     </div>
   );

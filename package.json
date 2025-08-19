@@ -24,6 +24,7 @@
     "prepare": "husky install"
   },
   "dependencies": {
+    "@tanstack/react-table": "^8.20.0",
     "@heroicons/react": "^2.2.0",
     "@octokit/request-error": "^7.0.0",
     "@octokit/rest": "^20.0.0",

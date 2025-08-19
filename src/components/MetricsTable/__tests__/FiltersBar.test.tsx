@@ -17,8 +17,7 @@ const baseProps = {
   onSortChange: jest.fn(),
   order: 'desc' as const,
   onOrderChange: jest.fn(),
-  pageSize: 20,
-  onPerPageChange: jest.fn(),
+  // page size control moved out of FiltersBar
 };
 
 describe('FiltersBar', () => {
@@ -57,9 +56,7 @@ describe('FiltersBar', () => {
     expect(
       screen.getByRole('button', { name: /sort order/i })
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: /items per page/i })
-    ).toBeInTheDocument();
+    // per-page control is no longer part of FiltersBar
   });
 
   it('search input calls onSearch', async () => {
@@ -139,25 +136,7 @@ describe('FiltersBar', () => {
     expect(baseProps.onSortChange).toHaveBeenCalledWith('updated');
   });
 
-  it('per page dropdown calls onPerPageChange', async () => {
-    render(<FiltersBar {...baseProps} />);
-    const user = userEvent.setup();
-
-    await user.click(screen.getByRole('button', { name: /items per page/i }));
-    await user.click(screen.getByRole('menuitem', { name: '40' }));
-    expect(baseProps.onPerPageChange).toHaveBeenCalledWith(40);
-  });
-
-  it('per page covers multiple options and label reflects pageSize', async () => {
-    const props = { ...baseProps, pageSize: 10 };
-    render(<FiltersBar {...props} />);
-    const user = userEvent.setup();
-    const trigger = screen.getByRole('button', { name: /items per page/i });
-    expect(trigger).toHaveTextContent('Per page: 10');
-    await user.click(trigger);
-    await user.click(screen.getByRole('menuitem', { name: '50' }));
-    expect(baseProps.onPerPageChange).toHaveBeenCalledWith(50);
-  });
+  // per-page tests removed; control now lives next to pagination in MetricsTable
 
   it('order covers both asc and desc and label reflects order', async () => {
     const props = { ...baseProps, order: 'asc' as const };
