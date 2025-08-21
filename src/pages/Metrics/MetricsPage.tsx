@@ -26,44 +26,6 @@ function Skeleton({
   );
 }
 
-// Condensed status bar (rate limit + total count)
-function StatusBar({
-  total,
-  rateLimit,
-  loading,
-}: {
-  total?: number;
-  rateLimit?: { remaining: number; limit: number; reset: number } | null;
-  loading: boolean;
-}) {
-  if (!rateLimit && total == null) return null;
-  const pct = rateLimit?.limit ? rateLimit.remaining / rateLimit.limit : 0;
-  const color =
-    pct < 0.1 ? 'text-danger' : pct < 0.3 ? 'text-warning' : 'text-default-500';
-  return (
-    <div
-      className="flex items-center justify-end gap-4 mt-3 text-xs text-default-500"
-      aria-live="polite"
-    >
-      <div>
-        {loading ? (
-          <Skeleton width="w-10" />
-        ) : total != null ? (
-          `${total.toLocaleString()} PRs`
-        ) : null}
-      </div>
-      {rateLimit && (
-        <div
-          className={color}
-          title={`Resets at ${new Date(rateLimit.reset * 1000).toLocaleTimeString()}`}
-        >
-          API {rateLimit.remaining}/{rateLimit.limit}
-        </div>
-      )}
-    </div>
-  );
-}
-
 // Horizontal metric strip (replaces card grid)
 function SummaryMetricsStrip({
   summary,
@@ -72,50 +34,150 @@ function SummaryMetricsStrip({
   summary: ReturnType<typeof computeSummaryMetrics> | null;
   loading: boolean;
 }) {
-  const metrics: { label: string; value: string | number | null }[] = [
-    { label: 'PRs', value: summary?.count ?? null },
-    { label: 'Open', value: summary?.open ?? null },
-    { label: 'Merged', value: summary?.merged ?? null },
+  type Metric = {
+    key: string;
+    label: string;
+    value: string | number | null;
+    icon: React.ReactNode;
+  };
+
+  const IconPR = (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="w-4 h-4 text-default-500"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="6" cy="6" r="3" />
+      <path d="M9 6h6a3 3 0 0 1 3 3v8" />
+      <circle cx="18" cy="18" r="3" />
+      <path d="M6 9v9" />
+    </svg>
+  );
+  const IconOpen = (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="w-4 h-4 text-success"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M3 12h14" />
+      <path d="M10 5l7 7-7 7" />
+    </svg>
+  );
+  const IconMerged = (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="w-4 h-4 text-default-500"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M7 7v10" />
+      <path d="M17 7v4a4 4 0 0 1-4 4H7" />
+      <circle cx="7" cy="5" r="2" />
+      <circle cx="7" cy="19" r="2" />
+      <circle cx="17" cy="5" r="2" />
+    </svg>
+  );
+  const IconClock = (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="w-4 h-4 text-default-500"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 3" />
+    </svg>
+  );
+
+  const metrics: Metric[] = [
+    { key: 'prs', label: 'PRs', value: summary?.count ?? null, icon: IconPR },
     {
+      key: 'open',
+      label: 'Open',
+      value: summary?.open ?? null,
+      icon: IconOpen,
+    },
+    {
+      key: 'merged',
+      label: 'Merged',
+      value: summary?.merged ?? null,
+      icon: IconMerged,
+    },
+    {
+      key: 'lead',
       label: 'Median Lead',
       value:
         summary?.medianLeadTimeH != null
           ? formatHours(summary.medianLeadTimeH)
           : null,
+      icon: IconClock,
     },
     {
+      key: 'review',
       label: 'Median Review',
       value:
         summary?.medianReviewH != null
           ? formatHours(summary.medianReviewH)
           : null,
+      icon: IconClock,
     },
   ];
+
   return (
     <section aria-label="Pull request summary metrics" className="mt-4">
-      <div className="flex flex-wrap items-stretch gap-3 bg-default-50 border border-default-200 rounded-md px-4 py-3">
-        {metrics.map((m) => (
-          <div
-            key={m.label}
-            role="group"
-            aria-label={m.label}
-            className="flex flex-col justify-center min-w-[70px]"
-          >
-            <span className="text-[10px] uppercase tracking-wide text-default-400">
-              {m.label}
-            </span>
-            <span
-              className="text-sm font-semibold text-default-700"
-              aria-live="polite"
+      <div className="flex flex-wrap items-center gap-2 md:gap-3 bg-default-50/70 border border-default-200 px-3 py-2 md:px-4 md:py-3 shadow-sm backdrop-blur-sm justify-around">
+        {metrics.map((m, idx) => (
+          <div key={m.key} className="flex items-center">
+            <div
+              role="group"
+              aria-label={m.label}
+              className="flex items-center gap-2 md:gap-3 pr-2 md:pr-3 min-w-[84px]"
             >
-              {loading ? (
-                <Skeleton width="w-8" />
-              ) : m.value != null ? (
-                <>{m.value}</>
-              ) : (
-                '—'
-              )}
-            </span>
+              <span className="shrink-0" aria-hidden="true">
+                {m.icon}
+              </span>
+              <div className="flex flex-col">
+                <span className="text-[10px] uppercase tracking-wide text-default-400">
+                  {loading ? <Skeleton width="w-10" /> : m.label}
+                </span>
+                <span
+                  className="text-sm md:text-base font-semibold text-default-700 tabular-nums"
+                  aria-live="polite"
+                >
+                  {loading ? (
+                    <Skeleton width="w-12" />
+                  ) : m.value != null ? (
+                    <>{m.value}</>
+                  ) : (
+                    '—'
+                  )}
+                </span>
+              </div>
+            </div>
+            {idx < metrics.length - 1 && (
+              <div
+                className="hidden sm:block w-px h-7 bg-default-200/80 mr-2 md:mr-3 rounded"
+                aria-hidden="true"
+              />
+            )}
           </div>
         ))}
       </div>
@@ -146,15 +208,14 @@ export default function MetricsPage() {
   const queryContext = useQueryContext();
   const navigate = useNavigate();
 
-  const { items, loading, error, totalCount, rateLimit } =
-    usePullRequestMetrics(token!, {
-      query: queryContext.query,
-      page: queryContext.params.page,
-      sort: queryContext.params.sort as 'updated' | 'created' | 'comments',
-      perPage: queryContext.params.per_page,
-      order: queryContext.params.order as 'asc' | 'desc',
-      keepPreviousData: true,
-    });
+  const { items, loading, error, totalCount } = usePullRequestMetrics(token!, {
+    query: queryContext.query,
+    page: queryContext.params.page,
+    sort: queryContext.params.sort as 'updated' | 'created' | 'comments',
+    perPage: queryContext.params.per_page,
+    order: queryContext.params.order as 'asc' | 'desc',
+    keepPreviousData: true,
+  });
 
   const summary = useMemo(() => computeSummaryMetrics(items), [items]);
   const effectiveTotal = totalCount ?? items?.length ?? 0;
@@ -203,12 +264,6 @@ export default function MetricsPage() {
       />
 
       <SummaryMetricsStrip summary={summary} loading={loading} />
-      <StatusBar
-        total={effectiveTotal}
-        rateLimit={rateLimit}
-        loading={loading}
-      />
-
       <main className="mt-4" aria-live="polite">
         {uiState === 'error' && (
           <div className="flex items-center justify-between rounded-md border border-danger-200 bg-danger-50 px-3 py-2 text-sm text-danger">
@@ -264,5 +319,3 @@ export default function MetricsPage() {
     </div>
   );
 }
-
-// Removed old SummaryCard & RateLimitBadge components as functionality replaced by new condensed components

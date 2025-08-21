@@ -1,5 +1,10 @@
 /* eslint-disable */
 import * as React from 'react';
+import {
+  ChevronUpIcon,
+  ChevronDownIcon,
+  ArrowsUpDownIcon,
+} from '@heroicons/react/20/solid';
 import { cn } from '../../lib/utils';
 
 type TableSize = 'sm' | 'md' | 'lg';
@@ -34,12 +39,27 @@ export interface TableProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export const Table = React.forwardRef<HTMLTableElement, TableProps>(
-  ({ className, isStriped, size = 'md', stickyHeader, children, tableProps, ...rest }, ref) => {
+  (
+    {
+      className,
+      isStriped,
+      size = 'md',
+      stickyHeader,
+      children,
+      tableProps,
+      ...rest
+    },
+    ref
+  ) => {
     const { containerProps, tableA11y } = splitContainerAndTableA11y(rest);
-    const sizeClass = size === 'sm' ? 'text-xs' : size === 'lg' ? 'text-base' : 'text-sm';
+    const sizeClass =
+      size === 'sm' ? 'text-xs' : size === 'lg' ? 'text-base' : 'text-sm';
     return (
       <TableContext.Provider value={{ isStriped, size, stickyHeader }}>
-        <div className={cn('w-full overflow-x-auto rounded-md border', className)} {...containerProps}>
+        <div
+          className={cn('w-full overflow-x-auto rounded-md border', className)}
+          {...containerProps}
+        >
           <table
             className={cn('w-full caption-bottom', sizeClass)}
             {...tableA11y}
@@ -65,7 +85,8 @@ export const TableHeader = React.forwardRef<
       ref={ref}
       className={cn(
         '[&_tr]:border-b bg-muted/40',
-        stickyHeader && 'sticky top-0 z-10 bg-muted/60 backdrop-blur supports-[backdrop-filter]:bg-muted/40',
+        stickyHeader &&
+          'sticky top-0 z-10 bg-muted/60 backdrop-blur supports-[backdrop-filter]:bg-muted/40',
         className
       )}
       {...rest}
@@ -81,44 +102,59 @@ type TableColumnBaseProps = React.ThHTMLAttributes<HTMLTableCellElement> & {
   sortDirection?: 'asc' | 'desc' | null;
   onSort?: () => void;
 };
-export const TableColumn = React.forwardRef<HTMLTableCellElement, TableColumnBaseProps>(
-  (props, ref) => {
-    const { className, children, sortable, sortDirection = null, onSort, scope, ...rest } = props;
-    const ariaSort = sortable
-      ? sortDirection === 'asc'
-        ? 'ascending'
-        : sortDirection === 'desc'
-          ? 'descending'
-          : 'none'
-      : undefined;
-    return (
-      <th
-        ref={ref}
-        scope={scope ?? 'col'}
-        aria-sort={ariaSort as any}
-        className={cn(
-          'h-10 px-3 text-left align-middle font-medium text-muted-foreground whitespace-nowrap select-none',
-          sortable && 'cursor-pointer',
-          className
+export const TableColumn = React.forwardRef<
+  HTMLTableCellElement,
+  TableColumnBaseProps
+>((props, ref) => {
+  const {
+    className,
+    children,
+    sortable,
+    sortDirection = null,
+    onSort,
+    scope,
+    ...rest
+  } = props;
+  const ariaSort = sortable
+    ? sortDirection === 'asc'
+      ? 'ascending'
+      : sortDirection === 'desc'
+        ? 'descending'
+        : 'none'
+    : undefined;
+  return (
+    <th
+      ref={ref}
+      scope={scope ?? 'col'}
+      aria-sort={ariaSort as any}
+      className={cn(
+        'h-10 px-3 text-left align-middle font-medium text-muted-foreground whitespace-nowrap select-none',
+        sortable && 'cursor-pointer',
+        className
+      )}
+      {...rest}
+      onClick={(e) => {
+        rest.onClick?.(e);
+        if (sortable) onSort?.();
+      }}
+    >
+      <span className="inline-flex items-center gap-1">
+        {children}
+        {sortable && (
+          <span aria-hidden="true" className="opacity-70">
+            {sortDirection === 'asc' ? (
+              <ChevronUpIcon className="w-3.5 h-3.5" />
+            ) : sortDirection === 'desc' ? (
+              <ChevronDownIcon className="w-3.5 h-3.5" />
+            ) : (
+              <ArrowsUpDownIcon className="w-3.5 h-3.5" />
+            )}
+          </span>
         )}
-        {...rest}
-        onClick={(e) => {
-          rest.onClick?.(e);
-          if (sortable) onSort?.();
-        }}
-      >
-        <span className="inline-flex items-center gap-1">
-          {children}
-          {sortable && (
-            <span aria-hidden="true" className="text-[10px] opacity-70">
-              {sortDirection === 'asc' ? '▲' : sortDirection === 'desc' ? '▼' : '↕'}
-            </span>
-          )}
-        </span>
-      </th>
-    );
-  }
-);
+      </span>
+    </th>
+  );
+});
 TableColumn.displayName = 'TableColumn';
 
 export interface TableBodyProps<T = any>
@@ -169,7 +205,8 @@ export function TableBody<T>({
 }
 TableBody.displayName = 'TableBody';
 
-export interface TableRowProps extends React.HTMLAttributes<HTMLTableRowElement> {
+export interface TableRowProps
+  extends React.HTMLAttributes<HTMLTableRowElement> {
   hoverable?: boolean;
   clickable?: boolean;
 }
@@ -195,7 +232,8 @@ export const TableCell = React.forwardRef<HTMLTableCellElement, TableCellProps>(
     const { className, ...rest } = props;
     const { size } = React.useContext(TableContext);
     const pad = size === 'sm' ? 'p-2' : size === 'lg' ? 'p-4' : 'p-3';
-    const text = size === 'sm' ? 'text-xs' : size === 'lg' ? 'text-base' : 'text-sm';
+    const text =
+      size === 'sm' ? 'text-xs' : size === 'lg' ? 'text-base' : 'text-sm';
     return (
       <td
         ref={ref}
@@ -229,6 +267,10 @@ export const TableFooter = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...rest }, ref) => (
-  <tfoot ref={ref} className={cn('[&_tr]:border-t bg-muted/30', className)} {...rest} />
+  <tfoot
+    ref={ref}
+    className={cn('[&_tr]:border-t bg-muted/30', className)}
+    {...rest}
+  />
 ));
 TableFooter.displayName = 'TableFooter';

@@ -123,16 +123,6 @@ export default function MetricsTable(props: MetricsTableProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
   const [columnsMenuOpen, setColumnsMenuOpen] = useState(false);
-  // Repo/Author filters expected by tests
-  const [repoFilter, setRepoFilter] = useState<string | undefined>(undefined);
-  const [authorFilter, setAuthorFilter] = useState<string | undefined>(
-    undefined
-  );
-  const [repoMenuOpen, setRepoMenuOpen] = useState(false);
-  const [authorMenuOpen, setAuthorMenuOpen] = useState(false);
-  // Sort/Order dropdowns
-  const [sortMenuOpen, setSortMenuOpen] = useState(false);
-  const [orderMenuOpen, setOrderMenuOpen] = useState(false);
 
   useEffect(() => {
     if (queryParams) {
@@ -166,13 +156,9 @@ export default function MetricsTable(props: MetricsTableProps) {
       );
       const searchOK =
         !q || matchTitle || matchRepo || matchAuthor || matchReviewer;
-      const repoOK = !repoFilter || it.repo === repoFilter;
-      const authorOK = !authorFilter || it.author === authorFilter;
-      return searchOK && repoOK && authorOK;
+      return searchOK;
     });
-  }, [items, search, repoFilter, authorFilter]);
-
-  // Sorting moved to TanStack Table; client-side derivation is handled there.
+  }, [items, search]);
 
   // Selection toggle is stable and side-effect free
   const toggleSelect = useCallback((id: string) => {
@@ -365,10 +351,35 @@ export default function MetricsTable(props: MetricsTableProps) {
   const rtColumns = useMemo<RTColumnDef<PRItem>[]>(
     () => [
       // Support both visible and virtual columns (created/updated)
-      { id: 'repo', accessorFn: (r: PRItem) => r.repo },
+      {
+        id: 'repo',
+        accessorFn: (r: PRItem) => r.repo,
+        // exact match filter for dropdown selections
+        filterFn: (row, columnId, filterValue) => {
+          if (!filterValue) return true;
+          const v = row.getValue<string>(columnId);
+          return String(v) === String(filterValue);
+        },
+      },
       { id: 'title', accessorFn: (r: PRItem) => r.title },
-      { id: 'author', accessorFn: (r: PRItem) => r.author },
-      { id: 'state', accessorFn: (r: PRItem) => r.state },
+      {
+        id: 'author',
+        accessorFn: (r: PRItem) => r.author,
+        filterFn: (row, columnId, filterValue) => {
+          if (!filterValue) return true;
+          const v = row.getValue<string>(columnId);
+          return String(v) === String(filterValue);
+        },
+      },
+      {
+        id: 'state',
+        accessorFn: (r: PRItem) => r.state,
+        filterFn: (row, columnId, filterValue) => {
+          if (!filterValue) return true;
+          const v = row.getValue<string>(columnId);
+          return String(v) === String(filterValue);
+        },
+      },
       {
         id: 'changes_requested',
         accessorFn: (r: PRItem) => r.changes_requested,
@@ -428,135 +439,6 @@ export default function MetricsTable(props: MetricsTableProps) {
         <FiltersBar
           search={search}
           onSearch={(v: string) => setSearch(v)}
-          leftContent={
-            <div className="flex items-center gap-2">
-              {/* Repository filter */}
-              <DropdownMenu open={repoMenuOpen} onOpenChange={setRepoMenuOpen}>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    aria-label="Repository filter"
-                    onClick={() => setRepoMenuOpen((v) => !v)}
-                  >
-                    {repoFilter || 'Repository'}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent aria-label="Repository options">
-                  {Array.from(new Set(items.map((i) => i.repo))).map((r) => (
-                    <DropdownMenuItem
-                      key={r}
-                      role="menuitem"
-                      onClick={() => {
-                        setRepoFilter(r);
-                        setAuthorFilter(undefined);
-                        setPageIndex(1);
-                        props.onPageChange?.(1);
-                        setRepoMenuOpen(false);
-                      }}
-                    >
-                      {r}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-              {/* Author filter */}
-              <DropdownMenu
-                open={authorMenuOpen}
-                onOpenChange={setAuthorMenuOpen}
-              >
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    aria-label="Author filter"
-                    onClick={() => setAuthorMenuOpen((v) => !v)}
-                  >
-                    {authorFilter || 'Author'}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent aria-label="Author options">
-                  {Array.from(new Set(items.map((i) => i.author))).map((a) => (
-                    <DropdownMenuItem
-                      key={a}
-                      role="menuitem"
-                      onClick={() => {
-                        setAuthorFilter(a);
-                        // selecting author clears repo per tests
-                        setRepoFilter(undefined);
-                        setPageIndex(1);
-                        props.onPageChange?.(1);
-                        setAuthorMenuOpen(false);
-                      }}
-                    >
-                      {a}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-              {/* Sort field */}
-              <DropdownMenu open={sortMenuOpen} onOpenChange={setSortMenuOpen}>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    aria-label="Sort field"
-                    onClick={() => setSortMenuOpen((v) => !v)}
-                  >
-                    {sort}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent aria-label="Sort field options">
-                  {(['updated', 'created'] as SortKey[]).map((s) => (
-                    <DropdownMenuItem
-                      key={s}
-                      role="menuitem"
-                      onClick={() => {
-                        setSort(s);
-                        props.onSortChange?.(s);
-                        const colId = sortKeyToColumnId(s);
-                        if (colId)
-                          setSorting([{ id: colId, desc: order === 'desc' }]);
-                        setSortMenuOpen(false);
-                      }}
-                    >
-                      {s}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-              {/* Sort order */}
-              <DropdownMenu
-                open={orderMenuOpen}
-                onOpenChange={setOrderMenuOpen}
-              >
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    aria-label="Sort order"
-                    onClick={() => setOrderMenuOpen((v) => !v)}
-                  >
-                    {order}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent aria-label="Sort order options">
-                  {(['asc', 'desc'] as const).map((o) => (
-                    <DropdownMenuItem
-                      key={o}
-                      role="menuitem"
-                      onClick={() => {
-                        setOrder(o);
-                        props.onOrderChange?.(o);
-                        const colId = sortKeyToColumnId(sort);
-                        if (colId)
-                          setSorting([{ id: colId, desc: o === 'desc' }]);
-                        setOrderMenuOpen(false);
-                      }}
-                    >
-                      {o}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          }
           rightContent={
             <DropdownMenu
               open={columnsMenuOpen}
@@ -597,14 +479,6 @@ export default function MetricsTable(props: MetricsTableProps) {
           }
         />
       </div>
-      {/* Summary strip expected by tests */}
-      <div className="mt-2 text-sm text-muted-foreground flex flex-wrap gap-4">
-        <span>Sort: {sort}</span>
-        <span>Order: {order}</span>
-        <span>Per page: {pageSize}</span>
-        <span>Total: {effectiveTotal}</span>
-      </div>
-      {/* Table */}
       <Table
         aria-label="PR Metrics Table"
         data-testid="metrics-table"

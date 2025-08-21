@@ -97,7 +97,7 @@ describe('MetricsPage (minimal UI)', () => {
     ).toBeInTheDocument();
   });
 
-  test('renders summary metrics, table and normal rate limit indicator', () => {
+  test('renders summary metrics and table', () => {
     const now = new Date();
     const earlier = new Date(now.getTime() - 2 * 3600 * 1000);
     usePullRequestMetricsMock.mockReturnValue({
@@ -137,64 +137,6 @@ describe('MetricsPage (minimal UI)', () => {
     renderPage();
     expect(screen.getByText('PRs')).toBeInTheDocument();
     expect(screen.getByTestId('metrics-table')).toBeInTheDocument();
-    expect(screen.getByText(/API 80\/100/).className).toMatch(
-      /text-default-500/
-    );
-  });
-
-  test('rate limit warning (<30%) and danger (<10%) colors', () => {
-    const baseItem = {
-      id: '1',
-      owner: 'o',
-      repo_name: 'r',
-      repo: 'o/r',
-      number: 1,
-      title: 'PR',
-      url: '',
-      author: 'tester',
-      state: 'open',
-      created_at: new Date().toISOString(),
-      reviewers: [],
-      changes_requested: 0,
-      additions: 0,
-      deletions: 0,
-      comment_count: 0,
-      timeline: [],
-    };
-
-    usePullRequestMetricsMock.mockReturnValue({
-      items: [baseItem],
-      loading: false,
-      error: null,
-      totalCount: 1,
-      rateLimit: {
-        remaining: 20,
-        limit: 100,
-        reset: Math.floor(Date.now() / 1000) + 60,
-      },
-    });
-    const { rerender } = renderPage();
-    expect(screen.getByText(/API 20\/100/).className).toMatch(/text-warning/);
-
-    usePullRequestMetricsMock.mockReturnValue({
-      items: [baseItem],
-      loading: false,
-      error: null,
-      totalCount: 1,
-      rateLimit: {
-        remaining: 5,
-        limit: 100,
-        reset: Math.floor(Date.now() / 1000) + 60,
-      },
-    });
-    rerender(
-      <MemoryRouter initialEntries={['/insights?q=is:pr']}>
-        <AuthContext.Provider value={baseAuth}>
-          <MetricsPage />
-        </AuthContext.Provider>
-      </MemoryRouter>
-    );
-    expect(screen.getByText(/API 5\/100/).className).toMatch(/text-danger/);
   });
 
   test('table callback handlers update URL params', () => {

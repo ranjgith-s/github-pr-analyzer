@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import FiltersBar from '../FiltersBar';
 import { firstKey } from '../utils';
@@ -7,17 +7,7 @@ import { firstKey } from '../utils';
 const baseProps = {
   search: '',
   onSearch: jest.fn(),
-  repoFilter: '',
-  onRepoChange: jest.fn(),
-  authorFilter: '',
-  onAuthorChange: jest.fn(),
-  repos: ['repo-a', 'repo-b'],
-  authors: ['alice', 'bob'],
-  sort: 'updated',
-  onSortChange: jest.fn(),
-  order: 'desc' as const,
-  onOrderChange: jest.fn(),
-  // page size control moved out of FiltersBar
+  // In the new UI, FiltersBar only renders the search box plus optional left/right content.
 };
 
 describe('FiltersBar', () => {
@@ -35,28 +25,21 @@ describe('FiltersBar', () => {
     expect(firstKey({} as any)).toBe('');
   });
 
-  it('renders all controls and options', () => {
-    render(<FiltersBar {...baseProps} />);
-
-    // search input
+  it('renders search input and optional left/right content', () => {
+    render(
+      <FiltersBar
+        {...baseProps}
+        leftContent={<span data-testid="left">L</span>}
+        rightContent={<button aria-label="Example action">Do</button>}
+      />
+    );
     expect(
       screen.getByRole('textbox', { name: /search pull requests/i })
     ).toBeInTheDocument();
-
-    // dropdown triggers
+    expect(screen.getByTestId('left')).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /repository filter/i })
+      screen.getByRole('button', { name: /example action/i })
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: /author filter/i })
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: /sort field/i })
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: /sort order/i })
-    ).toBeInTheDocument();
-    // per-page control is no longer part of FiltersBar
   });
 
   it('search input calls onSearch', async () => {
@@ -70,94 +53,57 @@ describe('FiltersBar', () => {
     expect(baseProps.onSearch).toHaveBeenCalled();
   });
 
-  it('repo dropdown calls onRepoChange when option is clicked', async () => {
+  it('search input calls onSearch', async () => {
     render(<FiltersBar {...baseProps} />);
+    const input = screen.getByRole('textbox', {
+      name: /search pull requests/i,
+    });
     const user = userEvent.setup();
-
-    await user.click(
-      screen.getByRole('button', { name: /repository filter/i })
-    );
-    await user.click(screen.getByRole('menuitem', { name: 'repo-a' }));
-    expect(baseProps.onRepoChange).toHaveBeenCalledWith('repo-a');
+    await user.type(input, 'abc');
+    expect(baseProps.onSearch).toHaveBeenCalled();
   });
 
-  it('repo dropdown handles "All" (empty) selection via click and selectionChange', async () => {
-    const props = { ...baseProps, repoFilter: 'repo-a' };
-    render(<FiltersBar {...props} />);
-    const user = userEvent.setup();
-    // click All option
-    await user.click(
-      screen.getByRole('button', { name: /repository filter/i })
-    );
-    await user.click(screen.getByRole('menuitem', { name: 'All' }));
-    expect(baseProps.onRepoChange).toHaveBeenCalledWith('');
+  it('Escape clears search and Clear button appears when value present', async () => {
+    const { rerender } = render(<FiltersBar {...baseProps} />);
+    const input = screen.getByRole('textbox', {
+      name: /search pull requests/i,
+    });
+    // Simulate parent updating search to a non-empty value
+    await userEvent.type(input, 'xyz');
+    rerender(<FiltersBar {...baseProps} search="xyz" />);
+    // Clear button should show and work
+    expect(
+      screen.getByRole('button', { name: /clear search/i })
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /clear search/i }));
+    expect(baseProps.onSearch).toHaveBeenCalledWith('');
+
+    // Provide a non-empty value again and press Escape
+    rerender(<FiltersBar {...baseProps} search="abc" />);
+    const input2 = screen.getByRole('textbox', {
+      name: /search pull requests/i,
+    });
+    fireEvent.keyDown(input2, { key: 'Escape' });
+    expect(baseProps.onSearch).toHaveBeenCalledWith('');
   });
 
-  it('author dropdown calls onAuthorChange when option is clicked', async () => {
+  // Repo/author dropdowns and sort/order controls were removed from FiltersBar in the new UI.
+
+  it('does not render legacy sort/order triggers', () => {
     render(<FiltersBar {...baseProps} />);
-    const user = userEvent.setup();
-
-    await user.click(screen.getByRole('button', { name: /author filter/i }));
-    await user.click(screen.getByRole('menuitem', { name: 'alice' }));
-    expect(baseProps.onAuthorChange).toHaveBeenCalledWith('alice');
+    expect(
+      screen.queryByRole('button', { name: /sort field/i })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /sort order/i })
+    ).not.toBeInTheDocument();
   });
 
-  it('author dropdown handles "All" (empty) selection via click', async () => {
-    const props = { ...baseProps, authorFilter: 'alice' };
-    render(<FiltersBar {...props} />);
-    const user = userEvent.setup();
-    await user.click(screen.getByRole('button', { name: /author filter/i }));
-    await user.click(screen.getByRole('menuitem', { name: 'All' }));
-    expect(baseProps.onAuthorChange).toHaveBeenCalledWith('');
-  });
-
-  it('sort field and order call respective handlers', async () => {
-    render(<FiltersBar {...baseProps} />);
-    const user = userEvent.setup();
-
-    await user.click(screen.getByRole('button', { name: /sort field/i }));
-    await user.click(screen.getByRole('menuitem', { name: 'created' }));
-    expect(baseProps.onSortChange).toHaveBeenCalledWith('created');
-
-    await user.click(screen.getByRole('button', { name: /sort order/i }));
-    await user.click(screen.getByRole('menuitem', { name: 'asc' }));
-    expect(baseProps.onOrderChange).toHaveBeenCalledWith('asc');
-  });
-
-  it('sort field covers all options and selectionChange', async () => {
-    render(<FiltersBar {...baseProps} />);
-    const user = userEvent.setup();
-    await user.click(screen.getByRole('button', { name: /sort field/i }));
-    await user.click(screen.getByRole('menuitem', { name: 'comments' }));
-    expect(baseProps.onSortChange).toHaveBeenCalledWith('comments');
-    // switch to updated
-    await user.click(screen.getByRole('button', { name: /sort field/i }));
-    await user.click(screen.getByRole('menuitem', { name: 'updated' }));
-    expect(baseProps.onSortChange).toHaveBeenCalledWith('updated');
-  });
+  // Selection of sort options now handled via table headers; covered in MetricsTable tests
 
   // per-page tests removed; control now lives next to pagination in MetricsTable
 
-  it('order covers both asc and desc and label reflects order', async () => {
-    const props = { ...baseProps, order: 'asc' as const };
-    render(<FiltersBar {...props} />);
-    const user = userEvent.setup();
-    const trigger = screen.getByRole('button', { name: /sort order/i });
-    expect(trigger).toHaveTextContent('Order: asc');
-    await user.click(trigger);
-    await user.click(screen.getByRole('menuitem', { name: 'desc' }));
-    expect(baseProps.onOrderChange).toHaveBeenCalledWith('desc');
-  });
+  // Order control removed
 
-  it('labels of repo/author reflect current selection', () => {
-    render(
-      <FiltersBar {...baseProps} repoFilter="repo-b" authorFilter="bob" />
-    );
-    expect(
-      screen.getByRole('button', { name: /repository filter/i })
-    ).toHaveTextContent('repo-b');
-    expect(
-      screen.getByRole('button', { name: /author filter/i })
-    ).toHaveTextContent('bob');
-  });
+  // Repo/author labels removed with legacy dropdowns
 });

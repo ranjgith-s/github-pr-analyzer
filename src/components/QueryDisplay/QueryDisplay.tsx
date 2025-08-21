@@ -29,6 +29,7 @@ import { ShareQueryModal } from './ShareQueryModal';
 import { SuggestionService } from '../../services/suggestionService';
 import { useQueryHistory } from '../../hooks/useQueryHistory';
 import { useAuth } from '../../contexts/AuthContext/AuthContext';
+import { featureFlags } from '@/feature-flags';
 
 export interface QueryDisplayProps {
   query: string;
@@ -311,24 +312,28 @@ export function QueryDisplay({
                   >
                     Edit Query
                   </Button>
-                  <Button
-                    size="sm"
-                    color="default"
-                    variant="ghost"
-                    startContent={<ShareIcon className="h-4 w-4" />}
-                    onClick={() => setShowShareModal(true)}
-                  >
-                    Share
-                  </Button>
-                  <Button
-                    size="sm"
-                    color="default"
-                    variant="ghost"
-                    startContent={<BookmarkIcon className="h-4 w-4" />}
-                    onClick={handleBookmarkQuery}
-                  >
-                    Bookmark
-                  </Button>
+                  {featureFlags.share && (
+                    <Button
+                      size="sm"
+                      color="default"
+                      variant="ghost"
+                      startContent={<ShareIcon className="h-4 w-4" />}
+                      onClick={() => setShowShareModal(true)}
+                    >
+                      Share
+                    </Button>
+                  )}
+                  {featureFlags.bookmark && (
+                    <Button
+                      size="sm"
+                      color="default"
+                      variant="ghost"
+                      startContent={<BookmarkIcon className="h-4 w-4" />}
+                      onClick={handleBookmarkQuery}
+                    >
+                      Bookmark
+                    </Button>
+                  )}
                 </>
               )}
             </div>

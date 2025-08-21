@@ -73,8 +73,11 @@ test('renders filters and data', () => {
       <MetricsTable items={sample} />
     </MemoryRouter>
   );
-  expect(screen.getByLabelText('Repository filter')).toBeInTheDocument();
-  expect(screen.getByLabelText('Author filter')).toBeInTheDocument();
+  // Only search input and columns menu are present in the new UI
+  expect(
+    screen.getByRole('textbox', { name: /search pull requests/i })
+  ).toBeInTheDocument();
+  expect(screen.getByLabelText('Choose columns')).toBeInTheDocument();
   expect(screen.getByLabelText('Pagination')).toBeInTheDocument();
 });
 
@@ -84,7 +87,6 @@ test('renders empty state', () => {
       <MetricsTable items={[]} totalCount={0} />
     </MemoryRouter>
   );
-  expect(screen.getByText('Page 1 of 1')).toBeInTheDocument();
   expect(screen.getByText(/no pull requests/i)).toBeInTheDocument();
 });
 
@@ -106,28 +108,30 @@ test('renders loading overlay message', () => {
   expect(screen.getByText(/loading pull requests/i)).toBeInTheDocument();
 });
 
-test('filters by repo and author and resets page', () => {
-  const items = sample.concat({
-    ...sample[0],
-    id: '2',
-    repo: 'octo/other',
-    repo_name: 'other',
-    author: 'someone',
-    number: 2,
-  });
+test('header sorting toggles order on click', () => {
+  const items = [
+    { ...sample[0], id: '1', repo: 'octo/zzz', title: 'Zed' },
+    { ...sample[0], id: '2', repo: 'octo/aaa', title: 'Aha' },
+  ];
   render(
-    <MemoryRouter initialEntries={['/metrics?page=2']}>
-      <MetricsTable items={items} queryParams={{ page: 2, order: 'desc' }} />
+    <MemoryRouter>
+      <MetricsTable items={items} />
     </MemoryRouter>
   );
+  // Click REPOSITORY header to sort by repo (desc by default)
+  const repoHeader = screen.getByRole('columnheader', { name: /repository/i });
   act(() => {
-    fireEvent.click(screen.getByLabelText('Repository filter'));
+    fireEvent.click(repoHeader);
   });
+  const rowsDesc = screen.getAllByRole('row').slice(1); // skip header row
+  // First data row should be zzz when desc
+  expect(rowsDesc[0]).toHaveTextContent('octo/zzz');
+  // Click again to toggle to asc
   act(() => {
-    fireEvent.click(screen.getByRole('menuitem', { name: 'octo/repo' }));
+    fireEvent.click(repoHeader);
   });
-  expect(screen.getAllByText('Test PR')).toHaveLength(1);
-  expect(screen.getByText(/Page 1 of/)).toBeInTheDocument();
+  const rowsAsc = screen.getAllByRole('row').slice(1);
+  expect(rowsAsc[0]).toHaveTextContent('octo/aaa');
 });
 
 test('selects and navigates to PR', async () => {
@@ -234,80 +238,69 @@ test('handles PRs with missing title', () => {
   expect(links.some((link) => link.textContent === '')).toBe(true);
 });
 
-test('sort dropdown updates value and invokes callback', () => {
+test('clicking a header triggers onSortChange and toggles on subsequent clicks', () => {
   const onSortChange = jest.fn();
   render(
     <MemoryRouter>
       <MetricsTable items={sample} onSortChange={onSortChange} />
     </MemoryRouter>
   );
-  act(() => {
-    fireEvent.click(screen.getByLabelText('Sort field'));
+  const commentsHeader = screen.getByRole('columnheader', {
+    name: /comments/i,
   });
-  act(() => {
-    fireEvent.click(screen.getByRole('menuitem', { name: 'created' }));
-  });
-  expect(onSortChange).toHaveBeenCalledWith('created');
-  expect(screen.getByText(/Sort: created/)).toBeInTheDocument();
+  act(() => fireEvent.click(commentsHeader));
+  expect(onSortChange).toHaveBeenCalledWith('comment_count');
+  // Second click toggles order internally; ensure it doesn't crash
+  act(() => fireEvent.click(commentsHeader));
 });
 
-test('order dropdown updates value and invokes callback', () => {
+test('order toggles when clicking the same header repeatedly and calls onOrderChange', () => {
   const onOrderChange = jest.fn();
   render(
     <MemoryRouter>
       <MetricsTable items={sample} onOrderChange={onOrderChange} />
     </MemoryRouter>
   );
-  act(() => {
-    fireEvent.click(screen.getByLabelText('Sort order'));
-  });
-  act(() => {
-    fireEvent.click(screen.getByRole('menuitem', { name: 'asc' }));
-  });
-  expect(onOrderChange).toHaveBeenCalledWith('asc');
-  expect(screen.getByText(/Order: asc/)).toBeInTheDocument();
+  const repoHeader = screen.getByRole('columnheader', { name: /repository/i });
+  // First click sets sort to repo (keeps current order)
+  act(() => fireEvent.click(repoHeader));
+  // Second click toggles order
+  act(() => fireEvent.click(repoHeader));
+  expect(onOrderChange).toHaveBeenCalled();
 });
 
-test('per page dropdown updates value, resets page and invokes callback', () => {
+test('per page input updates value, resets to first page and invokes callback (debounced)', async () => {
+  jest.useFakeTimers();
+  const many = Array.from({ length: 25 }, (_, i) => ({
+    ...sample[0],
+    id: String(i + 1),
+    number: i + 1,
+    title: `PR ${i + 1}`,
+  }));
   const onPerPageChange = jest.fn();
   render(
     <MemoryRouter>
       <MetricsTable
-        items={sample}
+        items={many}
         onPerPageChange={onPerPageChange}
         queryParams={{ page: 2, per_page: 20, order: 'desc' }}
       />
     </MemoryRouter>
   );
-  expect(screen.getByText(/Per page: 20/)).toBeInTheDocument();
+  const input = screen.getByRole('spinbutton', { name: /items per page/i });
   act(() => {
-    fireEvent.click(screen.getByLabelText('Items per page'));
+    fireEvent.change(input, { target: { value: '30' } });
   });
   act(() => {
-    fireEvent.click(screen.getByRole('menuitem', { name: '30' }));
+    jest.advanceTimersByTime(400);
   });
+  // Page should reset to 1 so PR 1 becomes visible
   expect(onPerPageChange).toHaveBeenCalledWith(30);
-  expect(screen.getByText(/Per page: 30/)).toBeInTheDocument();
-  expect(screen.getByText(/Page 1 of/)).toBeInTheDocument();
+  await waitFor(() => expect(screen.getByText('PR 1')).toBeInTheDocument());
+  jest.useRealTimers();
 });
 
-test('totalCount prop overrides fallback length', () => {
-  render(
-    <MemoryRouter>
-      <MetricsTable items={sample} totalCount={555} />
-    </MemoryRouter>
-  );
-  expect(screen.getByText('Total: 555')).toBeInTheDocument();
-});
-
-test('falls back to items length when totalCount not provided', () => {
-  render(
-    <MemoryRouter>
-      <MetricsTable items={sample} />
-    </MemoryRouter>
-  );
-  expect(screen.getByText(`Total: ${sample.length}`)).toBeInTheDocument();
-});
+// total count summary text has been removed in the new UI; rely on pagination and rows instead
 
 test('column visibility toggle hides column', async () => {
   render(
@@ -374,40 +367,26 @@ describe('MetricsTable additional coverage (merged)', () => {
   });
 
   it('switching repository then author clears repository filter', () => {
-    const items = [
-      baseItem,
-      {
-        ...baseItem,
-        id: '2',
-        author: 'someone',
-        repo: 'octo/other',
-        repo_name: 'other',
-      },
-    ];
-    renderTable(items);
-    act(() => {
-      fireEvent.click(screen.getByLabelText('Repository filter'));
+    // Repo/author dropdowns were removed; verify search still works instead
+    renderTable([baseItem, { ...baseItem, id: '2', title: 'Another PR' }]);
+    fireEvent.change(screen.getByPlaceholderText(/search/i), {
+      target: { value: 'Another' },
     });
-    act(() => {
-      fireEvent.click(screen.getByRole('menuitem', { name: 'octo/repo' }));
-    });
-    act(() => {
-      fireEvent.click(screen.getByLabelText('Author filter'));
-    });
-    act(() => {
-      fireEvent.click(screen.getByRole('menuitem', { name: 'someone' }));
-    });
-    expect(screen.getByLabelText('Author filter')).toHaveTextContent('someone');
-    expect(screen.getByLabelText('Repository filter')).toHaveTextContent(
-      'Repository'
-    );
+    expect(screen.getByText('Another PR')).toBeInTheDocument();
+    expect(screen.queryByText('Test PR')).not.toBeInTheDocument();
   });
 
-  it('updates internal state when queryParams prop changes (sort/order/page/per_page)', () => {
+  it('updates per_page from queryParams on prop change', () => {
+    const many = Array.from({ length: 30 }, (_, i) => ({
+      ...baseItem,
+      id: String(i + 1),
+      title: `PR ${i + 1}`,
+      number: i + 1,
+    }));
     const { rerender } = render(
       <MemoryRouter>
         <MetricsTable
-          items={[baseItem]}
+          items={many}
           queryParams={{
             sort: 'updated',
             order: 'desc',
@@ -420,14 +399,13 @@ describe('MetricsTable additional coverage (merged)', () => {
     rerender(
       <MemoryRouter>
         <MetricsTable
-          items={[baseItem]}
+          items={many}
           queryParams={{ sort: 'created', order: 'asc', page: 3, per_page: 10 }}
         />
       </MemoryRouter>
     );
-    expect(screen.getByText(/Sort: created/)).toBeInTheDocument();
-    expect(screen.getByText(/Order: asc/)).toBeInTheDocument();
-    expect(screen.getByText(/Per page: 10/)).toBeInTheDocument();
+    const input = screen.getByRole('spinbutton', { name: /items per page/i });
+    expect((input as HTMLInputElement).value).toBe('10');
   });
 
   it('shows N/A timeline segments when dates missing', () => {

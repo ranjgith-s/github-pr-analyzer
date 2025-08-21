@@ -39,6 +39,7 @@ import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import * as RouterDom from 'react-router-dom';
 import { QueryDisplay } from '../QueryDisplay';
+import { featureFlags } from '@/feature-flags';
 import * as queryValidator from '../../../services/queryValidator';
 import { SuggestionService } from '../../../services/suggestionService';
 
@@ -51,6 +52,9 @@ beforeEach(() => {
   mockAddBookmark.mockReset();
   mockAddToHistory.mockReset();
   jest.restoreAllMocks();
+  // Ensure buttons are rendered for tests that rely on them
+  featureFlags.share = true;
+  featureFlags.bookmark = true;
 });
 
 describe('QueryDisplay', () => {
