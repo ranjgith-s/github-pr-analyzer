@@ -32,3 +32,4 @@ export * from './select';
 export * from './autocomplete';
 export * from './table';
 export * from './dropdown';
+export * from './sidebar';
