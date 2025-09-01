@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { Chip, Card, CardContent } from '../ui';
+import { ActiveFiltersSummary } from './ActiveFiltersSummary';
 import { Select, SelectItem, Autocomplete, AutocompleteItem } from '../ui';
 import {
   parseGitHubQuery,
@@ -31,8 +32,7 @@ export function VisualFilterBuilder({
   const [filters, setFilters] = React.useState<FilterState>(() =>
     parseGitHubQuery(query)
   );
-  const [showAllFilters, setShowAllFilters] = React.useState(false);
-  const [initialVisibleCount, setInitialVisibleCount] = React.useState(3);
+  // Sidebar layout: always render all filters in a single column
   // Dynamic user suggestion inputs and results
   const [authorInput, setAuthorInput] = React.useState('');
   const [reviewerInput, setReviewerInput] = React.useState('');
@@ -109,13 +109,7 @@ export function VisualFilterBuilder({
     }));
   };
 
-  // Determine initial visible filters based on viewport (1/2/3 per row)
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) return;
-    const isLg = window.matchMedia('(min-width: 1024px)').matches;
-    const isSm = window.matchMedia('(min-width: 640px)').matches;
-    setInitialVisibleCount(isLg ? 3 : isSm ? 2 : 1);
-  }, []);
+  // Removed responsive initial visible count; sidebar shows all filters
 
   // Utility to ensure '@me' is available at top and no duplicates
   const addMe = (list: string[]) => {
@@ -269,6 +263,45 @@ export function VisualFilterBuilder({
     </div>
   );
 
+  // Helpers to clear date bounds from filters.dateRange
+  const clearCreatedStart = () => {
+    const created = filters.dateRange.created || {};
+    const next = { ...created, start: undefined };
+    updateFilter('dateRange', {
+      ...filters.dateRange,
+      created: next.start || next.end ? next : undefined,
+    });
+  };
+
+  const clearCreatedEnd = () => {
+    const created = filters.dateRange.created || {};
+    const next = { ...created, end: undefined };
+    updateFilter('dateRange', {
+      ...filters.dateRange,
+      created: next.start || next.end ? next : undefined,
+    });
+  };
+
+  const clearUpdatedStart = () => {
+    const updated = filters.dateRange.updated || {};
+    const next = { ...updated, start: undefined };
+    updateFilter('dateRange', {
+      ...filters.dateRange,
+      updated: next.start || next.end ? next : undefined,
+    });
+  };
+
+  const clearUpdatedEnd = () => {
+    const updated = filters.dateRange.updated || {};
+    const next = { ...updated, end: undefined };
+    updateFilter('dateRange', {
+      ...filters.dateRange,
+      updated: next.start || next.end ? next : undefined,
+    });
+  };
+
+  // date formatting is handled inside the ActiveFiltersSummary
+
   // Helper function to render autocomplete with chips
   const renderAutocompleteSection = (
     label: string,
@@ -323,102 +356,86 @@ export function VisualFilterBuilder({
   return (
     <div className="space-y-4">
       {/* Applied Filters Summary */}
-      {(filters.authors.length > 0 ||
-        filters.reviewers.length > 0 ||
-        filters.assignees.length > 0 ||
-        filters.involves.length > 0 ||
-        filters.repositories.length > 0 ||
-        filters.labels.length > 0 ||
-        filters.state !== 'all' ||
-        filters.isDraft !== null ||
-        filters.dateRange.created?.start ||
-        filters.dateRange.created?.end ||
-        filters.dateRange.updated?.start ||
-        filters.dateRange.updated?.end) && (
-        <div className="bg-default-50 border border-default-200 rounded-lg p-3">
-          <h3 className="text-xs font-semibold text-default-700 mb-2">
-            Active Filters
-          </h3>
-          <div className="flex flex-wrap gap-1.5">
-            {filters.authors.map((author, index) => (
-              <Chip
-                key={`active-author-${index}`}
-                onClose={() => removeStringArrayItem('authors', index)}
-                variant="flat"
-                color="primary"
-                size="sm"
-                className="text-xs"
-              >
-                Author: {author}
-              </Chip>
-            ))}
-            {filters.reviewers.map((reviewer, index) => (
-              <Chip
-                key={`active-reviewer-${index}`}
-                onClose={() => removeStringArrayItem('reviewers', index)}
-                variant="flat"
-                color="secondary"
-                size="sm"
-                className="text-xs"
-              >
-                Reviewer: {reviewer}
-              </Chip>
-            ))}
-            {filters.repositories.map((repo, index) => (
-              <Chip
-                key={`active-repo-${index}`}
-                onClose={() => removeStringArrayItem('repositories', index)}
-                variant="flat"
-                color="success"
-                size="sm"
-                className="text-xs"
-              >
-                Repo: {repo}
-              </Chip>
-            ))}
-            {filters.state !== 'all' && (
-              <Chip
-                onClose={() => updateFilter('state', 'all')}
-                variant="flat"
-                color="default"
-                size="sm"
-                className="text-xs"
-              >
-                State: {filters.state}
-              </Chip>
-            )}
-            {filters.isDraft !== null && (
-              <Chip
-                onClose={() => updateFilter('isDraft', null)}
-                variant="flat"
-                color="default"
-                size="sm"
-                className="text-xs"
-              >
-                Draft: {filters.isDraft ? 'Yes' : 'No'}
-              </Chip>
-            )}
-          </div>
-        </div>
-      )}
-      {/* Filters grid header with Show more toggle */}
+      <ActiveFiltersSummary
+        filters={filters}
+        onRemoveAuthor={(i) => removeStringArrayItem('authors', i)}
+        onRemoveReviewer={(i) => removeStringArrayItem('reviewers', i)}
+        onRemoveAssignee={(i) => removeStringArrayItem('assignees', i)}
+        onRemoveInvolves={(i) => removeStringArrayItem('involves', i)}
+        onRemoveRepository={(i) => removeStringArrayItem('repositories', i)}
+        onRemoveLabel={(i) => removeStringArrayItem('labels', i)}
+        onResetState={() => updateFilter('state', 'all')}
+        onResetDraft={() => updateFilter('isDraft', null)}
+        onClearCreatedStart={clearCreatedStart}
+        onClearCreatedEnd={clearCreatedEnd}
+        onClearUpdatedStart={clearUpdatedStart}
+        onClearUpdatedEnd={clearUpdatedEnd}
+        onClearAll={() => {
+          setFilters({
+            authors: [],
+            reviewers: [],
+            repositories: [],
+            labels: [],
+            state: 'all',
+            isDraft: null,
+            dateRange: {},
+            assignees: [],
+            involves: [],
+          });
+        }}
+      />
+      {/* Filters header (no show more/less in sidebar) */}
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-default-700">Filters</h3>
+      </div>
+
+      {/* Quick presets for world-class UX */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <button
           type="button"
-          className="text-xs text-primary-600 hover:text-primary-700 disabled:opacity-50"
-          onClick={() => setShowAllFilters((v) => !v)}
-          aria-label="toggle-more-filters"
+          className="rounded-md border px-3 py-2 text-xs hover:bg-accent"
+          onClick={() =>
+            updateFilter(
+              'authors',
+              Array.from(new Set(['@me', ...filters.authors]))
+            )
+          }
         >
-          {showAllFilters ? 'Show less' : 'Show more filters'}
+          Authored by me
+        </button>
+        <button
+          type="button"
+          className="rounded-md border px-3 py-2 text-xs hover:bg-accent"
+          onClick={() =>
+            updateFilter(
+              'reviewers',
+              Array.from(new Set(['@me', ...(filters.reviewers || [])]))
+            )
+          }
+        >
+          Reviewed by me
+        </button>
+        <button
+          type="button"
+          className="rounded-md border px-3 py-2 text-xs hover:bg-accent"
+          onClick={() => updateFilter('state', 'open')}
+        >
+          Open PRs
+        </button>
+        <button
+          type="button"
+          className="rounded-md border px-3 py-2 text-xs hover:bg-accent"
+          onClick={() => updateFilter('isDraft', true)}
+        >
+          Drafts
         </button>
       </div>
 
-      {/* Individual Filters Grid: responsive with max 3 per row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* Individual Filters: single-column list for sidebar */}
+      <div className="grid grid-cols-1 gap-4">
         {[
           <Card key="authors" className="border border-default-200">
-            <CardContent className="p-4">
+            <CardContent>
               {renderAutocompleteSection(
                 'Authors',
                 'Add author...',
@@ -433,7 +450,7 @@ export function VisualFilterBuilder({
             </CardContent>
           </Card>,
           <Card key="reviewers" className="border border-default-200">
-            <CardContent className="p-4">
+            <CardContent>
               {renderAutocompleteSection(
                 'Reviewers',
                 'Add reviewer...',
@@ -448,7 +465,7 @@ export function VisualFilterBuilder({
             </CardContent>
           </Card>,
           <Card key="assignees" className="border border-default-200">
-            <CardContent className="p-4">
+            <CardContent>
               {renderAutocompleteSection(
                 'Assignees',
                 'Add assignee...',
@@ -463,7 +480,7 @@ export function VisualFilterBuilder({
             </CardContent>
           </Card>,
           <Card key="involves" className="border border-default-200">
-            <CardContent className="p-4">
+            <CardContent>
               {renderAutocompleteSection(
                 'Involves',
                 'Add user...',
@@ -478,7 +495,7 @@ export function VisualFilterBuilder({
             </CardContent>
           </Card>,
           <Card key="repositories" className="border border-default-200">
-            <CardContent className="p-4">
+            <CardContent>
               {renderAutocompleteSection(
                 'Repositories',
                 'Add repository (owner/repo)...',
@@ -489,7 +506,7 @@ export function VisualFilterBuilder({
             </CardContent>
           </Card>,
           <Card key="labels" className="border border-default-200">
-            <CardContent className="p-4">
+            <CardContent>
               {renderAutocompleteSection(
                 'Labels',
                 'Add label...',
@@ -635,9 +652,7 @@ export function VisualFilterBuilder({
               </Select>
             </CardContent>
           </Card>,
-        ]
-          .filter((_, idx) => showAllFilters || idx < initialVisibleCount)
-          .map((node) => node)}
+        ].map((node) => node)}
       </div>
     </div>
   );

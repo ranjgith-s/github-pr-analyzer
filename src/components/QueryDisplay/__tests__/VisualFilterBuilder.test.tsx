@@ -110,25 +110,9 @@ describe('VisualFilterBuilder (ungrouped grid + presets)', () => {
     expect(items.some((i) => i.textContent === 'bob')).toBe(true);
   });
 
-  it('renders first row only by default and toggles more filters', async () => {
-    const user = userEvent.setup();
+  it('renders all filters in a single column (no toggle)', () => {
     render(<VisualFilterBuilder {...defaultProps} />);
-
-    // Only first filter card visible initially (Authors)
     expect(screen.getByText('Authors')).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: 'toggle-more-filters' })
-    ).toBeInTheDocument();
-
-    // Hidden sections should not be present before toggle
-    expect(screen.queryByText('Reviewers')).not.toBeInTheDocument();
-    expect(screen.queryByText('Pull Request State')).not.toBeInTheDocument();
-    expect(screen.queryByText('Created: Preset')).not.toBeInTheDocument();
-
-    // Toggle to show all
-    await user.click(
-      screen.getByRole('button', { name: 'toggle-more-filters' })
-    );
     expect(screen.getByText('Reviewers')).toBeInTheDocument();
     expect(screen.getByText('Assignees')).toBeInTheDocument();
     expect(screen.getByText('Involves')).toBeInTheDocument();
@@ -206,11 +190,6 @@ describe('VisualFilterBuilder (ungrouped grid + presets)', () => {
   it('updates state and draft selects', async () => {
     const user = userEvent.setup();
     render(<VisualFilterBuilder {...defaultProps} />);
-    // show all to reveal selects
-    await user.click(
-      screen.getByRole('button', { name: 'toggle-more-filters' })
-    );
-
     const stateSelect = screen.getByDisplayValue('All States');
     await user.click(stateSelect);
     await user.click(screen.getByText('Open'));
@@ -225,10 +204,6 @@ describe('VisualFilterBuilder (ungrouped grid + presets)', () => {
   it('handles date presets for created and updated', async () => {
     const user = userEvent.setup();
     render(<VisualFilterBuilder {...defaultProps} />);
-    await user.click(
-      screen.getByRole('button', { name: 'toggle-more-filters' })
-    );
-
     // Created preset
     const createdSelect = screen
       .getByText('Created: Preset')
@@ -247,9 +222,6 @@ describe('VisualFilterBuilder (ungrouped grid + presets)', () => {
   it('exercises all preset branches', async () => {
     const user = userEvent.setup();
     render(<VisualFilterBuilder {...defaultProps} />);
-    await user.click(
-      screen.getByRole('button', { name: 'toggle-more-filters' })
-    );
     const createdSelect = screen
       .getByText('Created: Preset')
       .parentElement!.querySelector('select');
@@ -268,7 +240,6 @@ describe('VisualFilterBuilder (ungrouped grid + presets)', () => {
   });
 
   it('handles involves field with test id', async () => {
-    const user = userEvent.setup();
     mockParseGitHubQuery.mockReturnValue({
       authors: [],
       reviewers: [],
@@ -281,11 +252,6 @@ describe('VisualFilterBuilder (ungrouped grid + presets)', () => {
       involves: ['testuser'],
     });
     render(<VisualFilterBuilder {...defaultProps} />);
-    // Reveal all filters because only first row is visible by default in tests (matchMedia false)
-    const toggleBtn = screen.getByRole('button', {
-      name: 'toggle-more-filters',
-    });
-    await user.click(toggleBtn);
     expect(screen.getByTestId('involves-autocomplete')).toBeInTheDocument();
     expect(screen.getByText('testuser')).toBeInTheDocument();
   });
@@ -334,7 +300,7 @@ describe('VisualFilterBuilder (ungrouped grid + presets)', () => {
       involves: [],
     });
     render(<VisualFilterBuilder {...defaultProps} />);
-    expect(screen.getByText('Active Filters')).toBeInTheDocument();
+    expect(screen.getByText(/Active Filters/i)).toBeInTheDocument();
 
     for (const text of [
       'Author: john',
@@ -363,6 +329,6 @@ describe('VisualFilterBuilder (ungrouped grid + presets)', () => {
       involves: [],
     });
     render(<VisualFilterBuilder {...defaultProps} />);
-    expect(screen.queryByText('Active Filters')).not.toBeInTheDocument();
+    expect(screen.queryByText(/Active Filters/i)).not.toBeInTheDocument();
   });
 });

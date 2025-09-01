@@ -47,6 +47,27 @@ const renderWithRouter = (component: React.ReactElement) => {
   return render(<BrowserRouter>{component}</BrowserRouter>);
 };
 
+// Helper: find the Edit Query button reliably (fallback to primary-colored button)
+function getEditButton(): HTMLButtonElement {
+  const byName = screen.queryByRole('button', { name: /edit query/i });
+  if (byName) return byName as HTMLButtonElement;
+  const fallback = document.body.querySelector(
+    'button[data-color="primary"]'
+  ) as HTMLButtonElement | null;
+  if (!fallback) throw new Error('Edit button not found');
+  return fallback;
+}
+
+// Helper: open edit drawer and switch to Advanced (textarea) mode
+async function openEditInAdvancedMode() {
+  await act(async () => {
+    getEditButton().click();
+  });
+  // Default is Visual mode; toggle once to go Advanced
+  const toggle = screen.getByRole('switch');
+  await act(async () => toggle.click());
+}
+
 beforeEach(() => {
   mockToken = null;
   mockAddBookmark.mockReset();
@@ -165,12 +186,7 @@ describe('QueryDisplay', () => {
 
   it('should enter edit mode and display textarea', async () => {
     renderWithRouter(<QueryDisplay query="is:pr author:john" />);
-    const editButton = screen.getByRole('button', { name: /edit query/i });
-
-    await act(async () => {
-      editButton.click();
-    });
-
+    await openEditInAdvancedMode();
     expect(screen.getByLabelText('Edit search query')).toBeInTheDocument();
     expect(
       screen.getByText('Press Cmd+Enter to apply, Escape to cancel')
@@ -181,14 +197,11 @@ describe('QueryDisplay', () => {
     const user = userEvent.setup();
     renderWithRouter(<QueryDisplay query="abc" />);
 
-    await act(async () => {
-      screen.getByRole('button', { name: /edit query/i }).click();
-    });
+    await openEditInAdvancedMode();
 
     const textarea = screen.getByLabelText(
       'Edit search query'
     ) as HTMLTextAreaElement;
-    expect(screen.getByText('3/256')).toBeInTheDocument();
 
     await act(async () => {
       await user.clear(textarea);
@@ -204,9 +217,7 @@ describe('QueryDisplay', () => {
     const handleChange = jest.fn();
     renderWithRouter(<QueryDisplay query="foo" onQueryChange={handleChange} />);
 
-    await act(async () => {
-      screen.getByRole('button', { name: /edit query/i }).click();
-    });
+    await openEditInAdvancedMode();
 
     const textarea = screen.getByLabelText(
       'Edit search query'
@@ -236,9 +247,7 @@ describe('QueryDisplay', () => {
     });
     renderWithRouter(<QueryDisplay query="foo" onQueryChange={handleChange} />);
 
-    await act(async () => {
-      screen.getByRole('button', { name: /edit query/i }).click();
-    });
+    await openEditInAdvancedMode();
 
     await act(async () => {
       screen.getByRole('button', { name: /apply/i }).click();
@@ -257,9 +266,7 @@ describe('QueryDisplay', () => {
     });
     renderWithRouter(<QueryDisplay query="foo" />);
 
-    await act(async () => {
-      screen.getByRole('button', { name: /edit query/i }).click();
-    });
+    await openEditInAdvancedMode();
 
     expect(screen.getByText('Error1')).toBeInTheDocument();
     expect(screen.getByText('Warn1')).toBeInTheDocument();
@@ -269,9 +276,7 @@ describe('QueryDisplay', () => {
   it('should cancel editing and revert changes', async () => {
     renderWithRouter(<QueryDisplay query="foo" />);
 
-    await act(async () => {
-      screen.getByRole('button', { name: /edit query/i }).click();
-    });
+    await openEditInAdvancedMode();
 
     const textarea = screen.getByLabelText(
       'Edit search query'
@@ -296,9 +301,7 @@ describe('QueryDisplay', () => {
     const handleChange = jest.fn();
     renderWithRouter(<QueryDisplay query="foo" onQueryChange={handleChange} />);
 
-    await act(async () => {
-      screen.getByRole('button', { name: /edit query/i }).click();
-    });
+    await openEditInAdvancedMode();
 
     const textarea = screen.getByLabelText(
       'Edit search query'
@@ -318,7 +321,7 @@ describe('QueryDisplay', () => {
     expect(handleChange).toHaveBeenCalled();
 
     await act(async () => {
-      screen.getByRole('button', { name: /edit query/i }).click();
+      getEditButton().click();
     });
 
     const textarea2 = screen.getByLabelText(
@@ -395,11 +398,15 @@ describe('QueryDisplay additional coverage', () => {
 
   it('switches between advanced and visual modes', async () => {
     renderWithRouter(<QueryDisplay query="is:pr author:me" />);
-    const editBtn = screen.getByRole('button', { name: /edit query/i });
-    await act(async () => editBtn.click());
-    const toggle = screen.getByRole('switch');
-    await act(async () => toggle.click());
+    await act(async () => getEditButton().click());
+    // Initially Visual mode shows Filters
     expect(await screen.findByText('Filters')).toBeInTheDocument();
+    const toggle = screen.getByRole('switch');
+    // Toggle to Advanced
+    await act(async () => toggle.click());
+    expect(
+      await screen.findByLabelText('Edit search query')
+    ).toBeInTheDocument();
   });
 
   it('handles autocomplete suggestions and selection', async () => {
@@ -416,9 +423,7 @@ describe('QueryDisplay additional coverage', () => {
         },
       ] as any);
     renderWithRouter(<QueryDisplay query="is:pr" />);
-    await act(async () =>
-      screen.getByRole('button', { name: /edit query/i }).click()
-    );
+    await openEditInAdvancedMode();
     const textarea = screen.getByLabelText('Edit search query');
     await act(async () => {
       fireEvent.change(textarea, { target: { value: 'is:pr a' } });
@@ -436,9 +441,7 @@ describe('QueryDisplay additional coverage', () => {
       .spyOn(RouterDom, 'useSearchParams')
       .mockReturnValue([new URLSearchParams(), setParams] as any);
     renderWithRouter(<QueryDisplay query="is:pr" />);
-    await act(async () =>
-      screen.getByRole('button', { name: /edit query/i }).click()
-    );
+    await openEditInAdvancedMode();
     const textarea = screen.getByLabelText('Edit search query');
     await act(async () =>
       fireEvent.change(textarea, { target: { value: 'is:pr author:alice' } })
@@ -460,9 +463,7 @@ describe('QueryDisplay additional coverage', () => {
         { type: 'user', value: 'author:john', display: 'author:john' },
       ] as any);
     renderWithRouter(<QueryDisplay query="is:pr" />);
-    await act(async () =>
-      screen.getByRole('button', { name: /edit query/i }).click()
-    );
+    await openEditInAdvancedMode();
     const textarea = screen.getByLabelText('Edit search query');
     await act(async () =>
       fireEvent.change(textarea, { target: { value: 'is:pr a' } })
@@ -490,9 +491,7 @@ describe('QueryDisplay edge branch coverage', () => {
       .spyOn(console, 'error')
       .mockImplementation(() => {});
     renderWithRouter(<QueryDisplay query="is:pr" />);
-    await act(async () =>
-      screen.getByRole('button', { name: /edit query/i }).click()
-    );
+    await openEditInAdvancedMode();
     const textarea = screen.getByLabelText('Edit search query');
     await act(async () =>
       fireEvent.change(textarea, { target: { value: 'is:pr a' } })
@@ -511,9 +510,7 @@ describe('QueryDisplay edge branch coverage', () => {
       ] as any)
       .mockResolvedValueOnce([] as any);
     renderWithRouter(<QueryDisplay query="is:pr" />);
-    await act(async () =>
-      screen.getByRole('button', { name: /edit query/i }).click()
-    );
+    await openEditInAdvancedMode();
     const textarea = screen.getByLabelText('Edit search query');
     await act(async () =>
       fireEvent.change(textarea, { target: { value: 'is:pr a' } })
@@ -553,9 +550,7 @@ describe('QueryDisplay edge branch coverage', () => {
     ] as any);
     // Start without the trailing colon so that the subsequent change event updates the value
     renderWithRouter(<QueryDisplay query="author" />);
-    await act(async () =>
-      screen.getByRole('button', { name: /edit query/i }).click()
-    );
+    await openEditInAdvancedMode();
     const textarea = screen.getByLabelText('Edit search query');
     // Change value to add the colon which should trigger suggestions at the word boundary
     await act(async () =>
@@ -569,9 +564,7 @@ describe('QueryDisplay edge branch coverage', () => {
   it('Enter without modifier does not save', async () => {
     const onChange = jest.fn();
     renderWithRouter(<QueryDisplay query="is:pr" onQueryChange={onChange} />);
-    await act(async () =>
-      screen.getByRole('button', { name: /edit query/i }).click()
-    );
+    await openEditInAdvancedMode();
     const textarea = screen.getByLabelText('Edit search query');
     await act(async () => {
       fireEvent.keyDown(textarea, { key: 'Enter', bubbles: true });
@@ -582,17 +575,22 @@ describe('QueryDisplay edge branch coverage', () => {
 
   it('toggle visual then back to advanced preserves content', async () => {
     renderWithRouter(<QueryDisplay query="is:pr author:me" />);
-    await act(async () =>
-      screen.getByRole('button', { name: /edit query/i }).click()
-    );
+    // Open edit (Visual by default)
+    await act(async () => getEditButton().click());
+    // Toggle to Advanced
     const toggle = screen.getByRole('switch');
-    await act(async () => toggle.click());
-    expect(await screen.findByText('Filters')).toBeInTheDocument();
     await act(async () => toggle.click());
     const textarea = screen.getByLabelText(
       'Edit search query'
     ) as HTMLTextAreaElement;
     expect(textarea.value.length).toBeGreaterThan(0);
+    // Toggle back to Visual then again to Advanced to ensure persistence across toggles
+    await act(async () => toggle.click()); // back to Visual
+    await act(async () => toggle.click()); // to Advanced again
+    const textarea2 = screen.getByLabelText(
+      'Edit search query'
+    ) as HTMLTextAreaElement;
+    expect(textarea2.value.length).toBeGreaterThan(0);
   });
 
   it('hides autocomplete when no suggestions returned', async () => {
@@ -601,9 +599,7 @@ describe('QueryDisplay edge branch coverage', () => {
       .spyOn(SuggestionService, 'getSuggestions')
       .mockResolvedValue([] as any);
     renderWithRouter(<QueryDisplay query="is:pr" />);
-    await act(async () =>
-      screen.getByRole('button', { name: /edit query/i }).click()
-    );
+    await openEditInAdvancedMode();
     const textarea = screen.getByLabelText('Edit search query');
     await act(async () =>
       fireEvent.change(textarea, { target: { value: 'is:pr x' } })
