@@ -63,7 +63,7 @@ export default function FiltersBar(
   const { search, onSearch, leftContent, rightContent } = props;
 
   return (
-    <div className="mb-6">
+    <div className="mb-2">
       <div className="flex items-center gap-3">
         {leftContent && <div className="shrink-0">{leftContent}</div>}
         <div className="flex-1 min-w-[240px]">
