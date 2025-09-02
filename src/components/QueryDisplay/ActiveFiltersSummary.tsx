@@ -4,6 +4,7 @@ import { FilterState } from '../../utils/queryBuilder';
 
 export interface ActiveFiltersSummaryProps {
   filters: FilterState;
+  hideClearAll?: boolean;
   onRemoveAuthor: (index: number) => void;
   onRemoveReviewer: (index: number) => void;
   onRemoveAssignee: (index: number) => void;
@@ -23,6 +24,7 @@ const fmt = (d?: Date) => (d ? d.toISOString().split('T')[0] : '');
 
 export const ActiveFiltersSummary: React.FC<ActiveFiltersSummaryProps> = ({
   filters,
+  hideClearAll,
   onRemoveAuthor,
   onRemoveReviewer,
   onRemoveAssignee,
@@ -247,34 +249,29 @@ export const ActiveFiltersSummary: React.FC<ActiveFiltersSummaryProps> = ({
   const remaining = total - visibleItems.length;
 
   return (
-    <div className="bg-default-50 rounded-lg p-3 w-full">
-      <div className="flex items-center justify-between mb-2">
-        <div className="text-xs font-medium text-default-600">
-          Active Filters ({total})
-        </div>
-        <div className="flex items-center gap-2">
-          {total > MAX_VISIBLE && (
-            <button
-              type="button"
-              className="text-xs text-primary hover:underline"
-              onClick={() => setCollapsed((v) => !v)}
-            >
-              {collapsed ? `Show ${remaining} more` : 'Show less'}
-            </button>
-          )}
-          {onClearAll && total > 0 && (
-            <button
-              type="button"
-              className="text-xs text-danger hover:underline"
-              onClick={onClearAll}
-              aria-label="Clear all filters"
-            >
-              Clear all
-            </button>
-          )}
-        </div>
-      </div>
+    <div className="bg-default-50 rounded-lg p-3 w-full flex gap-2 justify-between">
       <div className="flex flex-wrap gap-1.5">{visibleItems}</div>
+      <div className="flex items-center gap-2">
+        {total > MAX_VISIBLE && (
+          <button
+            type="button"
+            className="text-xs text-primary hover:underline"
+            onClick={() => setCollapsed((v) => !v)}
+          >
+            {collapsed ? `Show ${remaining} more` : 'Show less'}
+          </button>
+        )}
+        {!hideClearAll && onClearAll && total > 0 && (
+          <button
+            type="button"
+            className="text-xs text-danger hover:underline"
+            onClick={onClearAll}
+            aria-label="Clear all filters"
+          >
+            Clear all
+          </button>
+        )}
+      </div>
     </div>
   );
 };

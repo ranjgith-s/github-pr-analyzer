@@ -1,5 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui';
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from '../ui/tooltip';
 import { getFromCache, setCache } from '../../services/cache';
 
 type Size = 'xs' | 'sm' | 'md' | 'lg';
@@ -20,6 +26,7 @@ interface UserAvatarProps {
   username: string;
   size?: Size;
   className?: string;
+  fullName?: string; // Optional: user's display name (First Last)
 }
 
 function computeMeta(username: string): CachedUserMeta {
@@ -35,6 +42,7 @@ export default function UserAvatar({
   username,
   size = 'sm',
   className,
+  fullName,
 }: UserAvatarProps) {
   const cacheKey = useMemo(
     () => `avatar:${username.toLowerCase()}`,
@@ -74,22 +82,50 @@ export default function UserAvatar({
   }
 
   return (
-    <a
-      href={meta.html_url}
-      target="_blank"
-      rel="noopener noreferrer"
-      title={username}
-      aria-label={username}
-      className="inline-flex"
-    >
-      <Avatar className={`${sizeToClasses[size]} ${className || ''}`.trim()}>
-        <AvatarImage
-          src={meta.avatar_url}
-          alt={username}
-          referrerPolicy="no-referrer"
-        />
-        <AvatarFallback>{initial}</AvatarFallback>
-      </Avatar>
-    </a>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <a
+            href={meta.html_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={username}
+            aria-label={username}
+            className="inline-flex"
+          >
+            <Avatar
+              className={`${sizeToClasses[size]} ${className || ''}`.trim()}
+            >
+              <AvatarImage
+                src={meta.avatar_url}
+                alt={username}
+                referrerPolicy="no-referrer"
+              />
+              <AvatarFallback>{initial}</AvatarFallback>
+            </Avatar>
+          </a>
+        </TooltipTrigger>
+        <TooltipContent sideOffset={6}>
+          <div className="flex gap-2">
+            <Avatar
+              className={`${sizeToClasses[size]} ${className || ''}`.trim()}
+            >
+              <AvatarImage
+                src={meta.avatar_url}
+                alt={username}
+                referrerPolicy="no-referrer"
+              />
+            </Avatar>
+
+            <div className="flex flex-col">
+              <span className="font-medium leading-none">
+                {fullName?.trim() || username}
+              </span>
+              <span className="text-xs text-muted-foreground">@{username}</span>
+            </div>
+          </div>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }

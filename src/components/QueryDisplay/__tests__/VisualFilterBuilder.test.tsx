@@ -300,7 +300,6 @@ describe('VisualFilterBuilder (ungrouped grid + presets)', () => {
       involves: [],
     });
     render(<VisualFilterBuilder {...defaultProps} />);
-    expect(screen.getByText(/Active Filters/i)).toBeInTheDocument();
 
     for (const text of [
       'Author: john',

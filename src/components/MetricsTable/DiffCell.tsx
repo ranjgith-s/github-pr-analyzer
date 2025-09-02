@@ -7,11 +7,19 @@ interface DiffCellProps {
 
 export default function DiffCell({ additions, deletions }: DiffCellProps) {
   return (
-    <div className="flex items-center gap-2">
-      <span className="whitespace-nowrap font-mono">
+    <div className="flex gap-2 items-center justify-center flex-col">
+      <span className="whitespace-nowrap font-mono text-xs">
         <span className="text-green-400">+{additions}</span>{' '}
         <span className="text-red-400">-{deletions}</span>
       </span>
+      <div className="flex gap-1">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div
+            key={i}
+            className={`h-2 w-2 ${i < (additions / (additions + deletions)) * 5 ? 'bg-green-500' : 'bg-red-500'}`}
+          />
+        ))}
+      </div>
     </div>
   );
 }

@@ -87,8 +87,6 @@ describe('ActiveFiltersSummary', () => {
       />
     );
 
-    // Presence (header shows a count: Active Filters (N))
-    expect(screen.getByText(/Active Filters/i)).toBeInTheDocument();
     // Expand if collapsed to reveal all chips
     const showMore = screen.queryByText(/Show \d+ more/);
     if (showMore) {
