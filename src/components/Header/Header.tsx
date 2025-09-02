@@ -51,7 +51,7 @@ export default function Header({ breadcrumbs }: HeaderProps) {
   }, [token]);
 
   return (
-    <header className="w-full px-6 py-3 border-border bg-background/80 backdrop-blur-md flex items-center justify-between">
+    <header className="w-full px-6 py-3 border-b border-border bg-background/80 backdrop-blur-md flex items-center justify-between sticky top-0 z-50">
       <div className="flex items-center gap-4 min-w-0">
         <Breadcrumb className="font-bold">
           <BreadcrumbList>

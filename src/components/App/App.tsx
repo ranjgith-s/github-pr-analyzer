@@ -63,10 +63,8 @@ export default function App() {
 
   return (
     <div className="text-foreground bg-background min-h-screen">
-      <div className="border border-transparent border-b-slate-200/10 dark:border-b-slate-800/50">
-        <Header breadcrumbs={breadcrumbs} />
-      </div>
-      <div style={{ padding: token ? 24 : 0 }}>
+      <Header breadcrumbs={breadcrumbs} />
+      <div>
         <Routes>
           <Route
             path="/login"
