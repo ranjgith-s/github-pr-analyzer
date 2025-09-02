@@ -33,3 +33,4 @@ export * from './autocomplete';
 export * from './table';
 export * from './dropdown';
 export * from './sidebar';
+export * from './tooltip';
