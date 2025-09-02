@@ -16,6 +16,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   Button,
+  Chip,
 } from '../ui';
 import { Settings2Icon } from 'lucide-react';
 import TimelineBar from './TimelineBar';
@@ -49,6 +50,22 @@ export function formatDuration(start?: string | null, end?: string | null) {
 }
 
 // Local types and pure helpers to keep UI logic simple and testable
+const stateToChipColor = (
+  state: PRItem['state']
+): 'primary' | 'secondary' | 'success' | 'warning' | 'default' => {
+  switch (state) {
+    case 'open':
+      return 'primary';
+    case 'merged':
+      return 'success';
+    case 'draft':
+      return 'warning';
+    case 'closed':
+    default:
+      return 'default';
+  }
+};
+
 type SortKey =
   | 'repo'
   | 'title'
@@ -282,7 +299,11 @@ export default function MetricsTable(props: MetricsTableProps) {
       {
         id: 'state',
         header: 'State',
-        cell: (row: PRItem) => <span>{row.state}</span>,
+        cell: (row: PRItem) => (
+          <Chip color={stateToChipColor(row.state)} size="sm">
+            {row.state}
+          </Chip>
+        ),
       },
     ],
     [selectedIds, toggleSelect]

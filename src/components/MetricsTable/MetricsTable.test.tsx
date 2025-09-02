@@ -462,3 +462,46 @@ describe('MetricsTable additional coverage (merged)', () => {
     expect(timeline.getAttribute('aria-label')).toMatch(/N\/A/);
   });
 });
+
+describe('State chip color reflects PR state', () => {
+  const makeItem = (state: PRItem['state']): PRItem => ({
+    ...baseItem,
+    id: `${state}-id`,
+    state,
+  });
+
+  const renderWithState = (state: PRItem['state']) =>
+    render(
+      <MemoryRouter>
+        <MetricsTable items={[makeItem(state)]} />
+      </MemoryRouter>
+    );
+
+  it('uses primary for open', () => {
+    renderWithState('open');
+    const chip = screen.getByTestId('chip');
+    expect(chip).toHaveTextContent('open');
+    expect(chip).toHaveClass('bg-primary/15');
+  });
+
+  it('uses success for merged', () => {
+    renderWithState('merged');
+    const chip = screen.getByTestId('chip');
+    expect(chip).toHaveTextContent('merged');
+    expect(chip).toHaveClass('bg-success/15');
+  });
+
+  it('uses warning for draft', () => {
+    renderWithState('draft');
+    const chip = screen.getByTestId('chip');
+    expect(chip).toHaveTextContent('draft');
+    expect(chip).toHaveClass('bg-warning/15');
+  });
+
+  it('uses default for closed', () => {
+    renderWithState('closed');
+    const chip = screen.getByTestId('chip');
+    expect(chip).toHaveTextContent('closed');
+    expect(chip).toHaveClass('bg-muted/60');
+  });
+});
