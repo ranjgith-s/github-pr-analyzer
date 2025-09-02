@@ -118,20 +118,22 @@ test('header sorting toggles order on click', () => {
       <MetricsTable items={items} />
     </MemoryRouter>
   );
-  // Click REPOSITORY header to sort by repo (desc by default)
-  const repoHeader = screen.getByRole('columnheader', { name: /repository/i });
+  // Click PULL REQUEST header to sort by title (desc by default)
+  const prHeader = screen.getByRole('columnheader', {
+    name: /pull request/i,
+  });
   act(() => {
-    fireEvent.click(repoHeader);
+    fireEvent.click(prHeader);
   });
   const rowsDesc = screen.getAllByRole('row').slice(1); // skip header row
-  // First data row should be zzz when desc
-  expect(rowsDesc[0]).toHaveTextContent('octo/zzz');
+  // First data row should be Zed when desc (sorted by title)
+  expect(rowsDesc[0]).toHaveTextContent('Zed');
   // Click again to toggle to asc
   act(() => {
-    fireEvent.click(repoHeader);
+    fireEvent.click(prHeader);
   });
   const rowsAsc = screen.getAllByRole('row').slice(1);
-  expect(rowsAsc[0]).toHaveTextContent('octo/aaa');
+  expect(rowsAsc[0]).toHaveTextContent('Aha');
 });
 
 test('selects and navigates to PR', async () => {
@@ -295,11 +297,13 @@ test('order toggles when clicking the same header repeatedly and calls onOrderCh
       <MetricsTable items={sample} onOrderChange={onOrderChange} />
     </MemoryRouter>
   );
-  const repoHeader = screen.getByRole('columnheader', { name: /repository/i });
+  const prHeader = screen.getByRole('columnheader', {
+    name: /pull request/i,
+  });
   // First click sets sort to repo (keeps current order)
-  act(() => fireEvent.click(repoHeader));
+  act(() => fireEvent.click(prHeader));
   // Second click toggles order
-  act(() => fireEvent.click(repoHeader));
+  act(() => fireEvent.click(prHeader));
   expect(onOrderChange).toHaveBeenCalled();
 });
 

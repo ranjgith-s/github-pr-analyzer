@@ -187,19 +187,24 @@ export default function MetricsTable(props: MetricsTableProps) {
           />
         ),
       },
-      { id: 'repo', header: 'Repository', accessorKey: 'repo' },
       {
-        id: 'title',
-        header: 'Title',
+        id: 'pr',
+        header: 'Pull Request',
         cell: (row: PRItem) => (
-          <a
-            href={row.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ textDecoration: 'none', color: 'inherit' }}
-          >
-            {row.title}
-          </a>
+          <div className="flex flex-col">
+            <a
+              href={row.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block max-w-[60ch] truncate text-foreground"
+              style={{ textDecoration: 'none' }}
+            >
+              {row.title}
+            </a>
+            <span className="text-xs text-muted-foreground font-mono">
+              {row.repo}
+            </span>
+          </div>
         ),
       },
       {
@@ -223,16 +228,16 @@ export default function MetricsTable(props: MetricsTableProps) {
         ),
       },
       {
-        id: 'changes_requested',
-        header: 'Changes Requested',
-        accessorKey: 'changes_requested',
-      },
-      {
         id: 'diff',
         header: 'Diff',
         cell: (row: PRItem) => (
           <DiffCell additions={row.additions} deletions={row.deletions} />
         ),
+      },
+      {
+        id: 'changes_requested',
+        header: 'Revisions',
+        accessorKey: 'changes_requested',
       },
       { id: 'comment_count', header: 'Comments', accessorKey: 'comment_count' },
       {
@@ -305,6 +310,7 @@ export default function MetricsTable(props: MetricsTableProps) {
 
   const sortKeyToColumnId = useCallback((s: string): SortKey | null => {
     if (s === 'comments') return 'comment_count';
+    if (s === 'pr') return 'title';
     if (
       [
         'repo',
