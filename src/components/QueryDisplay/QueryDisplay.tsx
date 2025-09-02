@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Card, Button, Spinner } from '../ui';
+import { Button, Spinner } from '../ui';
 import { Switch } from '../ui';
 import {
   SidebarProvider,
@@ -309,10 +309,11 @@ export function QueryDisplay({
   }, [isEditing, editValue, validationResult]);
 
   return (
-    <Card className={`flex flex-col gap-3 ${className}`}>
+    <div className={`flex flex-col gap-3 ${className}`}>
       <div className="flex items-center justify-between gap-3 p-2">
         <ActiveFiltersSummary
           filters={filters}
+          hideClearAll
           onRemoveAuthor={(i) => removeFrom('authors', i)}
           onRemoveReviewer={(i) => removeFrom('reviewers', i)}
           onRemoveAssignee={(i) => removeFrom('assignees', i)}
@@ -565,6 +566,6 @@ export function QueryDisplay({
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
       />
-    </Card>
+    </div>
   );
 }
