@@ -6,37 +6,49 @@ essentialTests();
 
 function essentialTests() {
   describe('TimelineBar', () => {
-    it('renders proportional widths and labels for provided durations', () => {
-      // 2h, 1h, 1h -> 50%, 25%, 25%
-      const twoH = 2 * 60 * 60 * 1000;
-      const oneH = 60 * 60 * 1000;
+    it('renders proportional widths based on timestamps', () => {
+      // created -> published: 2h, published -> firstReview: 1h, firstReview -> closed: 1h
+      const base = new Date('2020-01-01T00:00:00Z').getTime();
+      const createdAt = new Date(base).toISOString();
+      const publishedAt = new Date(base + 2 * 60 * 60 * 1000).toISOString();
+      const firstReviewAt = new Date(base + 3 * 60 * 60 * 1000).toISOString();
+      const closedAt = new Date(base + 4 * 60 * 60 * 1000).toISOString();
+
       const { container } = render(
-        <TimelineBar draftMs={twoH} reviewMs={oneH} activeMs={oneH} />
+        <TimelineBar
+          createdAt={createdAt}
+          publishedAt={publishedAt}
+          firstReviewAt={firstReviewAt}
+          closedAt={closedAt}
+        />
       );
 
-      // aria-label summarizes durations
-      expect(
-        screen.getByLabelText(/Draft: 2h Review: 1h Active: 1h/i)
-      ).toBeInTheDocument();
-
-      // Three bars with widths ~50%, ~25%, ~25%
-      const bars = container.querySelectorAll('div.h-2');
+      // Three bars with widths 50%, 25%, 25%
+      const bars = container.querySelectorAll('div.h-1');
       expect(bars.length).toBe(3);
       expect((bars[0] as HTMLElement).style.width).toBe('50%');
       expect((bars[1] as HTMLElement).style.width).toBe('25%');
       expect((bars[2] as HTMLElement).style.width).toBe('25%');
+
+      // Summary text shows total duration (4h)
+      expect(screen.getByText(/4h/i)).toBeInTheDocument();
     });
 
-    it('renders N/A labels and 0% widths when durations are null', () => {
+    it('renders N/A and 0% widths when end timestamps are missing', () => {
+      const createdAt = '2020-01-01T00:00:00Z';
       const { container } = render(
-        <TimelineBar draftMs={null} reviewMs={null} activeMs={null} />
+        <TimelineBar
+          createdAt={createdAt}
+          publishedAt={null}
+          firstReviewAt={null}
+          closedAt={null}
+        />
       );
 
-      expect(
-        screen.getByLabelText(/Draft: N\/A Review: N\/A Active: N\/A/i)
-      ).toBeInTheDocument();
+      // No end -> N/A summary
+      expect(screen.getByText(/N\/A/i)).toBeInTheDocument();
 
-      const bars = container.querySelectorAll('div.h-2');
+      const bars = container.querySelectorAll('div.h-1');
       expect(bars.length).toBe(3);
       expect((bars[0] as HTMLElement).style.width).toBe('0%');
       expect((bars[1] as HTMLElement).style.width).toBe('0%');

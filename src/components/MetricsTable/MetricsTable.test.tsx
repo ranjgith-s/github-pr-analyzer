@@ -7,7 +7,8 @@ import {
   waitFor,
 } from '@testing-library/react';
 import { MemoryRouter, useNavigate } from 'react-router-dom';
-import MetricsTable, { formatDuration } from './MetricsTable';
+import MetricsTable from './MetricsTable';
+import { formatDuration } from '@/lib/utils';
 import { PRItem } from '../../types';
 
 jest.mock('react-router-dom', () => {
@@ -158,23 +159,17 @@ test('selects and navigates to PR', async () => {
   expect(navigate).toHaveBeenCalled();
 });
 
-test('renders timeline and lead time', () => {
-  render(
+test('renders timeline summary and colored segments', () => {
+  const { container } = render(
     <MemoryRouter>
       <MetricsTable items={sample} />
     </MemoryRouter>
   );
-  expect(screen.getByLabelText(/Draft:/)).toBeInTheDocument();
-  expect(
-    screen.getByLabelText(/Draft:/).querySelector('.bg-success')
-  ).toBeInTheDocument();
-  expect(
-    screen.getByLabelText(/Draft:/).querySelector('.bg-warning')
-  ).toBeInTheDocument();
-  expect(
-    screen.getByLabelText(/Draft:/).querySelector('.bg-primary')
-  ).toBeInTheDocument();
-  expect(screen.getByText(/0h/i)).toBeInTheDocument();
+  const total = formatDuration(sample[0].created_at, sample[0].closed_at);
+  expect(screen.getByText(total)).toBeInTheDocument();
+  expect(container.querySelector('.bg-indigo-500')).toBeTruthy();
+  expect(container.querySelector('.bg-lime-400')).toBeTruthy();
+  expect(container.querySelector('.bg-teal-400')).toBeTruthy();
 });
 
 test('pagination works, changes page and invokes callback', () => {
@@ -446,7 +441,7 @@ describe('MetricsTable additional coverage (merged)', () => {
     expect((input as HTMLInputElement).value).toBe('10');
   });
 
-  it('shows N/A timeline segments when dates missing', () => {
+  it('shows N/A timeline summary when end dates missing', () => {
     const items = [
       {
         ...baseItem,
@@ -457,9 +452,7 @@ describe('MetricsTable additional coverage (merged)', () => {
       },
     ];
     renderTable(items);
-    const timeline = screen.getByLabelText(/Draft:/);
-    expect(timeline).toBeInTheDocument();
-    expect(timeline.getAttribute('aria-label')).toMatch(/N\/A/);
+    expect(screen.getAllByText(/N\/A/i).length).toBeGreaterThan(0);
   });
 });
 

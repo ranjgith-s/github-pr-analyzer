@@ -36,19 +36,6 @@ import {
 } from '@tanstack/react-table';
 import UserAvatar from '../UserAvatar/UserAvatar';
 
-export function formatDuration(start?: string | null, end?: string | null) {
-  if (!start || !end) return 'N/A';
-  const diff = new Date(end).getTime() - new Date(start).getTime();
-  if (diff < 0) return 'N/A';
-  const hours = Math.floor(diff / 36e5);
-  const days = Math.floor(hours / 24);
-  const rem = hours % 24;
-  if (days) {
-    return rem ? `${days}d ${rem}h` : `${days}d`;
-  }
-  return `${rem}h`;
-}
-
 // Local types and pure helpers to keep UI logic simple and testable
 const stateToChipColor = (
   state: PRItem['state']
@@ -258,43 +245,16 @@ export default function MetricsTable(props: MetricsTableProps) {
       },
       { id: 'comment_count', header: 'Comments', accessorKey: 'comment_count' },
       {
-        id: 'timeline',
-        header: 'Timeline',
-        cell: (row: PRItem) => {
-          const created = row.created_at ? new Date(row.created_at) : null;
-          const published = row.published_at
-            ? new Date(row.published_at)
-            : null;
-          const firstReview = row.first_review_at
-            ? new Date(row.first_review_at)
-            : null;
-          const closed = row.closed_at ? new Date(row.closed_at) : null;
-          const draftMs =
-            created && published
-              ? published.getTime() - created.getTime()
-              : null;
-          const reviewMs =
-            published && firstReview
-              ? firstReview.getTime() - published.getTime()
-              : null;
-          const activeMs =
-            firstReview && closed
-              ? closed.getTime() - firstReview.getTime()
-              : null;
-          return (
-            <TimelineBar
-              draftMs={draftMs}
-              reviewMs={reviewMs}
-              activeMs={activeMs}
-            />
-          );
-        },
-      },
-      {
         id: 'lead_time',
         header: 'Lead Time',
-        cell: (row: PRItem) =>
-          formatDuration(row.first_commit_at, row.closed_at),
+        cell: (row: PRItem) => (
+          <TimelineBar
+            createdAt={row.created_at}
+            publishedAt={row.published_at}
+            firstReviewAt={row.first_review_at}
+            closedAt={row.closed_at}
+          />
+        ),
       },
       {
         id: 'state',
