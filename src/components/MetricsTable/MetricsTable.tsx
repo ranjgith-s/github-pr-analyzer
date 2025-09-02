@@ -33,6 +33,7 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from '@tanstack/react-table';
+import UserAvatar from '../UserAvatar/UserAvatar';
 
 export function formatDuration(start?: string | null, end?: string | null) {
   if (!start || !end) return 'N/A';
@@ -205,33 +206,20 @@ export default function MetricsTable(props: MetricsTableProps) {
         id: 'author',
         header: 'Author',
         cell: (row: PRItem) => (
-          <a
-            href={`https://github.com/${row.author}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {row.author}
-          </a>
+          <div className="flex items-center">
+            <UserAvatar username={row.author} size="sm" />
+          </div>
         ),
       },
       {
         id: 'reviewers',
         header: 'Reviewers',
         cell: (row: PRItem) => (
-          <span>
-            {row.reviewers.map((n, i) => (
-              <React.Fragment key={n}>
-                <a
-                  href={`https://github.com/${n}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {n}
-                </a>
-                {i < row.reviewers.length - 1 && ', '}
-              </React.Fragment>
+          <div className="flex -space-x-2 items-center">
+            {row.reviewers.map((n) => (
+              <UserAvatar key={n} username={n} size="sm" />
             ))}
-          </span>
+          </div>
         ),
       },
       {

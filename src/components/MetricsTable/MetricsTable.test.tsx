@@ -227,6 +227,40 @@ test('handles PRs with no reviewers', () => {
   expect(screen.getByText('Test PR')).toBeInTheDocument();
 });
 
+test('renders author as avatar with link and tooltip', async () => {
+  render(
+    <MemoryRouter>
+      <MetricsTable items={[baseItem]} />
+    </MemoryRouter>
+  );
+  const authorLink = await screen.findByRole('link', { name: baseItem.author });
+  expect(authorLink).toHaveAttribute(
+    'href',
+    `https://github.com/${baseItem.author}`
+  );
+  expect(authorLink).toHaveAttribute('title', baseItem.author);
+  const img = authorLink.querySelector('img') as HTMLImageElement | null;
+  if (img) {
+    expect(img).toBeTruthy();
+  } else {
+    // Radix Avatar may render fallback in test env
+    expect(authorLink.textContent).toMatch(/^[A-Z]$/);
+  }
+});
+
+test('renders reviewers as avatar group with links', async () => {
+  const reviewers = ['r1', 'r2', 'r3'];
+  render(
+    <MemoryRouter>
+      <MetricsTable items={[{ ...baseItem, reviewers }]} />
+    </MemoryRouter>
+  );
+  for (const r of reviewers) {
+    const link = await screen.findByRole('link', { name: r });
+    expect(link).toHaveAttribute('href', `https://github.com/${r}`);
+  }
+});
+
 test('handles PRs with missing title', () => {
   const items = [{ ...sample[0], title: '' }];
   render(
