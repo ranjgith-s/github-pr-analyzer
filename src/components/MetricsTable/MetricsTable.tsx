@@ -119,6 +119,8 @@ export default function MetricsTable(props: MetricsTableProps) {
   const { queryParams, totalCount, items, loading, error, resultCount } = props;
   const navigate = useNavigate();
   const effectiveTotal = totalCount ?? items.length;
+  const serverPaginated =
+    typeof totalCount === 'number' && totalCount > items.length;
 
   // State (mirrors prior design to keep tests stable)
   const [search, setSearch] = useState('');
@@ -382,13 +384,17 @@ export default function MetricsTable(props: MetricsTableProps) {
     state: {
       sorting,
       columnFilters,
-      pagination: { pageIndex: Math.max(0, pageIndex - 1), pageSize },
+      pagination: {
+        pageIndex: serverPaginated ? 0 : Math.max(0, pageIndex - 1),
+        pageSize: serverPaginated ? filtered.length : pageSize,
+      },
     },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    // Retain pagination model for client-side mode only (no harm if serverPaginated since pageIndex=0)
     getPaginationRowModel: getPaginationRowModel(),
   });
 
@@ -411,14 +417,48 @@ export default function MetricsTable(props: MetricsTableProps) {
         className: 'text-default-500',
       };
     }
-    const count =
-      typeof resultCount === 'number' ? resultCount : filtered.length;
+    // Total number of results across all pages (server or client side)
+    const total =
+      typeof resultCount === 'number'
+        ? resultCount
+        : typeof totalCount === 'number'
+          ? totalCount
+          : filtered.length;
+    // Derive visible range (start-end) respecting total & pagination
+    let start = 0;
+    let end = 0;
+    if (total > 0) {
+      const effectivePageSize = pageSize;
+      const theoreticalStart = (pageIndex - 1) * effectivePageSize + 1;
+      const lastPageStart =
+        Math.floor((total - 1) / effectivePageSize) * effectivePageSize + 1;
+      start = theoreticalStart > total ? lastPageStart : theoreticalStart;
+      const visibleLength = currentItems.length;
+      if (visibleLength > 0) {
+        end = Math.min(start + visibleLength - 1, total);
+      } else {
+        end = Math.min(start + effectivePageSize - 1, total);
+        if (start > end) start = end;
+      }
+    }
     return {
       icon: null,
-      text: `${count} result${count === 1 ? '' : 's'}`,
-      className: count > 0 ? 'text-success' : 'text-default-400',
+      text:
+        total === 0
+          ? 'Showing 0 of 0 results'
+          : `Showing ${start}-${end} of ${total} result${total === 1 ? '' : 's'}`,
+      className: 'text-default-400',
     };
-  }, [error, loading, resultCount, filtered.length]);
+  }, [
+    error,
+    loading,
+    resultCount,
+    filtered.length,
+    currentItems.length,
+    totalCount,
+    pageIndex,
+    pageSize,
+  ]);
 
   if (loading) return loadingOverlay;
 

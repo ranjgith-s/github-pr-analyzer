@@ -89,7 +89,28 @@ test('shows status content with provided resultCount', () => {
     </MemoryRouter>
   );
   expect(screen.getByLabelText('Results status')).toHaveTextContent(
-    '5 results'
+    'Showing 1-1 of 5 results'
+  );
+});
+
+test('shows correct range for second page', () => {
+  const many = Array.from({ length: 45 }, (_, i) => ({
+    ...sample[0],
+    id: String(i + 1),
+    number: i + 1,
+    title: `PR ${i + 1}`,
+  }));
+  render(
+    <MemoryRouter>
+      <MetricsTable
+        items={many}
+        totalCount={45}
+        queryParams={{ page: 2, per_page: 20, order: 'desc', sort: 'updated' }}
+      />
+    </MemoryRouter>
+  );
+  expect(screen.getByLabelText('Results status')).toHaveTextContent(
+    'Showing 21-40 of 45 results'
   );
 });
 
