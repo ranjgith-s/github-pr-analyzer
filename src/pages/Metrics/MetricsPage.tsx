@@ -4,7 +4,7 @@ import { useQueryContext } from '../../hooks/useQueryContext';
 import { usePullRequestMetrics } from '../../hooks/usePullRequestMetrics';
 import { useAuth } from '../../contexts/AuthContext/AuthContext';
 import MetricsTable from '../../components/MetricsTable/MetricsTable';
-// Removed LoadingOverlay in favor of lightweight skeletons
+import LoadingOverlay from '../../components/LoadingOverlay/LoadingOverlay';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 import { useMetaDescription } from '../../hooks/useMetaDescription';
 import { buildQueryString } from '../../utils/queryUtils';
@@ -217,6 +217,15 @@ export default function MetricsPage() {
     keepPreviousData: true,
   });
 
+  const loadingMessages = useMemo(
+    () => [
+      'Loading pull requests...',
+      'Crunching numbers...',
+      'Preparing table...',
+    ],
+    []
+  );
+
   const summary = useMemo(() => computeSummaryMetrics(items), [items]);
   const effectiveTotal = totalCount ?? items?.length ?? 0;
 
@@ -282,14 +291,7 @@ export default function MetricsPage() {
         )}
 
         {uiState === 'loading' && (
-          <div className="mt-6 space-y-2" aria-label="Loading results">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-9 rounded-md bg-default-100 animate-pulse"
-              />
-            ))}
-          </div>
+          <LoadingOverlay show={true} messages={loadingMessages} />
         )}
 
         {uiState === 'ready' && (

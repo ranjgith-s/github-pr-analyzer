@@ -54,7 +54,7 @@ describe('MetricsPage (minimal UI)', () => {
     jest.clearAllMocks();
   });
 
-  test('shows loading skeleton when loading & no items', () => {
+  test('shows loading overlay when loading & no items', () => {
     usePullRequestMetricsMock.mockReturnValue({
       items: [],
       loading: true,
@@ -63,7 +63,7 @@ describe('MetricsPage (minimal UI)', () => {
       rateLimit: null,
     });
     renderPage();
-    expect(screen.getByLabelText('Loading results')).toBeInTheDocument();
+    expect(screen.getByTestId('spinner')).toBeInTheDocument();
   });
 
   test('shows error state and retry triggers navigation', () => {
