@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthContext/AuthContext';
 
@@ -135,8 +135,50 @@ describe('MetricsPage (minimal UI)', () => {
       },
     });
     renderPage();
+    // Compact strip now renders only four metrics (slice(0,4)). Ensure accessible groups exist.
+    const section = screen.getByRole('region', {
+      name: /pull request summary metrics/i,
+    });
+    const groups = within(section).getAllByRole('group');
+    expect(groups.length).toBe(4);
+    // First metric still includes PRs label text when not loading.
     expect(screen.getByText('PRs')).toBeInTheDocument();
     expect(screen.getByTestId('metrics-table')).toBeInTheDocument();
+  });
+
+  test('shows exactly four compact metrics when data present', () => {
+    usePullRequestMetricsMock.mockReturnValue({
+      items: [
+        {
+          id: '10',
+          owner: 'o',
+          repo_name: 'r',
+          repo: 'o/r',
+          number: 10,
+          title: 'Another',
+          url: '',
+          author: 'tester',
+          state: 'open',
+          created_at: new Date().toISOString(),
+          reviewers: [],
+          changes_requested: 0,
+          additions: 5,
+          deletions: 1,
+          comment_count: 0,
+          timeline: [],
+        },
+      ],
+      loading: false,
+      error: null,
+      totalCount: 1,
+      rateLimit: null,
+    });
+    renderPage();
+    const region = screen.getByRole('region', {
+      name: /pull request summary metrics/i,
+    });
+    const groups = within(region).getAllByRole('group');
+    expect(groups).toHaveLength(4);
   });
 
   test('table callback handlers update URL params', () => {

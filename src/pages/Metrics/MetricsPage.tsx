@@ -142,43 +142,40 @@ function SummaryMetricsStrip({
   ];
 
   return (
-    <section aria-label="Pull request summary metrics" className="mt-4">
-      <div className="flex flex-wrap items-center gap-2 md:gap-3 bg-default-50/70 border border-default-200 px-3 py-2 md:px-4 md:py-3 shadow-sm backdrop-blur-sm justify-around">
-        {metrics.map((m, idx) => (
-          <div key={m.key} className="flex items-center">
-            <div
+    <section aria-label="Pull request summary metrics" className="mt-3">
+      <div className="flex flex-wrap items-center text-xs md:text-sm gap-x-3 gap-y-1 rounded px-2.5 justify-around">
+        {metrics.slice(0, 4).map((m, idx) => (
+          <React.Fragment key={m.key}>
+            {idx > 0 && (
+              <span aria-hidden="true" className="text-default-300 select-none">
+                •
+              </span>
+            )}
+            <span
               role="group"
-              aria-label={m.label}
-              className="flex items-center gap-2 md:gap-3 pr-2 md:pr-3 min-w-[84px]"
+              aria-label={`${m.label}: ${m.value ?? 'Not available'}`}
+              className="inline-flex items-center gap-1"
             >
-              <span className="shrink-0" aria-hidden="true">
+              <span className="w-3.5 h-3.5 md:w-4 md:h-4" aria-hidden="true">
                 {m.icon}
               </span>
-              <div className="flex flex-col">
-                <span className="text-[10px] uppercase tracking-wide text-default-400">
-                  {loading ? <Skeleton width="w-10" /> : m.label}
-                </span>
-                <span
-                  className="text-sm md:text-base font-semibold text-default-700 tabular-nums"
-                  aria-live="polite"
-                >
-                  {loading ? (
-                    <Skeleton width="w-12" />
-                  ) : m.value != null ? (
-                    <>{m.value}</>
-                  ) : (
-                    '—'
-                  )}
-                </span>
-              </div>
-            </div>
-            {idx < metrics.length - 1 && (
-              <div
-                className="hidden sm:block w-px h-7 bg-default-200/80 mr-2 md:mr-3 rounded"
-                aria-hidden="true"
-              />
-            )}
-          </div>
+              <span className="text-default-400 uppercase tracking-wide hidden sm:inline text-[10px]">
+                {loading ? <Skeleton width="w-8" /> : m.label}
+              </span>
+              <span
+                className="font-semibold tabular-nums text-default-700"
+                aria-live="polite"
+              >
+                {loading ? (
+                  <Skeleton width="w-8" />
+                ) : m.value != null ? (
+                  <>{m.value}</>
+                ) : (
+                  '—'
+                )}
+              </span>
+            </span>
+          </React.Fragment>
         ))}
       </div>
     </section>
