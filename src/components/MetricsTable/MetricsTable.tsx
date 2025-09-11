@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { PRItem } from '../../types';
 import { QueryParams } from '../../utils/queryUtils';
 import LoadingOverlay from '../LoadingOverlay/LoadingOverlay';
+import { Spinner } from '../ui';
+import { ExclamationCircleIcon } from '@heroicons/react/24/outline';
 import {
   Table,
   TableHeader,
@@ -110,10 +112,11 @@ interface MetricsTableProps {
   onPerPageChange?: (n: number) => void;
   onSortChange?: (s: string) => void;
   onOrderChange?: (o: 'asc' | 'desc') => void;
+  resultCount?: number; // optional external result count
 }
 
 export default function MetricsTable(props: MetricsTableProps) {
-  const { queryParams, totalCount, items, loading, error } = props;
+  const { queryParams, totalCount, items, loading, error, resultCount } = props;
   const navigate = useNavigate();
   const effectiveTotal = totalCount ?? items.length;
 
@@ -393,11 +396,35 @@ export default function MetricsTable(props: MetricsTableProps) {
   const currentRows = table.getRowModel().rows;
   const currentItems = currentRows.map((r: any) => r.original as PRItem);
 
+  const statusContent = useMemo(() => {
+    if (error) {
+      return {
+        icon: <ExclamationCircleIcon className="h-4 w-4 text-danger" />,
+        text: `Error: ${error}`,
+        className: 'text-danger',
+      };
+    }
+    if (loading) {
+      return {
+        icon: <Spinner size="sm" color="primary" />,
+        text: 'Loading results...',
+        className: 'text-default-500',
+      };
+    }
+    const count =
+      typeof resultCount === 'number' ? resultCount : filtered.length;
+    return {
+      icon: null,
+      text: `${count} result${count === 1 ? '' : 's'}`,
+      className: count > 0 ? 'text-success' : 'text-default-400',
+    };
+  }, [error, loading, resultCount, filtered.length]);
+
   if (loading) return loadingOverlay;
 
   return (
     <div className="flex flex-col w-full">
-      <div className="flex w-full justify-between">
+      <div className="flex w-full justify-between items-start gap-4">
         <ActionBar
           disabled={selectedIds.length !== 1}
           onView={() => {
@@ -414,6 +441,17 @@ export default function MetricsTable(props: MetricsTableProps) {
         <FiltersBar
           search={search}
           onSearch={(v: string) => setSearch(v)}
+          leftContent={
+            <div
+              className="flex items-center gap-2 text-sm"
+              aria-label="Results status"
+            >
+              {statusContent.icon}
+              <span className={`font-normal ${statusContent.className}`}>
+                {statusContent.text}
+              </span>
+            </div>
+          }
           rightContent={
             <DropdownMenu
               open={columnsMenuOpen}

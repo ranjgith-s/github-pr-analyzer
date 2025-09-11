@@ -82,6 +82,28 @@ test('renders filters and data', () => {
   expect(screen.getByLabelText('Pagination')).toBeInTheDocument();
 });
 
+test('shows status content with provided resultCount', () => {
+  render(
+    <MemoryRouter>
+      <MetricsTable items={sample} resultCount={5} />
+    </MemoryRouter>
+  );
+  expect(screen.getByLabelText('Results status')).toHaveTextContent(
+    '5 results'
+  );
+});
+
+test('shows error status content', () => {
+  render(
+    <MemoryRouter>
+      <MetricsTable items={sample} error="Boom" />
+    </MemoryRouter>
+  );
+  expect(screen.getByLabelText('Results status')).toHaveTextContent(
+    'Error: Boom'
+  );
+});
+
 test('renders empty state', () => {
   render(
     <MemoryRouter>

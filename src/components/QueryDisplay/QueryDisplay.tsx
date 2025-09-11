@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Button, Spinner } from '../ui';
+import { Button } from '../ui';
 import { Switch } from '../ui';
 import {
   SidebarProvider,
@@ -9,13 +9,7 @@ import {
   SidebarContent,
   SidebarFooter,
 } from '../ui';
-import {
-  MagnifyingGlassIcon,
-  ExclamationCircleIcon,
-  PencilIcon,
-  ShareIcon,
-  BookmarkIcon,
-} from '@heroicons/react/24/outline';
+import { ShareIcon, BookmarkIcon } from '@heroicons/react/24/outline';
 import { validateQuery } from '../../services/queryValidator';
 import { getDefaultQuery } from '../../utils/queryUtils';
 import { VisualFilterBuilder } from './VisualFilterBuilder';
@@ -36,6 +30,7 @@ import {
   type AutocompleteSuggestion,
 } from '@/services/suggestionService';
 import { QueryAutocomplete } from './QueryAutocomplete';
+import { FunnelIcon, FunnelPlusIcon } from 'lucide-react';
 
 export interface QueryDisplayProps {
   query: string;
@@ -49,9 +44,8 @@ export interface QueryDisplayProps {
 
 export function QueryDisplay({
   query,
-  resultCount,
+  // resultCount and error intentionally unused (status moved to MetricsTable)
   isLoading = false,
-  error = null,
   className = '',
   onQueryChange,
   editable = true,
@@ -176,39 +170,7 @@ export function QueryDisplay({
     }
   };
 
-  const getStatusContent = () => {
-    if (error) {
-      return {
-        icon: <ExclamationCircleIcon className="h-4 w-4 text-danger" />,
-        text: `Error: ${error}`,
-        textColor: 'text-danger',
-      };
-    }
-
-    if (isLoading) {
-      return {
-        icon: <Spinner size="sm" color="primary" />,
-        text: 'Loading results...',
-        textColor: 'text-default-500',
-      };
-    }
-
-    if (typeof resultCount === 'number') {
-      return {
-        icon: <MagnifyingGlassIcon className="h-4 w-4 text-success" />,
-        text: `${resultCount} result${resultCount !== 1 ? 's' : ''}`,
-        textColor: 'text-success',
-      };
-    }
-
-    return {
-      icon: <MagnifyingGlassIcon className="h-4 w-4 text-default-400" />,
-      text: 'Ready to search',
-      textColor: 'text-default-400',
-    };
-  };
-
-  const statusContent = getStatusContent();
+  // statusContent removed (relocated to MetricsTable)
 
   // Derive current filters from the query string
   const filters = React.useMemo<FilterState>(
@@ -310,7 +272,7 @@ export function QueryDisplay({
 
   return (
     <div className={`flex flex-col gap-3 ${className}`}>
-      <div className="flex items-center justify-between gap-3 p-2">
+      <div className="flex items-center justify-between gap-3">
         <ActiveFiltersSummary
           filters={filters}
           hideClearAll
@@ -333,54 +295,44 @@ export function QueryDisplay({
             size="sm"
             color="primary"
             variant="ghost"
-            startContent={<PencilIcon className="h-4 w-4" />}
+            startContent={
+              filters ? (
+                <FunnelPlusIcon className="h-4 w-4" />
+              ) : (
+                <FunnelIcon className="h-4 w-4" />
+              )
+            }
             onClick={handleEditStart}
           />
         )}
       </div>
 
-      <div className="flex flex-wrap items-center justify-between pb-2 px-2">
-        <div className="flex min-w-0 items-center gap-2">
-          {statusContent.icon}
-          <span className={`font-normal text-sm ${statusContent.textColor}`}>
-            {statusContent.text}
-          </span>
-          <a
-            href="https://docs.github.com/en/search-github/searching-on-github/searching-issues-and-pull-requests"
-            target="_blank"
-            rel="noreferrer"
-            className="ml-2 text-xs underline text-default-400 hover:text-default-600"
-          >
-            Learn more
-          </a>
+      {editable && !isLoading && !isEditing && (
+        <div className="flex items-center gap-2 ml-auto">
+          {featureFlags.share && (
+            <Button
+              size="sm"
+              color="default"
+              variant="ghost"
+              startContent={<ShareIcon className="h-4 w-4" />}
+              onClick={() => setShowShareModal(true)}
+            >
+              Share
+            </Button>
+          )}
+          {featureFlags.bookmark && (
+            <Button
+              size="sm"
+              color="default"
+              variant="ghost"
+              startContent={<BookmarkIcon className="h-4 w-4" />}
+              onClick={handleBookmarkQuery}
+            >
+              Bookmark
+            </Button>
+          )}
         </div>
-        {editable && !isLoading && !isEditing && (
-          <div className="flex items-center gap-2">
-            {featureFlags.share && (
-              <Button
-                size="sm"
-                color="default"
-                variant="ghost"
-                startContent={<ShareIcon className="h-4 w-4" />}
-                onClick={() => setShowShareModal(true)}
-              >
-                Share
-              </Button>
-            )}
-            {featureFlags.bookmark && (
-              <Button
-                size="sm"
-                color="default"
-                variant="ghost"
-                startContent={<BookmarkIcon className="h-4 w-4" />}
-                onClick={handleBookmarkQuery}
-              >
-                Bookmark
-              </Button>
-            )}
-          </div>
-        )}
-      </div>
+      )}
 
       {/* Accessible query preview for integration tests and screen readers */}
       <code
@@ -457,6 +409,14 @@ export function QueryDisplay({
                     htmlFor="adv-editor"
                   >
                     Edit search query
+                    <a
+                      href="https://docs.github.com/en/search-github/searching-on-github/searching-issues-and-pull-requests"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="ml-2 text-xs underline text-default-400 hover:text-default-600"
+                    >
+                      Learn more
+                    </a>
                   </label>
                   <Textarea
                     id="adv-editor"

@@ -85,47 +85,6 @@ describe('QueryDisplay', () => {
     expect(screen.getByText('is:pr author:john')).toBeInTheDocument();
   });
 
-  it('should show loading state', () => {
-    renderWithRouter(
-      <QueryDisplay query="is:pr author:john" isLoading={true} />
-    );
-
-    expect(screen.getByText('Loading results...')).toBeInTheDocument();
-    expect(
-      screen.getByRole('progressbar', { hidden: true })
-    ).toBeInTheDocument();
-  });
-
-  it('should display result count when provided', () => {
-    renderWithRouter(
-      <QueryDisplay query="is:pr author:john" resultCount={42} />
-    );
-
-    expect(screen.getByText('42 results')).toBeInTheDocument();
-  });
-
-  it('should handle singular result count', () => {
-    renderWithRouter(
-      <QueryDisplay query="is:pr author:john" resultCount={1} />
-    );
-
-    expect(screen.getByText('1 result')).toBeInTheDocument();
-  });
-
-  it('should show error state', () => {
-    renderWithRouter(
-      <QueryDisplay query="is:pr author:john" error="Invalid query syntax" />
-    );
-
-    expect(screen.getByText('Error: Invalid query syntax')).toBeInTheDocument();
-  });
-
-  it('should show ready state when no count or loading', () => {
-    renderWithRouter(<QueryDisplay query="is:pr author:john" />);
-
-    expect(screen.getByText('Ready to search')).toBeInTheDocument();
-  });
-
   it('should be accessible', () => {
     renderWithRouter(
       <QueryDisplay query="is:pr author:john" resultCount={5} />
@@ -136,9 +95,10 @@ describe('QueryDisplay', () => {
     expect(codeElement).toHaveAttribute('tabIndex', '0');
   });
 
-  it('should display external link for documentation', () => {
+  it('should display external link for documentation', async () => {
     renderWithRouter(<QueryDisplay query="is:pr author:john" />);
-
+    // Open edit -> advanced mode to reveal textarea and docs link
+    await openEditInAdvancedMode();
     const link = screen.getByRole('link', { name: 'Learn more' });
     expect(link).toHaveAttribute(
       'href',
@@ -152,36 +112,6 @@ describe('QueryDisplay', () => {
     );
 
     expect(container.firstChild).toHaveClass('custom-class');
-  });
-
-  it('should show proper icon for each state', () => {
-    const { rerender } = renderWithRouter(
-      <QueryDisplay query="test" isLoading={true} />
-    );
-    expect(
-      screen.getByRole('progressbar', { hidden: true })
-    ).toBeInTheDocument();
-
-    rerender(
-      <BrowserRouter>
-        <QueryDisplay query="test" error="Error message" />
-      </BrowserRouter>
-    );
-    expect(screen.getByText(/Error:/)).toBeInTheDocument();
-
-    rerender(
-      <BrowserRouter>
-        <QueryDisplay query="test" resultCount={5} />
-      </BrowserRouter>
-    );
-    expect(screen.getByText('5 results')).toBeInTheDocument();
-
-    rerender(
-      <BrowserRouter>
-        <QueryDisplay query="test" />
-      </BrowserRouter>
-    );
-    expect(screen.getByText('Ready to search')).toBeInTheDocument();
   });
 
   it('should enter edit mode and display textarea', async () => {
