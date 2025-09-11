@@ -433,11 +433,14 @@ describe('MetricsTable additional coverage (merged)', () => {
 
   it('enables view button after selecting a single row', async () => {
     renderTable();
-    const viewBtn = screen.getByRole('button', { name: /view pull request/i });
     const checkboxes = screen.getAllByRole('checkbox');
     const rowCheckbox = checkboxes[1] || checkboxes[0];
     await act(async () => {
       fireEvent.click(rowCheckbox);
+    });
+    // Button renders only after selection in current UI
+    const viewBtn = await screen.findByRole('button', {
+      name: /view pull request/i,
     });
     await waitFor(() => expect(viewBtn).toBeEnabled());
   });
