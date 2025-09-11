@@ -4,10 +4,10 @@ import userEvent from '@testing-library/user-event';
 import ActionBar from '../ActionBar';
 
 describe('ActionBar', () => {
-  it('disables the button when disabled=true', () => {
+  it('does not render the button when disabled=true', () => {
     render(<ActionBar disabled={true} onView={() => {}} />);
-    const btn = screen.getByRole('button', { name: /view pull request/i });
-    expect(btn).toBeDisabled();
+    const btn = screen.queryByRole('button', { name: /view pull request/i });
+    expect(btn).not.toBeInTheDocument();
   });
 
   it('calls onView when clicked', async () => {

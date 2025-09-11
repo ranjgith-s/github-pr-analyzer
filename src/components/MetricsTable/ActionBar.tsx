@@ -7,14 +7,11 @@ interface ActionBarProps {
 }
 
 export default function ActionBar({ disabled, onView }: ActionBarProps) {
+  if (disabled) return <div />;
+
   return (
     <div style={{ marginBottom: 16 }}>
-      <Button
-        variant="solid"
-        isDisabled={disabled}
-        aria-label="View pull request"
-        onClick={onView}
-      >
+      <Button variant="solid" aria-label="View pull request" onClick={onView}>
         View pull request
       </Button>
     </div>
