@@ -89,17 +89,19 @@ export default function Header({ breadcrumbs }: HeaderProps) {
         </Breadcrumb>
       </div>
       <div className="flex items-center gap-2">
-        {user && (
+        {(user || token) && (
           <>
-            <Avatar className="h-6 w-6">
-              <img
-                src={user.avatar_url}
-                title={`${user.login} (you)`}
-                alt="avatar"
-                className="h-full w-full object-cover"
-                referrerPolicy="no-referrer"
-              />
-            </Avatar>
+            {user && (
+              <Avatar className="h-6 w-6">
+                <img
+                  src={user.avatar_url}
+                  title={`${user.login} (you)`}
+                  alt="avatar"
+                  className="h-full w-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              </Avatar>
+            )}
             <Button
               size="sm"
               variant="ghost"
