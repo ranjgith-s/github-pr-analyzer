@@ -209,5 +209,7 @@ test('shows error for empty PAT', async () => {
     await user.click(screen.getByRole('button', { name: /login with token/i }));
   });
 
-  expect(screen.getByText(/please enter a valid personal access token/i)).toBeInTheDocument();
+  expect(
+    screen.getByText(/please enter a valid personal access token/i)
+  ).toBeInTheDocument();
 });
