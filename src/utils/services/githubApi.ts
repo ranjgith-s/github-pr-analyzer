@@ -1,15 +1,10 @@
 // githubApi.ts
 import { Octokit } from '@octokit/rest';
 
-// Initialize Octokit instance with enhanced configuration
-function createOctokitInstance(token: string): Octokit {
+export function getOctokit(token: string): Octokit {
   return new Octokit({
     auth: token,
   });
-}
-
-export function getOctokit(token: string): Octokit {
-  return createOctokitInstance(token);
 }
 
 export async function getAuthenticatedUser(octokit: Octokit): Promise<any> {
