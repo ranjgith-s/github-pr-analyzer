@@ -3,7 +3,6 @@ import { InMemoryCache } from './cache';
 import * as githubApi from './githubApi';
 import * as transformers from './transformers';
 import { PRItem } from 'src/types';
-import type { Commit } from './transformers';
 import { validateAndSanitizeQuery } from '../../services/queryValidator';
 import { handleOctokitError } from '../../services/errorHandler';
 import { getFromCache, setCache } from '../../services/cache';
@@ -164,7 +163,7 @@ async function transformSearchResponse(
     const queries = batch
       .map((item, idx) => {
         const [owner, repo] = item.repository_url.split('/').slice(-2);
-        return `pr${idx}: repository(owner: "${owner}", name: "${repo}") { pullRequest(number: ${item.number}) { id title author { login } createdAt publishedAt closedAt mergedAt isDraft additions deletions comments { totalCount } reviews(first:100) { nodes { author { login } state submittedAt } } } }`;
+        return `pr${idx}: repository(owner: "${owner}", name: "${repo}") { pullRequest(number: ${item.number}) { id title author { login } createdAt publishedAt closedAt mergedAt isDraft additions deletions comments { totalCount } reviews(first:100) { nodes { author { login } state submittedAt } } commits(first: 1) { nodes { commit { authoredDate committedDate } } } } }`;
       })
       .join(' ');
     const query = `query { ${queries} }`;
@@ -186,28 +185,16 @@ async function transformSearchResponse(
   }
 
   // Transform to PRItems with limited concurrency
+  // Optimized: Removed N+1 commit fetch by using GraphQL data
   const limit = 5;
   const results: PRItem[] = [];
   for (let i = 0; i < prDetails.length; i += limit) {
     const chunk = prDetails.slice(i, i + limit);
     const chunkResults = await Promise.all(
       chunk.map(async ({ pr, item, owner, repo }) => {
-        const cacheKey = `${owner}/${repo}/pr/${item.number}`;
-        let commits = repoCache.get(cacheKey);
-        if (!commits) {
-          commits = await githubApi.paginateApi<Commit[]>(
-            octokit,
-            octokit.rest.pulls.listCommits,
-            {
-              owner,
-              repo,
-              pull_number: item.number,
-              per_page: 100,
-            }
-          );
-          repoCache.set(cacheKey, commits);
-        }
-        return transformers.toPRItem(pr, item, owner, repo, commits);
+        // We now fetch the first commit via GraphQL in the batch request
+        // Passing empty array for commits, the transformer will use the GraphQL data
+        return transformers.toPRItem(pr, item, owner, repo, []);
       })
     );
     results.push(...chunkResults);
