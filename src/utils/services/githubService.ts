@@ -3,7 +3,6 @@ import { InMemoryCache } from './cache';
 import * as githubApi from './githubApi';
 import * as transformers from './transformers';
 import { PRItem } from 'src/types';
-import type { Commit } from './transformers';
 import { validateAndSanitizeQuery } from '../../services/queryValidator';
 import { handleOctokitError } from '../../services/errorHandler';
 import { getFromCache, setCache } from '../../services/cache';
