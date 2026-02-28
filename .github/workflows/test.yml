@@ -15,7 +15,7 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: node scripts/updateReadmeCoverage.js
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: coverage-report
           path: coverage
