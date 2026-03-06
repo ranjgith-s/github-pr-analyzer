@@ -1,6 +1,7 @@
 import React from 'react';
 import { GitHubUser } from '../../utils/services/auth';
-import { Input, Card, Avatar } from '../ui';
+import { Input, Card } from '../ui';
+import UserAvatar from '../UserAvatar/UserAvatar';
 
 interface Props {
   query: string;
@@ -32,15 +33,7 @@ export default function SearchUserBox({
               className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-muted/40 border-b last:border-b-0 border-border"
               onClick={() => onSelect(u)}
             >
-              <Avatar className="h-6 w-6">
-                <img
-                  src={u.avatar_url}
-                  alt={u.login}
-                  className="h-full w-full object-cover"
-                  referrerPolicy="no-referrer"
-                />
-              </Avatar>
-              {/* TODO: Replace Avatar prop differences once avatar bridge wrapper supports size variants */}
+              <UserAvatar username={u.login} size="sm" />
               <span className="font-mono text-sm text-foreground">
                 {u.login}
               </span>
