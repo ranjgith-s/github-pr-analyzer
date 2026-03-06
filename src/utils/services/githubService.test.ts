@@ -40,6 +40,9 @@ const mockOctokit = {
       list: jest.fn(),
       listCommits: jest.fn(),
     },
+    rateLimit: {
+      get: jest.fn(),
+    },
     actions: {
       listWorkflowRunsForRepo: jest.fn(),
     },
@@ -409,5 +412,37 @@ describe('github service', () => {
     );
     expect(result.title).toBe('fetchedPR');
     expect(githubService.repoCache.get('o/r/pr/2').title).toBe('fetchedPR');
+  });
+
+  describe('getRateLimit', () => {
+    it('returns rate limit data on success', async () => {
+      mockOctokit.rest.rateLimit.get.mockResolvedValue({
+        data: {
+          resources: {
+            core: {
+              remaining: 4999,
+              limit: 5000,
+              reset: 1234567890,
+            },
+          },
+        },
+      });
+
+      const result = await githubService.getRateLimit('token');
+      expect(result).toEqual({
+        remaining: 4999,
+        limit: 5000,
+        reset: 1234567890,
+      });
+      expect(mockOctokit.rest.rateLimit.get).toHaveBeenCalled();
+    });
+
+    it('returns null on failure', async () => {
+      mockOctokit.rest.rateLimit.get.mockRejectedValue(new Error('API error'));
+
+      const result = await githubService.getRateLimit('token');
+      expect(result).toBeNull();
+      expect(mockOctokit.rest.rateLimit.get).toHaveBeenCalled();
+    });
   });
 });
