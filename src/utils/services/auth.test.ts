@@ -7,7 +7,7 @@ describe('validateToken', () => {
   const mockToken = 'mock-token';
   const mockUser = {
     login: 'testuser',
-    avatar_url: 'https://example.com/avatar.jpg'
+    avatar_url: 'https://example.com/avatar.jpg',
   };
 
   beforeEach(() => {
@@ -15,13 +15,15 @@ describe('validateToken', () => {
   });
 
   it('returns user data for a valid token', async () => {
-    const mockGetAuthenticated = jest.fn().mockResolvedValue({ data: mockUser });
+    const mockGetAuthenticated = jest
+      .fn()
+      .mockResolvedValue({ data: mockUser });
     (Octokit as unknown as jest.Mock).mockImplementation(() => ({
       rest: {
         users: {
-          getAuthenticated: mockGetAuthenticated
-        }
-      }
+          getAuthenticated: mockGetAuthenticated,
+        },
+      },
     }));
 
     const result = await validateToken(mockToken);
@@ -37,9 +39,9 @@ describe('validateToken', () => {
     (Octokit as unknown as jest.Mock).mockImplementation(() => ({
       rest: {
         users: {
-          getAuthenticated: mockGetAuthenticated
-        }
-      }
+          getAuthenticated: mockGetAuthenticated,
+        },
+      },
     }));
 
     await expect(validateToken(mockToken)).rejects.toThrow('Bad credentials');
