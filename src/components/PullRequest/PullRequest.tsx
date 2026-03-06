@@ -18,17 +18,14 @@ interface TimelineEntry {
   label: string;
   date: string;
 }
-export default function PullRequestPage() {
+function usePullRequestData() {
   const { token } = useAuth();
   const { owner, repo, number } = useParams();
   const location = useLocation();
-  const navigate = useNavigate();
+
   const [events, setEvents] = useState<TimelineEntry[] | null>(null);
   const [title, setTitle] = useState<string>(location.state?.title || '');
   const [loading, setLoading] = useState<boolean>(true);
-
-  useDocumentTitle(title);
-  useMetaDescription(title ? `Details for PR ${title}` : null);
 
   useEffect(() => {
     async function fetchData() {
@@ -65,6 +62,44 @@ export default function PullRequestPage() {
     fetchData();
   }, [token, location, owner, repo, number]);
 
+  return { events, title, loading };
+}
+
+function PullRequestTimeline({ events }: { events: TimelineEntry[] }) {
+  if (!events || events.length === 0) return null;
+
+  return (
+    <ol className="relative border-s border-border pl-6">
+      {events.map((e) => (
+        <li
+          key={`${e.label}-${e.date}`}
+          className="mb-6 last:mb-0 flex items-start"
+        >
+          <span
+            className="flex-shrink-0 w-3 h-3 mt-1.5 rounded-full bg-primary border-2 border-background shadow"
+            aria-hidden="true"
+          ></span>
+          <div className="ml-4">
+            <span className="block font-semibold text-primary">
+              {e.label}
+            </span>
+            <span className="block text-sm text-foreground/70">
+              {e.date}
+            </span>
+          </div>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+export default function PullRequestPage() {
+  const navigate = useNavigate();
+  const { events, title, loading } = usePullRequestData();
+
+  useDocumentTitle(title);
+  useMetaDescription(title ? `Details for PR ${title}` : null);
+
   if (loading) {
     return (
       <div className="flex justify-center items-center mt-12">
@@ -89,29 +124,7 @@ export default function PullRequestPage() {
       <Card className="mb-6 p-4">
         <h2 className="text-xl font-bold mb-2 text-foreground">{title}</h2>
         <div className="mb-4">
-          {events && (
-            <ol className="relative border-s border-border pl-6">
-              {events.map((e) => (
-                <li
-                  key={`${e.label}-${e.date}`}
-                  className="mb-6 last:mb-0 flex items-start"
-                >
-                  <span
-                    className="flex-shrink-0 w-3 h-3 mt-1.5 rounded-full bg-primary border-2 border-background shadow"
-                    aria-hidden="true"
-                  ></span>
-                  <div className="ml-4">
-                    <span className="block font-semibold text-primary">
-                      {e.label}
-                    </span>
-                    <span className="block text-sm text-foreground/70">
-                      {e.date}
-                    </span>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          )}
+          {events && <PullRequestTimeline events={events} />}
         </div>
         <Button variant="ghost" onClick={() => navigate('/insights')}>
           Back to Insights
