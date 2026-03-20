@@ -174,11 +174,12 @@ async function transformSearchResponse(
     for (let idx = 0; idx < batch.length; idx++) {
       const pr = prData[`pr${idx}`]?.pullRequest;
       if (pr) {
+        const [owner, repo] = batch[idx].repository_url.split('/').slice(-2);
         prDetails.push({
           pr,
           item: batch[idx],
-          owner: batch[idx].repository_url.split('/').slice(-2)[0],
-          repo: batch[idx].repository_url.split('/').slice(-2)[1],
+          owner,
+          repo,
         });
       }
     }
