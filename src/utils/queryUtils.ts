@@ -6,6 +6,14 @@ export interface QueryParams {
   order?: string; // asc | desc (optional)
 }
 
+export interface ParsedQueryParams {
+  q?: string;
+  page: number;
+  sort: string;
+  per_page: number;
+  order: string;
+}
+
 export interface User {
   login: string;
 }
@@ -43,7 +51,9 @@ export function getReviewRequestedQuery(user: User): string {
   return `is:pr review-requested:${user.login}`;
 }
 
-export function parseQueryParams(searchParams: URLSearchParams): QueryParams {
+export function parseQueryParams(
+  searchParams: URLSearchParams
+): ParsedQueryParams {
   const q = searchParams.get('q');
   const page = searchParams.get('page');
   const sort = searchParams.get('sort');
