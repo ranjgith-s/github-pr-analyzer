@@ -233,6 +233,11 @@ export async function fetchDeveloperMetrics(token: string, login: string) {
   let issuesClosed = 0;
   const items = authored;
   const batchSize = 20;
+  const batchPromises: Promise<{
+    batch: any[];
+    prData: Record<string, { pullRequest: any }>;
+  }>[] = [];
+
   for (let i = 0; i < items.length; i += batchSize) {
     const batch = items.slice(i, i + batchSize);
     const queries = batch
@@ -242,9 +247,16 @@ export async function fetchDeveloperMetrics(token: string, login: string) {
       })
       .join(' ');
     const query = `query { ${queries} }`;
-    const prData = await githubApi.graphqlQuery<
-      Record<string, { pullRequest: any }>
-    >(octokit, query);
+    batchPromises.push(
+      githubApi
+        .graphqlQuery<Record<string, { pullRequest: any }>>(octokit, query)
+        .then((prData) => ({ batch, prData }))
+    );
+  }
+
+  const allBatchResults = await Promise.all(batchPromises);
+
+  for (const { batch, prData } of allBatchResults) {
     for (let idx = 0; idx < batch.length; idx++) {
       const pr = prData[`pr${idx}`]?.pullRequest;
       if (pr) {
