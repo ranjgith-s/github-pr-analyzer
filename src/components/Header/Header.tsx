@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { ArrowLeftStartOnRectangleIcon } from '@heroicons/react/24/solid';
 import { Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext/AuthContext';
-import { Avatar, Button } from '../ui';
+import { Button } from '../ui';
+import UserAvatar from '../UserAvatar/UserAvatar';
 import {
   ShadBreadcrumb as Breadcrumb,
   ShadBreadcrumbList as BreadcrumbList,
@@ -89,17 +90,15 @@ export default function Header({ breadcrumbs }: HeaderProps) {
         </Breadcrumb>
       </div>
       <div className="flex items-center gap-2">
-        {user && (
+        {(user || token) && (
           <>
-            <Avatar className="h-6 w-6">
-              <img
-                src={user.avatar_url}
-                title={`${user.login} (you)`}
-                alt="avatar"
-                className="h-full w-full object-cover"
-                referrerPolicy="no-referrer"
+            {user && (
+              <UserAvatar
+                username={user.login}
+                size="sm"
+                fullName={`${user.login} (you)`}
               />
-            </Avatar>
+            )}
             <Button
               size="sm"
               variant="ghost"

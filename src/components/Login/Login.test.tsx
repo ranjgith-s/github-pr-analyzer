@@ -160,3 +160,56 @@ test('on redirect, exchange resolves with error sets message', async () => {
   );
   await waitFor(() => expect(screen.getByText('bad')).toBeInTheDocument());
 });
+
+test('can login with PAT', async () => {
+  const TokenProbe = () => {
+    const { token } = useAuth();
+    return <div data-testid="tok">{token}</div>;
+  };
+  render(
+    <MemoryRouter
+      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+    >
+      <ThemeModeProvider>
+        <AuthProvider>
+          <Login />
+          <TokenProbe />
+        </AuthProvider>
+      </ThemeModeProvider>
+    </MemoryRouter>
+  );
+
+  const user = userEvent.setup();
+  const input = screen.getByPlaceholderText(/Personal Access Token/i);
+  await act(async () => {
+    await user.type(input, 'ghp_secretToken');
+    await user.click(screen.getByRole('button', { name: /login with token/i }));
+  });
+
+  await waitFor(() => {
+    expect(screen.getByTestId('tok').textContent).toBe('ghp_secretToken');
+  });
+});
+
+test('shows error for empty PAT', async () => {
+  render(
+    <MemoryRouter
+      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+    >
+      <ThemeModeProvider>
+        <AuthProvider>
+          <Login />
+        </AuthProvider>
+      </ThemeModeProvider>
+    </MemoryRouter>
+  );
+
+  const user = userEvent.setup();
+  await act(async () => {
+    await user.click(screen.getByRole('button', { name: /login with token/i }));
+  });
+
+  expect(
+    screen.getByText(/please enter a valid personal access token/i)
+  ).toBeInTheDocument();
+});

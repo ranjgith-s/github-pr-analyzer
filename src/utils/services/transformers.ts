@@ -46,11 +46,19 @@ export function toPRItem(
   item: any,
   owner: string,
   repo: string,
-  commits: Commit[]
+  commits: Commit[] = []
 ): PRItem {
   const { reviewerSet, firstReview, changesRequested } = getReviewStats(
     pr.reviews.nodes as Review[]
   );
+
+  let firstCommitDate = getEarliestCommitDate(commits);
+  // Fallback to GraphQL commit data if REST commits are empty
+  if (!firstCommitDate && pr.commits?.nodes?.length > 0) {
+    const commit = pr.commits.nodes[0].commit;
+    firstCommitDate = commit.authoredDate || commit.committedDate || null;
+  }
+
   return {
     id: pr.id,
     owner,
@@ -71,7 +79,7 @@ export function toPRItem(
     published_at: pr.publishedAt,
     closed_at: pr.mergedAt || pr.closedAt,
     first_review_at: firstReview,
-    first_commit_at: getEarliestCommitDate(commits),
+    first_commit_at: firstCommitDate,
     reviewers: Array.from(reviewerSet),
     changes_requested: changesRequested,
     additions: pr.additions,

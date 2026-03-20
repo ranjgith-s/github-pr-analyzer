@@ -5,12 +5,21 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatDuration(start?: string | null, end?: string | null) {
-  if (!start || !end) return 'N/A';
+type DateInput = string | number | Date | null | undefined;
 
-  const startMs = Date.parse(start);
-  const endMs = Date.parse(end);
-  if (Number.isNaN(startMs) || Number.isNaN(endMs)) return 'N/A';
+function toTimestamp(d: DateInput): number | null {
+  if (d === null || d === undefined) return null;
+  if (typeof d === 'number') return d;
+  if (d instanceof Date) return d.getTime();
+  const parsed = Date.parse(d);
+  return Number.isNaN(parsed) ? null : parsed;
+}
+
+export function formatDuration(start?: DateInput, end?: DateInput) {
+  const startMs = toTimestamp(start);
+  const endMs = toTimestamp(end);
+
+  if (startMs === null || endMs === null) return 'N/A';
 
   const diffMs = endMs - startMs;
   if (diffMs < 0) return 'N/A';

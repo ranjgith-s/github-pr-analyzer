@@ -1,6 +1,6 @@
 import React, { useState, type FC } from 'react';
 import { ChevronUpIcon } from '@heroicons/react/24/solid';
-import { Button } from '../ui';
+import { Button, Input } from '../ui';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext/AuthContext';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
@@ -8,9 +8,10 @@ import { useMetaDescription } from '../../hooks/useMetaDescription';
 import supabase from '@/lib/supabaseClient';
 
 export default function Login() {
-  const { token } = useAuth();
+  const { token, login } = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
+  const [pat, setPat] = useState('');
   useDocumentTitle('Sign in to PR-ism');
   useMetaDescription(
     'Login with your GitHub token to access pull request metrics.'
@@ -40,6 +41,16 @@ export default function Login() {
       },
     });
     if (error) setError(error.message || 'GitHub sign-in failed. Try again.');
+  };
+
+  const handlePatLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pat.trim()) {
+      setError('Please enter a valid Personal Access Token.');
+      return;
+    }
+    setError(null);
+    login(pat.trim());
   };
 
   // On redirect from GitHub, exchange the code for a session before any redirects can drop it
@@ -100,10 +111,10 @@ export default function Login() {
           </p>
         </section>
       </div>
-      <div className="flex items-center justify-center pb-12">
+      <div className="flex flex-col items-center justify-center pb-12 gap-4 max-w-sm mx-auto w-full">
         <Button
           onClick={handleGithubSignIn}
-          className="inline-flex items-center justify-center gap-2"
+          className="w-full inline-flex items-center justify-center gap-2"
         >
           <svg
             viewBox="0 0 24 24"
@@ -117,6 +128,28 @@ export default function Login() {
           </svg>
           Continue with GitHub
         </Button>
+
+        <div className="relative flex items-center w-full">
+          <div className="flex-grow border-t border-border"></div>
+          <span className="flex-shrink-0 mx-4 text-muted-foreground text-sm">
+            OR
+          </span>
+          <div className="flex-grow border-t border-border"></div>
+        </div>
+
+        <form onSubmit={handlePatLogin} className="w-full flex flex-col gap-2">
+          <Input
+            type="password"
+            placeholder="Personal Access Token (PAT)"
+            value={pat}
+            onChange={(e) => setPat(e.target.value)}
+            className="w-full"
+          />
+          <Button type="submit" variant="secondary" className="w-full">
+            Login with Token
+          </Button>
+        </form>
+
         <ErrorText message={error || ''} />
       </div>
     </main>

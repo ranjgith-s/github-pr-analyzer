@@ -104,6 +104,7 @@ describe('QueryDisplay', () => {
       'href',
       'https://docs.github.com/en/search-github/searching-on-github/searching-issues-and-pull-requests'
     );
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
   });
 
   it('should apply custom className', () => {
