@@ -157,8 +157,10 @@ export const TableColumn = React.forwardRef<
 });
 TableColumn.displayName = 'TableColumn';
 
-export interface TableBodyProps<T = any>
-  extends Omit<React.HTMLAttributes<HTMLTableSectionElement>, 'children'> {
+export interface TableBodyProps<T = any> extends Omit<
+  React.HTMLAttributes<HTMLTableSectionElement>,
+  'children'
+> {
   items?: T[];
   emptyContent?: React.ReactNode;
   children?: React.ReactNode | ((item: T, index: number) => React.ReactNode);
@@ -205,8 +207,7 @@ export function TableBody<T>({
 }
 TableBody.displayName = 'TableBody';
 
-export interface TableRowProps
-  extends React.HTMLAttributes<HTMLTableRowElement> {
+export interface TableRowProps extends React.HTMLAttributes<HTMLTableRowElement> {
   hoverable?: boolean;
   clickable?: boolean;
 }

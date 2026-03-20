@@ -48,7 +48,8 @@ type LegacyColor =
   | 'default';
 
 export interface ButtonProps
-  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'color'>,
+  extends
+    Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'color'>,
     Omit<VariantProps<typeof buttonVariants>, 'variant'> {
   asChild?: boolean;
   variant?: ExtendedVariant;
