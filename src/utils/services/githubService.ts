@@ -8,13 +8,91 @@ import { handleOctokitError } from '../../services/errorHandler';
 import { getFromCache, setCache } from '../../services/cache';
 import { User } from '../queryUtils';
 
+// Interfaces for GitHub API data
+interface SearchItem {
+  number: number;
+  repository_url: string;
+  html_url: string;
+}
+
+interface GitHubUser {
+  login: string;
+  name?: string | null;
+  avatar_url: string;
+  html_url: string;
+  bio?: string | null;
+  company?: string | null;
+  location?: string | null;
+  followers: number;
+  following: number;
+  public_repos: number;
+}
+
+interface GitHubRepo {
+  default_branch: string;
+  open_issues_count: number;
+}
+
+interface GraphQLPR {
+  id: string;
+  title: string;
+  author?: { login: string } | null;
+  createdAt: string;
+  publishedAt?: string | null;
+  closedAt?: string | null;
+  mergedAt?: string | null;
+  isDraft?: boolean;
+  additions: number;
+  deletions: number;
+  comments: { totalCount: number };
+  reviews: {
+    nodes: Array<{
+      author?: { login: string } | null;
+      state: string;
+      submittedAt?: string | null;
+    }>;
+  };
+  commits: {
+    nodes: Array<{
+      commit: {
+        authoredDate?: string;
+        committedDate?: string;
+      };
+    }>;
+  };
+  closingIssuesReferences: { totalCount: number };
+}
+
+interface SearchUser {
+  login: string;
+  avatar_url: string;
+}
+
+interface GitHubCommit {
+  sha: string;
+}
+
+interface GitHubPull {
+  merged_at?: string | null;
+  created_at: string;
+}
+
+interface GitHubWorkflowRun {
+  created_at: string;
+  conclusion: string | null;
+}
+
+interface GitHubContributor {
+  id: number;
+}
+
 // Caches
-const userCache = new InMemoryCache<any>();
-const repoCache = new InMemoryCache<any>();
+const userCache = new InMemoryCache<GitHubUser>();
+const repoCache = new InMemoryCache<GitHubRepo | GraphQLPR>();
 
 interface PRDetail {
-  pr: any;
-  item: any;
+  pr: GraphQLPR;
+  item: SearchItem;
   owner: string;
   repo: string;
 }
@@ -72,9 +150,7 @@ export async function fetchPullRequestMetrics(
     const octokit = githubApi.getOctokit(token);
     let user = userCache.get(token);
     if (!user) {
-      user = (await githubApi.getAuthenticatedUser(octokit)) as {
-        login: string;
-      };
+      user = (await githubApi.getAuthenticatedUser(octokit)) as GitHubUser;
       userCache.set(token, user);
     }
     if (!user) throw new Error('Authenticated user not found');
@@ -149,7 +225,11 @@ async function fetchPullRequestsByQuery(
 
 // Transform search response to our format
 async function transformSearchResponse(
-  response: { total_count: number; incomplete_results: boolean; items: any[] },
+  response: {
+    total_count: number;
+    incomplete_results: boolean;
+    items: SearchItem[];
+  },
   token: string
 ): Promise<PRSearchResult> {
   const octokit = githubApi.getOctokit(token);
@@ -209,8 +289,14 @@ async function transformSearchResponse(
 
 export async function searchUsers(token: string, query: string) {
   const octokit = githubApi.getOctokit(token);
-  const items = await githubApi.searchUsersApi(octokit, query);
-  return items.map((u: any) => ({ login: u.login, avatar_url: u.avatar_url }));
+  const items = (await githubApi.searchUsersApi(
+    octokit,
+    query
+  )) as SearchUser[];
+  return items.map((u: SearchUser) => ({
+    login: u.login,
+    avatar_url: u.avatar_url,
+  }));
 }
 
 export async function fetchDeveloperMetrics(token: string, login: string) {
@@ -243,7 +329,7 @@ export async function fetchDeveloperMetrics(token: string, login: string) {
       .join(' ');
     const query = `query { ${queries} }`;
     const prData = await githubApi.graphqlQuery<
-      Record<string, { pullRequest: any }>
+      Record<string, { pullRequest: GraphQLPR }>
     >(octokit, query);
     for (let idx = 0; idx < batch.length; idx++) {
       const pr = prData[`pr${idx}`]?.pullRequest;
@@ -255,7 +341,7 @@ export async function fetchDeveloperMetrics(token: string, login: string) {
           leadTimes.push(diff / 36e5);
         }
         const changeReq = pr.reviews.nodes.filter(
-          (n: any) => n.state === 'CHANGES_REQUESTED'
+          (n: { state: string }) => n.state === 'CHANGES_REQUESTED'
         ).length;
         changes.push(changeReq);
         sizes.push(pr.additions + pr.deletions);
@@ -322,9 +408,9 @@ export async function fetchRepoInsights(
   const octokit = githubApi.getOctokit(token);
   const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
   const repoKey = `${owner}/${repo}`;
-  let repoData = repoCache.get(repoKey);
+  let repoData = repoCache.get(repoKey) as GitHubRepo | undefined;
   if (!repoData) {
-    repoData = await githubApi.getRepo(octokit, owner, repo);
+    repoData = (await githubApi.getRepo(octokit, owner, repo)) as GitHubRepo;
     if (repoData) repoCache.set(repoKey, repoData);
   }
   if (!repoData) throw new Error('Repo not found');
@@ -337,26 +423,30 @@ export async function fetchRepoInsights(
     contributors,
     communityProfile,
   ] = await Promise.all([
-    githubApi.paginateApi<any[]>(octokit, octokit.rest.repos.listCommits, {
-      owner,
-      repo,
-      sha: repoData.default_branch,
-      since,
-      per_page: 100,
-    }),
-    githubApi.paginateApi<any[]>(octokit, octokit.rest.pulls.list, {
+    githubApi.paginateApi<GitHubCommit[]>(
+      octokit,
+      octokit.rest.repos.listCommits,
+      {
+        owner,
+        repo,
+        sha: repoData.default_branch,
+        since,
+        per_page: 100,
+      }
+    ),
+    githubApi.paginateApi<GitHubPull[]>(octokit, octokit.rest.pulls.list, {
       owner,
       repo,
       state: 'closed',
       per_page: 100,
     }),
-    githubApi.paginateApi<any[]>(octokit, octokit.rest.pulls.list, {
+    githubApi.paginateApi<GitHubPull[]>(octokit, octokit.rest.pulls.list, {
       owner,
       repo,
       state: 'open',
       per_page: 100,
     }),
-    githubApi.paginateApi<any[]>(
+    githubApi.paginateApi<GitHubWorkflowRun[]>(
       octokit,
       octokit.rest.actions.listWorkflowRunsForRepo,
       {
@@ -368,28 +458,38 @@ export async function fetchRepoInsights(
       }
     ),
     githubApi.getCommitActivityStats(octokit, owner, repo),
-    githubApi.paginateApi<any[]>(octokit, octokit.rest.repos.listContributors, {
-      owner,
-      repo,
-      per_page: 100,
-    }) || [],
+    githubApi.paginateApi<GitHubContributor[]>(
+      octokit,
+      octokit.rest.repos.listContributors,
+      {
+        owner,
+        repo,
+        per_page: 100,
+      }
+    ) || [],
     githubApi.getCommunityProfileMetrics(octokit, owner, repo),
   ]);
   const recentMerged = prs.filter(
-    (p: any) => p.merged_at && p.merged_at >= since
+    (p: GitHubPull) => p.merged_at && p.merged_at >= since
   );
   const leadTimes = recentMerged.map(
-    (p: any) =>
-      (new Date(p.merged_at).getTime() - new Date(p.created_at).getTime()) /
+    (p: GitHubPull) =>
+      (new Date(p.merged_at!).getTime() - new Date(p.created_at).getTime()) /
       36e5
   );
   const averageMergeTime =
     leadTimes.length > 0
       ? leadTimes.reduce((a, b) => a + b, 0) / leadTimes.length
       : 0;
-  const recentRuns = workflowRuns.filter((r: any) => r.created_at >= since);
-  const failures = recentRuns.filter((r: any) => r.conclusion === 'failure');
-  const successes = recentRuns.filter((r: any) => r.conclusion === 'success');
+  const recentRuns = workflowRuns.filter(
+    (r: GitHubWorkflowRun) => r.created_at >= since
+  );
+  const failures = recentRuns.filter(
+    (r: GitHubWorkflowRun) => r.conclusion === 'failure'
+  );
+  const successes = recentRuns.filter(
+    (r: GitHubWorkflowRun) => r.conclusion === 'success'
+  );
   const changeFailureRate =
     recentRuns.length > 0 ? failures.length / recentRuns.length : 0;
   let meanTimeToRestore = 0;
@@ -397,7 +497,8 @@ export async function fetchRepoInsights(
     const diffs: number[] = [];
     for (const fail of failures) {
       const nextSuccess = successes.find(
-        (s: any) => new Date(s.created_at) > new Date(fail.created_at)
+        (s: GitHubWorkflowRun) =>
+          new Date(s.created_at) > new Date(fail.created_at)
       );
       if (nextSuccess) {
         diffs.push(
@@ -449,11 +550,11 @@ export async function getDeveloperProfile(token: string, login: string) {
   };
 }
 
-export async function getAuthenticatedUserProfile(token: string) {
+export async function getAuthenticatedUserProfile(token: string): Promise<GitHubUser | undefined> {
   let user = userCache.get(token);
   if (!user) {
     const octokit = githubApi.getOctokit(token);
-    user = await githubApi.getAuthenticatedUser(octokit);
+    user = (await githubApi.getAuthenticatedUser(octokit)) as GitHubUser;
     if (user) userCache.set(token, user);
   }
   return user;
@@ -464,22 +565,32 @@ export async function fetchPullRequestDetails(
   owner?: string,
   repo?: string,
   number?: string
-) {
+): Promise<GraphQLPR | null> {
   if (!owner || !repo || !number) throw new Error('Missing PR params');
   const cacheKey = `${owner}/${repo}/pr/${number}`;
-  let pr = repoCache.get(cacheKey);
+  let pr = repoCache.get(cacheKey) as GraphQLPR | undefined;
   if (!pr) {
     const octokit = githubApi.getOctokit(token);
-    const { repository } = await octokit.graphql<any>(
+    const { repository } = await octokit.graphql<{
+      repository: { pullRequest: GraphQLPR };
+    }>(
       `query($owner:String!,$repo:String!,$number:Int!){
         repository(owner:$owner,name:$repo){
           pullRequest(number:$number){
+            id
             title
             createdAt
             publishedAt
             closedAt
             mergedAt
-            reviews(first:100){ nodes{ submittedAt } }
+            isDraft
+            additions
+            deletions
+            author { login }
+            comments { totalCount }
+            reviews(first:100){ nodes{ author { login } state submittedAt } }
+            commits(first:1){ nodes { commit { authoredDate committedDate } } }
+            closingIssuesReferences(first:1) { totalCount }
           }
         }
       }`,
@@ -497,7 +608,13 @@ export async function getRateLimit(
   try {
     const octokit = githubApi.getOctokit(token);
     const resp = await octokit.rest.rateLimit.get();
-    const core = (resp.data as any).resources.core;
+    const core = (
+      resp.data as {
+        resources: {
+          core: { remaining: number; limit: number; reset: number };
+        };
+      }
+    ).resources.core;
     return { remaining: core.remaining, limit: core.limit, reset: core.reset };
   } catch {
     return null;
