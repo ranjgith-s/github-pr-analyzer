@@ -10,8 +10,8 @@ import { getFromCache, setCache } from '../../services/cache';
 import { User } from '../queryUtils';
 
 // Caches
-const userCache = new InMemoryCache<any>();
-const repoCache = new InMemoryCache<any>();
+const userCache = new InMemoryCache<any>(500); // Cache up to 500 users
+const repoCache = new InMemoryCache<any>(1000); // Cache up to 1000 repo items (commits, PR details)
 
 interface PRDetail {
   pr: any;
