@@ -1,6 +1,7 @@
 // githubService.ts
 import { InMemoryCache } from './cache';
 import * as githubApi from './githubApi';
+import { GitHubUser } from './auth';
 import * as transformers from './transformers';
 import { PRItem } from 'src/types';
 import { validateAndSanitizeQuery } from '../../services/queryValidator';
@@ -9,7 +10,7 @@ import { getFromCache, setCache } from '../../services/cache';
 import { User } from '../queryUtils';
 
 // Caches
-const userCache = new InMemoryCache<any>();
+const userCache = new InMemoryCache<GitHubUser>();
 const repoCache = new InMemoryCache<any>();
 
 interface PRDetail {
@@ -449,14 +450,20 @@ export async function getDeveloperProfile(token: string, login: string) {
   };
 }
 
-export async function getAuthenticatedUserProfile(token: string) {
+export async function getAuthenticatedUserProfile(
+  token: string
+): Promise<GitHubUser | null> {
   let user = userCache.get(token);
   if (!user) {
     const octokit = githubApi.getOctokit(token);
-    user = await githubApi.getAuthenticatedUser(octokit);
+    const data = await githubApi.getAuthenticatedUser(octokit);
+    user = {
+      login: data.login,
+      avatar_url: data.avatar_url,
+    };
     if (user) userCache.set(token, user);
   }
-  return user;
+  return user || null;
 }
 
 export async function fetchPullRequestDetails(

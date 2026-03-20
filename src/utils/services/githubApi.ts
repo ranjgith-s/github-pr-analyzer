@@ -1,5 +1,5 @@
 // githubApi.ts
-import { Octokit } from '@octokit/rest';
+import { Octokit, RestEndpointMethodTypes } from '@octokit/rest';
 
 export function getOctokit(token: string): Octokit {
   return new Octokit({
@@ -7,7 +7,12 @@ export function getOctokit(token: string): Octokit {
   });
 }
 
-export async function getAuthenticatedUser(octokit: Octokit): Promise<any> {
+export type AuthenticatedUser =
+  RestEndpointMethodTypes['users']['getAuthenticated']['response']['data'];
+
+export async function getAuthenticatedUser(
+  octokit: Octokit
+): Promise<AuthenticatedUser> {
   return (await octokit.rest.users.getAuthenticated()).data;
 }
 

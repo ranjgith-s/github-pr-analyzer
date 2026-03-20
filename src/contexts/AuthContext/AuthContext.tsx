@@ -125,10 +125,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setToken(newToken);
     // Proactively fetch user so tests that assert immediate calls succeed.
     // Use Promise.resolve to avoid calling .then on undefined when the module is auto-mocked in tests.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    Promise.resolve((getAuthenticatedUserProfile as any)?.(newToken))
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .then((u: any) => setUser(u ?? null))
+    // Cast to potential undefined to support optional chaining for test mocks without using 'any'.
+    Promise.resolve(
+      (getAuthenticatedUserProfile as typeof getAuthenticatedUserProfile | undefined)?.(
+        newToken
+      )
+    )
+      .then((u) => setUser(u ?? null))
       .catch(() => {});
   };
 
