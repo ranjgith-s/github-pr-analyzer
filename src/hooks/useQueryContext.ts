@@ -30,10 +30,10 @@ export function useQueryContext(): QueryContext {
       query,
       isDefaultQuery,
       params: {
-        page: urlParams.page || 1,
-        sort: urlParams.sort || 'updated',
-        per_page: urlParams.per_page || 20,
-        order: urlParams.order || 'desc',
+        page: urlParams.page,
+        sort: urlParams.sort,
+        per_page: urlParams.per_page,
+        order: urlParams.order,
       },
       source: isDefaultQuery ? 'default' : 'url',
     };

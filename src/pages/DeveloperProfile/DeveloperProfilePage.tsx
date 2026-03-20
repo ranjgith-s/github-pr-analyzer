@@ -1,13 +1,13 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import { RadarChart, Radar, PolarAngleAxis } from 'recharts';
 import { useAuth } from '../../contexts/AuthContext/AuthContext';
 import { useDeveloperMetrics } from '../../hooks/useDeveloperMetrics';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 import { useMetaDescription } from '../../hooks/useMetaDescription';
 import LoadingOverlay from '../../components/LoadingOverlay/LoadingOverlay';
 import DeveloperMetricCard from '../../components/DeveloperMetricCard/DeveloperMetricCard';
-import { Card } from '../../components/ui';
+import ProfileHeader from './ProfileHeader';
+import RadarChartCard from './RadarChartCard';
 import { DeveloperMetrics } from 'src/types';
 
 const METRIC_INFO = [
@@ -77,6 +77,7 @@ export default function DeveloperProfilePage() {
   const { username } = useParams<{ username: string }>();
   const { token } = useAuth();
   const { data, loading } = useDeveloperMetrics(token!, username!);
+
   useDocumentTitle(
     data
       ? `${data.name || data.login} - Developer Insights`
@@ -90,74 +91,14 @@ export default function DeveloperProfilePage() {
     'Building radar chart...',
   ];
 
-  const chartData = data
-    ? [
-        { metric: 'Merge Success', value: data.mergeSuccess },
-        { metric: 'Cycle Efficiency', value: data.cycleEfficiency },
-        { metric: 'Size Efficiency', value: data.sizeEfficiency },
-        { metric: 'Lead Time', value: data.leadTimeScore },
-        { metric: 'Review Activity', value: data.reviewActivity },
-        { metric: 'Feedback Score', value: data.feedbackScore },
-        { metric: 'Issue Resolution', value: data.issueResolution },
-      ]
-    : [];
-
   return (
     <div style={{ padding: 24 }}>
       <LoadingOverlay show={loading} messages={loadingMessages} />
       {data && !loading && (
         <>
           <div className="grid gap-8 md:grid-cols-2">
-            <Card className="p-6 animate-fadeInUp">
-              <div className="flex items-center gap-4">
-                <img
-                  src={data.avatar_url}
-                  alt="avatar"
-                  width={64}
-                  height={64}
-                  className="rounded-full"
-                />
-                <div>
-                  <h2 className="text-2xl m-0">{data.name || data.login}</h2>
-                  <span className="text-foreground/60">{data.login}</span>
-                </div>
-              </div>
-              {data.bio && <p className="mt-4 max-w-[300px]">{data.bio}</p>}
-              <div className="mt-4 grid gap-1">
-                {data.company && <span>🏢 {data.company}</span>}
-                {data.location && <span>📍 {data.location}</span>}
-                <span>Repos: {data.public_repos}</span>
-                <span>Followers: {data.followers}</span>
-                <span>Following: {data.following}</span>
-                <a
-                  href={data.html_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary underline"
-                >
-                  View on GitHub
-                </a>
-              </div>
-            </Card>
-            <Card className="p-6 animate-fadeInUp flex items-center justify-center">
-              <RadarChart
-                width={500}
-                height={400}
-                data={chartData}
-                data-testid="radar-chart"
-              >
-                <PolarAngleAxis
-                  dataKey="metric"
-                  tick={{ fontFamily: 'monospace', fontSize: 10 }}
-                />
-                <Radar
-                  dataKey="value"
-                  stroke="#2da44e"
-                  fill="#2da44e"
-                  fillOpacity={0.6}
-                />
-              </RadarChart>
-            </Card>
+            <ProfileHeader data={data} />
+            <RadarChartCard data={data} />
           </div>
           <div className="mt-8">
             <div className="grid gap-6 md:grid-cols-3">

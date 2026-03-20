@@ -9,8 +9,8 @@ import { getFromCache, setCache } from '../../services/cache';
 import { User } from '../queryUtils';
 
 // Caches
-const userCache = new InMemoryCache<any>();
-const repoCache = new InMemoryCache<any>();
+const userCache = new InMemoryCache<any>(500); // Cache up to 500 users
+const repoCache = new InMemoryCache<any>(1000); // Cache up to 1000 repo items (commits, PR details)
 
 interface PRDetail {
   pr: any;
@@ -157,7 +157,8 @@ async function transformSearchResponse(
   const batchSize = 20;
   const prDetails: PRDetail[] = [];
 
-  // Process items in batches using GraphQL for efficiency
+  // Process items in batches using GraphQL for efficiency and Promise.all for concurrency
+  const batches = [];
   for (let i = 0; i < items.length; i += batchSize) {
     const batch = items.slice(i, i + batchSize);
     const queries = batch
@@ -183,7 +184,39 @@ async function transformSearchResponse(
         });
       }
     }
+    batches.push(items.slice(i, i + batchSize));
   }
+
+  const batchResults = await Promise.all(
+    batches.map(async (batch) => {
+      const queries = batch
+        .map((item, idx) => {
+          const [owner, repo] = item.repository_url.split('/').slice(-2);
+          return `pr${idx}: repository(owner: "${owner}", name: "${repo}") { pullRequest(number: ${item.number}) { id title author { login } createdAt publishedAt closedAt mergedAt isDraft additions deletions comments { totalCount } reviews(first:100) { nodes { author { login } state submittedAt } } commits(first: 1) { nodes { commit { authoredDate committedDate } } } } }`;
+        })
+        .join(' ');
+      const query = `query { ${queries} }`;
+      const prData = await githubApi.graphqlQuery<
+        Record<string, { pullRequest: unknown }>
+      >(octokit, query);
+
+      const details = [];
+      for (let idx = 0; idx < batch.length; idx++) {
+        const pr = prData[`pr${idx}`]?.pullRequest;
+        if (pr) {
+          details.push({
+            pr,
+            item: batch[idx],
+            owner: batch[idx].repository_url.split('/').slice(-2)[0],
+            repo: batch[idx].repository_url.split('/').slice(-2)[1],
+          });
+        }
+      }
+      return details;
+    })
+  );
+
+  prDetails.push(...batchResults.flat());
 
   // Transform to PRItems with limited concurrency
   // Optimized: Removed N+1 commit fetch by using GraphQL data
@@ -234,37 +267,45 @@ export async function fetchDeveloperMetrics(token: string, login: string) {
   let issuesClosed = 0;
   const items = authored;
   const batchSize = 20;
+  const batches = [];
   for (let i = 0; i < items.length; i += batchSize) {
-    const batch = items.slice(i, i + batchSize);
-    const queries = batch
-      .map((item, idx) => {
-        const [owner, repo] = item.repository_url.split('/').slice(-2);
-        return `pr${idx}: repository(owner: "${owner}", name: "${repo}") { pullRequest(number: ${item.number}) { mergedAt createdAt additions deletions comments { totalCount } reviews(first:100) { nodes { state } } closingIssuesReferences(first:1) { totalCount } } }`;
-      })
-      .join(' ');
-    const query = `query { ${queries} }`;
-    const prData = await githubApi.graphqlQuery<
-      Record<string, { pullRequest: any }>
-    >(octokit, query);
-    for (let idx = 0; idx < batch.length; idx++) {
-      const pr = prData[`pr${idx}`]?.pullRequest;
-      if (pr) {
-        if (pr.mergedAt) {
-          merged += 1;
-          const diff =
-            new Date(pr.mergedAt).getTime() - new Date(pr.createdAt).getTime();
-          leadTimes.push(diff / 36e5);
-        }
-        const changeReq = pr.reviews.nodes.filter(
-          (n: any) => n.state === 'CHANGES_REQUESTED'
-        ).length;
-        changes.push(changeReq);
-        sizes.push(pr.additions + pr.deletions);
-        comments.push(pr.comments.totalCount);
-        issuesClosed += pr.closingIssuesReferences.totalCount;
-      }
-    }
+    batches.push(items.slice(i, i + batchSize));
   }
+
+  await Promise.all(
+    batches.map(async (batch) => {
+      const queries = batch
+        .map((item, idx) => {
+          const [owner, repo] = item.repository_url.split('/').slice(-2);
+          return `pr${idx}: repository(owner: "${owner}", name: "${repo}") { pullRequest(number: ${item.number}) { mergedAt createdAt additions deletions comments { totalCount } reviews(first:100) { nodes { state } } closingIssuesReferences(first:1) { totalCount } } }`;
+        })
+        .join(' ');
+      const query = `query { ${queries} }`;
+      const prData = await githubApi.graphqlQuery<
+        Record<string, { pullRequest: any }>
+      >(octokit, query);
+
+      for (let idx = 0; idx < batch.length; idx++) {
+        const pr = prData[`pr${idx}`]?.pullRequest;
+        if (pr) {
+          if (pr.mergedAt) {
+            merged += 1;
+            const diff =
+              new Date(pr.mergedAt).getTime() -
+              new Date(pr.createdAt).getTime();
+            leadTimes.push(diff / 36e5);
+          }
+          const changeReq = pr.reviews.nodes.filter(
+            (n: any) => n.state === 'CHANGES_REQUESTED'
+          ).length;
+          changes.push(changeReq);
+          sizes.push(pr.additions + pr.deletions);
+          comments.push(pr.comments.totalCount);
+          issuesClosed += pr.closingIssuesReferences.totalCount;
+        }
+      }
+    })
+  );
   const median = (arr: number[]) => {
     if (arr.length === 0) return 0;
     const s = [...arr].sort((a, b) => a - b);

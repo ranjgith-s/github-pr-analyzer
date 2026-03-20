@@ -29,3 +29,15 @@ test('formats sub-hour durations with minutes and seconds', () => {
     '5m 7s'
   );
 });
+
+test('accepts number timestamps', () => {
+  const start = 1609459200000; // 2021-01-01T00:00:00Z
+  const end = 1609477200000; // 2021-01-01T05:00:00Z
+  expect(formatDuration(start, end)).toBe('5h');
+});
+
+test('accepts Date objects', () => {
+  const start = new Date('2021-01-01T00:00:00Z');
+  const end = new Date('2021-01-01T05:00:00Z');
+  expect(formatDuration(start, end)).toBe('5h');
+});
