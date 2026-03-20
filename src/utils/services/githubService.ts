@@ -414,14 +414,14 @@ export async function fetchRepoInsights(
   if (failures.length > 0) {
     const diffs: number[] = [];
     for (const fail of failures) {
+      const failDate = new Date(fail.created_at);
+      const failTime = failDate.getTime();
       const nextSuccess = successes.find(
-        (s: any) => new Date(s.created_at) > new Date(fail.created_at)
+        (s: any) => new Date(s.created_at).getTime() > failTime
       );
       if (nextSuccess) {
         diffs.push(
-          (new Date(nextSuccess.created_at).getTime() -
-            new Date(fail.created_at).getTime()) /
-            36e5
+          (new Date(nextSuccess.created_at).getTime() - failTime) / 36e5
         );
       }
     }
