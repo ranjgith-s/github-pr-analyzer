@@ -1,0 +1,4 @@
+
+## 2024-03-20 - [Optimize Array Filtering for Empty Queries and Early Matching]
+**Learning:** Default filter behaviors that compute string inclusion redundantly across all values severely degrade performance in O(n) rendering paths. Without an early return for empty search query strings (the 90% use case), an array filter iterates through all objects needlessly. Furthermore, computing all possible `.includes()` operations and combining them via logical OR at the end is slower than short-circuit evaluation utilizing `if (match) return true`.
+**Action:** Always check the fallback/empty query case in client-side search logic and use early returns to pass through raw `items` directly. Utilize short-circuit conditions (early returns) within map/filter callbacks instead of pre-calculating all boolean states.

@@ -71,16 +71,13 @@ export function useMetricsTable({
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
+    if (!q) return items;
     return items.filter((it) => {
-      const matchTitle = it.title.toLowerCase().includes(q);
-      const matchRepo = it.repo.toLowerCase().includes(q);
-      const matchAuthor = it.author.toLowerCase().includes(q);
-      const matchReviewer = it.reviewers.some((r) =>
-        r.toLowerCase().includes(q)
-      );
-      const searchOK =
-        !q || matchTitle || matchRepo || matchAuthor || matchReviewer;
-      return searchOK;
+      if (it.title.toLowerCase().includes(q)) return true;
+      if (it.repo.toLowerCase().includes(q)) return true;
+      if (it.author.toLowerCase().includes(q)) return true;
+      if (it.reviewers.some((r) => r.toLowerCase().includes(q))) return true;
+      return false;
     });
   }, [items, search]);
 
