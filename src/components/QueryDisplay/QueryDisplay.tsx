@@ -412,7 +412,7 @@ export function QueryDisplay({
                     <a
                       href="https://docs.github.com/en/search-github/searching-on-github/searching-issues-and-pull-requests"
                       target="_blank"
-                      rel="noreferrer"
+                      rel="noopener noreferrer"
                       className="ml-2 text-xs underline text-default-400 hover:text-default-600"
                     >
                       Learn more
