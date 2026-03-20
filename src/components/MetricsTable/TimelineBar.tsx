@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   Tooltip,
   TooltipContent,
@@ -14,37 +14,39 @@ interface TimelineBarProps {
   closedAt?: string | null;
 }
 
+const parseDate = (d?: string | null) => (d ? new Date(d).getTime() : null);
+
 export default function TimelineBar({
   createdAt,
   publishedAt,
   firstReviewAt,
   closedAt,
 }: TimelineBarProps) {
-  const draftLabel = formatDuration(createdAt, publishedAt);
-  const reviewLabel = formatDuration(publishedAt, firstReviewAt);
-  const activeLabel = formatDuration(firstReviewAt, closedAt);
+  // Parse dates once
+  const createdMs = useMemo(() => parseDate(createdAt), [createdAt]);
+  const publishedMs = useMemo(() => parseDate(publishedAt), [publishedAt]);
+  const firstReviewMs = useMemo(
+    () => parseDate(firstReviewAt),
+    [firstReviewAt]
+  );
+  const closedMs = useMemo(() => parseDate(closedAt), [closedAt]);
+
+  const draftLabel = formatDuration(createdMs, publishedMs);
+  const reviewLabel = formatDuration(publishedMs, firstReviewMs);
+  const activeLabel = formatDuration(firstReviewMs, closedMs);
+  const totalLabel = formatDuration(createdMs, closedMs);
 
   // based on the time strings, calculate the percentages
 
-  const totalTime =
-    closedAt && createdAt
-      ? new Date(closedAt).getTime() - new Date(createdAt).getTime()
-      : null;
+  const totalTime = closedMs && createdMs ? closedMs - createdMs : null;
 
   const reviewTime =
-    firstReviewAt && publishedAt
-      ? new Date(firstReviewAt).getTime() - new Date(publishedAt).getTime()
-      : null;
+    firstReviewMs && publishedMs ? firstReviewMs - publishedMs : null;
 
   const activeTime =
-    closedAt && firstReviewAt
-      ? new Date(closedAt).getTime() - new Date(firstReviewAt).getTime()
-      : null;
+    closedMs && firstReviewMs ? closedMs - firstReviewMs : null;
 
-  const draftTime =
-    publishedAt && createdAt
-      ? new Date(publishedAt).getTime() - new Date(createdAt).getTime()
-      : null;
+  const draftTime = publishedMs && createdMs ? publishedMs - createdMs : null;
 
   const draftPercentage =
     totalTime && draftTime ? (draftTime / totalTime) * 100 : 0;
@@ -61,7 +63,7 @@ export default function TimelineBar({
             className="flex flex-col items-start w-32 h-4 font-mono"
             tabIndex={0}
           >
-            {formatDuration(createdAt, closedAt)}
+            {totalLabel}
             <div className="flex w-full items-center">
               <div
                 className="h-1 rounded-full bg-indigo-500"
