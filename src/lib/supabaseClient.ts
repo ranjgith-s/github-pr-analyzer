@@ -32,7 +32,7 @@ export const supabase = createClient(supabaseUrl || '', supabaseKey || '', {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
-    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+    storage: typeof window !== 'undefined' ? window.sessionStorage : undefined,
   },
 });
 

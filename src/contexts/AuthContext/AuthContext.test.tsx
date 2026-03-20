@@ -17,7 +17,9 @@ test('login and logout updates token', () => {
 
   act(() => result.current.login('abc'));
   expect(result.current.token).toBe('abc');
+  expect(localStorage.getItem('token')).toBeNull();
 
   act(() => result.current.logout());
   expect(result.current.token).toBeNull();
+  expect(localStorage.getItem('token')).toBeNull();
 });
