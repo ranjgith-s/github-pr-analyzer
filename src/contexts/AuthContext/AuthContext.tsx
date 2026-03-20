@@ -42,12 +42,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
                   data.session as any
                 );
                 if (provFromExchange) {
-                  localStorage.setItem('token', provFromExchange);
                   setToken(provFromExchange);
                 }
               }
             } catch {
-              // ignore; fall through to getSession/localStorage
+              // ignore; fall through to getSession
             } finally {
               // Clean the URL so code/state are not left behind
               try {
@@ -69,15 +68,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         const session = data?.session as any;
         const prov = extractProviderToken(session);
         if (prov) {
-          localStorage.setItem('token', prov);
           setToken(prov);
           return;
         }
       } catch {
-        // no-op; fallback to localStorage
+        // no-op
       }
-      const stored = localStorage.getItem('token');
-      if (stored) setToken(stored);
     };
     init();
 
@@ -86,10 +82,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       (event: any, sess: any) => {
         const prov = extractProviderToken(sess?.session ?? sess);
         if (prov) {
-          localStorage.setItem('token', prov);
           setToken(prov);
         } else if (event === 'SIGNED_OUT') {
-          localStorage.removeItem('token');
           setToken(null);
         }
       }
@@ -121,7 +115,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [token]);
 
   const login = (newToken: string) => {
-    localStorage.setItem('token', newToken);
     setToken(newToken);
     // Proactively fetch user so tests that assert immediate calls succeed.
     // Use Promise.resolve to avoid calling .then on undefined when the module is auto-mocked in tests.
@@ -134,7 +127,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const logout = () => {
     supabase.auth.signOut?.();
-    localStorage.removeItem('token');
     setToken(null);
     setUser(null);
     navigate('/login');

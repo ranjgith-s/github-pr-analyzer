@@ -55,7 +55,7 @@ describe('AuthContext', () => {
 
     // token rendered
     expect(await screen.findByTestId('token')).toHaveTextContent('provTok');
-    expect(localStorage.getItem('token')).toBe('provTok');
+    expect(localStorage.getItem('token')).toBeNull();
 
     // Capture subscription to assert cleanup
     const sub = (supabase.auth.onAuthStateChange as jest.Mock).mock.results[0]
@@ -120,7 +120,7 @@ describe('AuthContext', () => {
     await act(async () => {
       screen.getByText('login').click();
     });
-    expect(localStorage.getItem('token')).toBe('tok123');
+    expect(localStorage.getItem('token')).toBeNull();
     expect(await screen.findByTestId('user')).toHaveTextContent('me');
 
     // logout invokes supabase signOut and clears state
@@ -159,7 +159,7 @@ describe('AuthContext', () => {
     window.history.pushState({}, '', '/');
   });
 
-  test('falls back to localStorage token when no Supabase session', async () => {
+  test('does NOT fall back to localStorage token when no Supabase session', async () => {
     // @ts-expect-error test helper
     supabase.auth.__reset?.();
     localStorage.setItem('token', 'fromLS');
@@ -171,16 +171,16 @@ describe('AuthContext', () => {
         </AuthProvider>
       </MemoryRouter>
     );
-    // The AuthProvider init will read localStorage when getSession yields null
+    // The AuthProvider init should NOT read localStorage
     await act(async () => {});
-    await expect(screen.findByTestId('token')).resolves.toHaveTextContent(
-      'fromLS'
-    );
+    expect(screen.getByTestId('token')).toHaveTextContent('');
   });
 
-  test('onAuthStateChange SIGNED_OUT clears token and localStorage', async () => {
-    // Start with an existing token
-    localStorage.setItem('token', 'x');
+  test('onAuthStateChange SIGNED_OUT clears token in memory', async () => {
+    // Start with a login
+    (githubService.getAuthenticatedUserProfile as jest.Mock).mockResolvedValue({
+      login: 'me',
+    });
     render(
       <MemoryRouter>
         <AuthProvider>
@@ -188,9 +188,13 @@ describe('AuthContext', () => {
         </AuthProvider>
       </MemoryRouter>
     );
+    await act(async () => {
+      screen.getByText('login').click();
+    });
+    expect(await screen.findByTestId('token')).toHaveTextContent('tok123');
+
     // @ts-expect-error test helper
     supabase.auth.__emitAuthEvent?.('SIGNED_OUT', null);
-    expect(localStorage.getItem('token')).toBeNull();
     expect(screen.getByTestId('token')).toHaveTextContent('');
   });
 
