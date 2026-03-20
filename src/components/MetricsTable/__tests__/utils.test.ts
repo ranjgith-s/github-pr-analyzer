@@ -24,7 +24,9 @@ describe('firstKey', () => {
   });
 
   it('returns currentKey if passed an object with currentKey property', () => {
-    expect(firstKey({ currentKey: 'objKey', otherProp: 'value' })).toBe('objKey');
+    expect(firstKey({ currentKey: 'objKey', otherProp: 'value' })).toBe(
+      'objKey'
+    );
   });
 
   it('returns empty string for other objects without currentKey', () => {
