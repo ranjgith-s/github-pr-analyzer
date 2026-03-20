@@ -71,11 +71,7 @@ export function useMetricsTable({
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-
-    // ⚡ Bolt: Early return for empty search to skip unnecessary array iteration
     if (!q) return items;
-
-    // ⚡ Bolt: Short-circuiting filter evaluations for O(n) string matching improvements
     return items.filter((it) => {
       if (it.title.toLowerCase().includes(q)) return true;
       if (it.repo.toLowerCase().includes(q)) return true;
