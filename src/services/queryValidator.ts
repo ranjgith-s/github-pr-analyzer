@@ -131,11 +131,6 @@ export function validateQuery(query: string): ValidationResult {
     warnings.push('Added "is:pr" qualifier');
   }
 
-  // Sanitize dangerous characters
-  sanitized = sanitized.replace(
-    /<script[^>]*>.*?<\/script>/gi,
-    'scriptalert()/script'
-  );
 
   // Validate GitHub-specific value formats
   const valueErrors = validateQualifierValue(sanitized);
