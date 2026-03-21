@@ -160,6 +160,30 @@ async function transformSearchResponse(
   // Process items in batches using GraphQL for efficiency and Promise.all for concurrency
   const batches = [];
   for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
+    const queries = batch
+      .map((item, idx) => {
+        const [owner, repo] = item.repository_url.split('/').slice(-2);
+        return `pr${idx}: repository(owner: "${owner}", name: "${repo}") { pullRequest(number: ${item.number}) { id title author { login } createdAt publishedAt closedAt mergedAt isDraft additions deletions comments { totalCount } reviews(first:100) { nodes { author { login } state submittedAt } } commits(first: 1) { nodes { commit { authoredDate committedDate } } } } }`;
+      })
+      .join(' ');
+    const query = `query { ${queries} }`;
+    const prData = await githubApi.graphqlQuery<
+      Record<string, { pullRequest: unknown }>
+    >(octokit, query);
+
+    for (let idx = 0; idx < batch.length; idx++) {
+      const pr = prData[`pr${idx}`]?.pullRequest;
+      if (pr) {
+        const [owner, repo] = batch[idx].repository_url.split('/').slice(-2);
+        prDetails.push({
+          pr,
+          item: batch[idx],
+          owner,
+          repo,
+        });
+      }
+    }
     batches.push(items.slice(i, i + batchSize));
   }
 
