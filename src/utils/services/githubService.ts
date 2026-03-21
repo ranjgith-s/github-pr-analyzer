@@ -405,9 +405,19 @@ export async function fetchRepoInsights(
     leadTimes.length > 0
       ? leadTimes.reduce((a, b) => a + b, 0) / leadTimes.length
       : 0;
-  const recentRuns = workflowRuns.filter((r: any) => r.created_at >= since);
-  const failures = recentRuns.filter((r: any) => r.conclusion === 'failure');
-  const successes = recentRuns.filter((r: any) => r.conclusion === 'success');
+  const recentRuns: any[] = [];
+  const failures: any[] = [];
+  const successes: any[] = [];
+  for (const r of workflowRuns) {
+    if (r.created_at >= since) {
+      recentRuns.push(r);
+      if (r.conclusion === 'failure') {
+        failures.push(r);
+      } else if (r.conclusion === 'success') {
+        successes.push(r);
+      }
+    }
+  }
   const changeFailureRate =
     recentRuns.length > 0 ? failures.length / recentRuns.length : 0;
   let meanTimeToRestore = 0;
