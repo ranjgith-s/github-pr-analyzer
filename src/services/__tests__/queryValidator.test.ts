@@ -94,10 +94,20 @@ describe('Query Validator', () => {
       );
     });
 
-    it('should sanitize dangerous characters', () => {
-      const result = validateQuery('is:pr author:<script>alert()</script>');
+    it('should not modify or flag script-like text in queries', () => {
+      const query = 'is:pr author:<script>alert()</script>';
+      const result = validateQuery(query);
 
-      expect(result.sanitized).toBe('is:pr author:scriptalert()/script');
+      // It will fail due to invalid user format, but should not be "sanitized"
+      expect(result.sanitized).toContain('<script>alert()</script>');
+    });
+
+    it('should correctly handle range operators like size:<100', () => {
+      const query = 'is:pr size:<100';
+      const result = validateQuery(query);
+
+      expect(result.isValid).toBe(true);
+      expect(result.sanitized).toBe('is:pr size:<100');
     });
   });
 
@@ -217,11 +227,6 @@ describe('Query Validator', () => {
         );
       });
 
-      it('should sanitize dangerous characters', () => {
-        const result = validateQuery('is:pr author:<script>alert()</script>');
-
-        expect(result.sanitized).toBe('is:pr author:scriptalert()/script');
-      });
     });
 
     describe('validateQueryRealtime', () => {
@@ -572,16 +577,6 @@ describe('Query Validator', () => {
       });
     });
 
-    describe('sanitization', () => {
-      it('sanitizes script tags while still flagging invalid user format', () => {
-        const result = validateQuery('author:<script>alert()</script>');
-
-        expect(result.sanitized).toBe('is:pr author:scriptalert()/script');
-        expect(
-          result.errors.some((e) => e.includes('Invalid user format'))
-        ).toBe(true);
-      });
-    });
 
     describe('suggestions', () => {
       it('does not duplicate existing suggestions same as query', () => {
