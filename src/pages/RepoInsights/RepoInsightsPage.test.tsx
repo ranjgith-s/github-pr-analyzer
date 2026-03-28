@@ -10,7 +10,6 @@ jest.mock('../../utils/services/githubService');
 describe('RepoInsightsPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    localStorage.setItem('token', 'tok');
   });
 
   it('does not show dropdown for invalid input', async () => {
