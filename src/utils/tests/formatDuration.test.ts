@@ -41,3 +41,22 @@ test('accepts Date objects', () => {
   const end = new Date('2021-01-01T05:00:00Z');
   expect(formatDuration(start, end)).toBe('5h');
 });
+
+test('returns N/A for invalid date strings', () => {
+  expect(formatDuration('invalid-date', '2020-01-01')).toBe('N/A');
+  expect(formatDuration('2020-01-01', 'invalid-date')).toBe('N/A');
+  expect(formatDuration('invalid-date', 'another-invalid')).toBe('N/A');
+});
+
+test('formats exact days without hours', () => {
+  expect(formatDuration('2020-01-01T00:00:00Z', '2020-01-03T00:00:00Z')).toBe(
+    '2d'
+  );
+});
+
+test('returns N/A when start date is after end date (negative duration)', () => {
+  const start = new Date('2021-01-01T05:00:00Z');
+  const end = new Date('2021-01-01T00:00:00Z');
+  expect(formatDuration(start, end)).toBe('N/A');
+  expect(formatDuration(1609477200000, 1609459200000)).toBe('N/A');
+});
